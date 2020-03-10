@@ -10,7 +10,7 @@ def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-v', '--verbose', help = 'print debugging output', action = 'count', default = 0)
-    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', default = 10)
+    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type=int, default = 10)
     args = parser.parse_args(arguments)
     return args
 
@@ -45,35 +45,36 @@ def d(x1, x2):
 def get_best_distances(medoids, imgs):
     assert len(medoids) >= 1
     sample_size = 700
-    best_distances = [float('inf') for _ in range(N)]
-    for p in range(N):
+    best_distances = [float('inf') for _ in range(sample_size)]
+    for p in range(sample_size):
         for m in medoids:
             if d(imgs[m], imgs[p]) < best_distances[p]:
                 best_distances[p] = d(imgs[m], imgs[p])
     return best_distances
 
 def naive_build(args, total_imgs):
+    d_count = 0
     sample_size = 700
     # import ipdb; ipdb.set_trace()
     imgs = total_imgs[np.random.choice(range(len(total_imgs)), size = sample_size, replace = False)]
     medoids = []
-    best_distances = [float('inf') for _ in range(N)]
+    best_distances = [float('inf') for _ in range(sample_size)]
     for k in range(args.num_medoids):
         print("Finding medoid", k)
         # Greedily choose the point which minimizes the loss
         best_loss = float('inf')
         best_medoid = -1
 
-        for target in range(N):
+        for target in range(sample_size):
             if (target + 1) % 100 == 0: print(target)
-            if target in medoids: continue # Skip existing medoids
+            #if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
             loss = 0
-            for reference in range(N):
-                if d(imgs[target], imgs[reference]) < best_distances[reference]:
-                    loss += d(imgs[target], imgs[reference])
-                else:
-                    loss += best_distances[reference]
+            for reference in range(sample_size):
+                # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
+                d_r_t = d(imgs[target], imgs[reference])
+                d_count += 1
+                loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
             if loss < best_loss:
                 best_loss = loss
@@ -86,12 +87,11 @@ def naive_build(args, total_imgs):
         best_distances = get_best_distances(medoids, imgs)
         print(medoids)
 
+    print(d_count, args.num_medoids*(sample_size)**2)
     return medoids
 
 def UCB_build():
     pass
-
-
 
 def main():
     pass
@@ -99,4 +99,6 @@ def main():
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
     total_images, total_labels = load_data(args)
-    print(naive_build(args, total_images))
+    medoids = naive_build(args, total_images)
+    # for m in medoids:
+    #     print(total_images[m].reshape(28, 28))
