@@ -107,11 +107,9 @@ def naive_build(args, imgs):
 def UCB_build():
     pass
 
-def main():
-    pass
-
-if __name__ == "__main__":
+def main(sys_args):
     args = get_args(sys.argv[1:])
+
     total_images, total_labels = load_data(args)
     sample_size = 700
     imgs = total_images[np.random.choice(range(len(total_images)), size = sample_size, replace = False)]
@@ -121,3 +119,7 @@ if __name__ == "__main__":
     if args.verbose >= 2:
         for m in medoids:
             print(total_images[m].reshape(28, 28))
+
+
+if __name__ == "__main__":
+    main(sys.argv)
