@@ -51,15 +51,15 @@ def get_best_distances(medoids, imgs):
     For each point, calculate the minimum distance to any medoid
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
-    sample_size = 700
-    best_distances = [float('inf') for _ in range(sample_size)]
-    for p in range(sample_size):
+    length = len(imgs)
+    best_distances = [float('inf') for _ in range(length)]
+    for p in range(length):
         for m in medoids:
             if d(imgs[m], imgs[p]) < best_distances[p]:
                 best_distances[p] = d(imgs[m], imgs[p])
     return best_distances
 
-def naive_build(args, total_imgs):
+def naive_build(args, imgs):
     '''
     Naively instantiates the medoids, corresponding to the BUILD step.
     Algorithm does so in a greedy way:
@@ -68,22 +68,21 @@ def naive_build(args, total_imgs):
             previous medoids being fixed
     '''
     d_count = 0
-    sample_size = 700
-    imgs = total_imgs[np.random.choice(range(len(total_imgs)), size = sample_size, replace = False)]
     medoids = []
-    best_distances = [float('inf') for _ in range(sample_size)]
+    length = len(imgs)
+    best_distances = [float('inf') for _ in range(length)]
     for k in range(args.num_medoids):
         print("Finding medoid", k)
         # Greedily choose the point which minimizes the loss
         best_loss = float('inf')
         best_medoid = -1
 
-        for target in range(sample_size):
+        for target in range(length):
             if (target + 1) % 100 == 0: print(target)
             # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
             loss = 0
-            for reference in range(sample_size):
+            for reference in range(length):
                 # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
                 d_r_t = d(imgs[target], imgs[reference])
                 d_count += 1
@@ -102,7 +101,7 @@ def naive_build(args, total_imgs):
         best_distances = get_best_distances(medoids, imgs)
         print(medoids)
 
-    print(d_count, args.num_medoids * (sample_size)**2)
+    print(d_count, args.num_medoids * (length)**2)
     return medoids
 
 def UCB_build():
@@ -114,7 +113,10 @@ def main():
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
     total_images, total_labels = load_data(args)
-    medoids = naive_build(args, total_images)
+    sample_size = 700
+    imgs = total_images[np.random.choice(range(len(total_images)), size = sample_size, replace = False)]
+
+    medoids = naive_build(args, imgs)
 
     if args.verbose >= 2:
         for m in medoids:
