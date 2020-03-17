@@ -10,12 +10,16 @@ def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-v', '--verbose', help = 'print debugging output', action = 'count', default = 0)
-    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type=int, default = 10)
+    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type = int, default = 10)
     args = parser.parse_args(arguments)
     return args
 
 
 def load_data(args):
+    '''
+    Load the entire (train + test) MNIST dataset
+    returns: MNIST data reshaped into flattened arrays, all labels
+    '''
     N = 70000
     m = 28
     train_images = mnist.train_images()
@@ -34,16 +38,19 @@ def load_data(args):
     if args.verbose >= 1:
         print(train_images[0])
     if args.verbose >= 2:
-        plt.imshow(train_images[0], cmap='gray')
+        plt.imshow(train_images[0], cmap = 'gray')
         plt.show()
 
     return total_images.reshape(N, m * m), total_labels
 
 def d(x1, x2):
-    return np.linalg.norm(x1 - x2, ord=2)
+    return np.linalg.norm(x1 - x2, ord = 2)
 
 def get_best_distances(medoids, imgs):
-    assert len(medoids) >= 1
+    '''
+    For each point, calculate the minimum distance to any medoid
+    '''
+    assert len(medoids) >= 1, "Need to pass at least one medoid"
     sample_size = 700
     best_distances = [float('inf') for _ in range(sample_size)]
     for p in range(sample_size):
@@ -53,9 +60,15 @@ def get_best_distances(medoids, imgs):
     return best_distances
 
 def naive_build(args, total_imgs):
+    '''
+    Naively instantiates the medoids, corresponding to the BUILD step.
+    Algorithm does so in a greedy way:
+        for k in range(num_medoids):
+            Add the medoid that will lead to lowest lost, conditioned on the
+            previous medoids being fixed
+    '''
     d_count = 0
     sample_size = 700
-    # import ipdb; ipdb.set_trace()
     imgs = total_imgs[np.random.choice(range(len(total_imgs)), size = sample_size, replace = False)]
     medoids = []
     best_distances = [float('inf') for _ in range(sample_size)]
@@ -67,7 +80,7 @@ def naive_build(args, total_imgs):
 
         for target in range(sample_size):
             if (target + 1) % 100 == 0: print(target)
-            #if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
+            # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
             loss = 0
             for reference in range(sample_size):
@@ -77,17 +90,19 @@ def naive_build(args, total_imgs):
                 loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
             if loss < best_loss:
+                # So far, this new medoid is the best candidate
                 best_loss = loss
                 best_medoid = target
 
         # Once we have chosen the best medoid, reupdate the best distances
         # Don't do this OTF to avoid overwriting best_distances or requiring deep copy
-        # Don't include these distance computations in the running metric because they could be computed OTF / tracked
+        # Otherwise, we would have side-effects when recomputing best_distances and recursively backtracking
+        # Also don't include these distance computations in the running metric because they could be computed OTF / tracked
         medoids.append(best_medoid)
         best_distances = get_best_distances(medoids, imgs)
         print(medoids)
 
-    print(d_count, args.num_medoids*(sample_size)**2)
+    print(d_count, args.num_medoids * (sample_size)**2)
     return medoids
 
 def UCB_build():
@@ -100,5 +115,7 @@ if __name__ == "__main__":
     args = get_args(sys.argv[1:])
     total_images, total_labels = load_data(args)
     medoids = naive_build(args, total_images)
-    # for m in medoids:
-    #     print(total_images[m].reshape(28, 28))
+
+    if args.verbose >= 2:
+        for m in medoids:
+            print(total_images[m].reshape(28, 28))
