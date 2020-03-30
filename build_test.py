@@ -127,18 +127,18 @@ def UCB_build(args, imgs):
     estimates = np.zeros(N)
     medoids = []
     best_distances = [float('inf') for _ in range(N)]
-    batch_size = 20 # NOTE: What should this init_size be? 20?
+    batch_size = 100 # NOTE: What should this init_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
 
     def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
         N = len(imgs)
-        estimates = np.zeros(N)
+        estimates = np.zeros(len(targets))
         tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-        for tar_idx in targets:
+        for tar_idx, target in enumerate(targets):
             distances = np.zeros(batch_size)
             for tmp_idx, tmp in enumerate(tmp_refs):
                 ## tmp is the actually index of the reference point, tmp_idx just numerates them)
-                distances[tmp_idx] = cost_fn(imgs, tar_idx, tmp, best_distances) # NOTE: depends on other medoids too!
+                distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
             estimates[tar_idx] = np.mean(distances)
         return estimates
 
@@ -151,20 +151,30 @@ def UCB_build(args, imgs):
         # If more than n points, just compute exactly -- otherwise, there's a failure mode where
         # Two points very close together require shittons of samples to distinguish their mean distance
 
-    for k in range(1):
+    for k in range(args.num_medoids):
         print("Finding medoid", k)
 
         ## Initialization
+        step_count = 1
         estimates = sample_for_targets(imgs, range(N), batch_size)
-        print(estimates)
-        cb_delta = sigma * np.sqrt(np.log(1 / p) / batch_size)
+        cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
         lcbs = estimates - cb_delta
         ucbs = estimates + cb_delta
 
         # Determine arms to pull
         best_ucb = ucbs.min()
+        candidates = np.where(lcbs < best_ucb)[0]
 
         # Pull arms, update ucbs and lcbs
+        while(len(candidates) > 1):
+            print(candidates)
+            step_count += 1
+            print("Step count", step_count)
+            # NOTE: Don't update all estimates, just pulled arms
+            estimates[candidates] = (((step_count - 1) * estimates[candidates]) + sample_for_targets(imgs, candidates, batch_size)) / step_count
+            cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
+            lcbs[candidates] = estimates[candidates] - cb_delta
+            ucbs[candidates] = estimates[candidates] + cb_delta
 
 
 
