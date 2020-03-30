@@ -127,29 +127,20 @@ def UCB_build(args, imgs):
     estimates = np.zeros(N)
     medoids = []
     best_distances = [float('inf') for _ in range(N)]
-    init_size = 20
+    batch_size = 20 # NOTE: What should this init_size be? 20?
 
-    def initialize_bounds(imgs, init_size):
+    def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
         N = len(imgs)
         estimates = np.zeros(N)
-        tmp_refs = np.array(np.random.choice(N, size = init_size, replace = False), dtype='int')
-        for tar_idx in range(N):
-            distances = np.zeros(init_size)
+        tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
+        for tar_idx in targets:
+            distances = np.zeros(batch_size)
             for tmp_idx, tmp in enumerate(tmp_refs):
                 ## tmp is the actually index of the reference point, tmp_idx just numerates them)
-                distances[tmp_idx] = cost_fn(imgs, tar_idx, tmp, best_distances)
+                distances[tmp_idx] = cost_fn(imgs, tar_idx, tmp, best_distances) # NOTE: depends on other medoids too!
             estimates[tar_idx] = np.mean(distances)
         return estimates
-
-    # NOTE: What should this init_size be? 20?
-    estimates = initialize_bounds(imgs, init_size)
-    cb_delta = sigma * np.sqrt(np.log(1 / p) / init_size)
-    lcbs = estimate - cb_delta
-    ucbs = estimate + cb_delta
-
-
-    import ipdb; ipdb.set_trace()
 
     # Iteratively:
     # Pretend each previous arm is fixed.
@@ -160,8 +151,15 @@ def UCB_build(args, imgs):
         # If more than n points, just compute exactly -- otherwise, there's a failure mode where
         # Two points very close together require shittons of samples to distinguish their mean distance
 
-    for k in range(args.num_medoids):
+    for k in range(1):
         print("Finding medoid", k)
+
+        ## Initialization
+        estimates = sample_for_targets(imgs, range(N), batch_size)
+        print(estimates)
+        cb_delta = sigma * np.sqrt(np.log(1 / p) / batch_size)
+        lcbs = estimates - cb_delta
+        ucbs = estimates + cb_delta
 
         # Determine arms to pull
         best_ucb = ucbs.min()
