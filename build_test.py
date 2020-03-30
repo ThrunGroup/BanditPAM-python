@@ -4,14 +4,13 @@ import mnist
 import matplotlib.pyplot as plt
 import argparse
 
-np.random.seed(42)
-
 def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-v', '--verbose', help = 'print debugging output', action = 'count', default = 0)
     parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type = int, default = 10)
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
+    parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     args = parser.parse_args(arguments)
     return args
 
@@ -99,6 +98,7 @@ def naive_build(args, imgs):
                 d_count += 1
                 loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
+            print(target, loss)
             if loss < best_loss:
                 # So far, this new medoid is the best candidate
                 best_loss = loss
@@ -153,29 +153,26 @@ def UCB_build(args, imgs):
 
     for k in range(args.num_medoids):
         print("Finding medoid", k)
-
         ## Initialization
-        step_count = 1
-        estimates = sample_for_targets(imgs, range(N), batch_size)
-        cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
-        lcbs = estimates - cb_delta
-        ucbs = estimates + cb_delta
-
-        # Determine arms to pull
-        best_ucb = ucbs.min()
-        candidates = np.where(lcbs < best_ucb)[0]
+        step_count = 0
+        candidates = range(N)
+        lcbs = -100 * np.ones(N)
+        ucbs = -100 * np.ones(N)
 
         # Pull arms, update ucbs and lcbs
-        while(len(candidates) > 1):
-            print(candidates)
+        while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
+            print("Step count", step_count, candidates)
             step_count += 1
-            print("Step count", step_count)
             # NOTE: Don't update all estimates, just pulled arms
             estimates[candidates] = (((step_count - 1) * estimates[candidates]) + sample_for_targets(imgs, candidates, batch_size)) / step_count
             cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
 
+            # Determine arms to pull
+            best_ucb = ucbs.min()
+            candidates = np.where(lcbs < best_ucb)[0]
+        print("Medoid:", candidates)
 
 
 def gaussian(mu, sigma, x):
@@ -203,14 +200,16 @@ def estimate_sigma(imgs):
 
 def main(sys_args):
     args = get_args(sys.argv[1:])
+    np.random.seed(args.seed)
     total_images, total_labels = load_data(args)
     sample_size = args.sample_size
     imgs = total_images[np.random.choice(range(len(total_images)), size = sample_size, replace = False)]
-
     #estimate_sigma(imgs)
     # Sigma = 0.7 looks ok
 
     # medoids = naive_build(args, imgs)
+    # 595 is true medoid at 6387.411136116143
+    # 285 is close second at 6392.1460710 -- not sure why not normalizing gives a problem
     medoids = [595, 306, 392, 319, 23, 558, 251, 118, 448, 529]
 
     if args.verbose >= 2:
