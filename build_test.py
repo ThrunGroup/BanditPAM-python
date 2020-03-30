@@ -173,6 +173,8 @@ def UCB_build(args, imgs):
             best_ucb = ucbs.min()
             candidates = np.where(lcbs < best_ucb)[0]
         print("Medoid:", candidates)
+        medoids.append(candidates[0])
+        best_distances = get_best_distances(medoids, imgs)
 
 
 def gaussian(mu, sigma, x):
