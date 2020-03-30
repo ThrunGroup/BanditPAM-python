@@ -98,7 +98,6 @@ def naive_build(args, imgs):
                 d_count += 1
                 loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
-            print(target, loss)
             if loss < best_loss:
                 # So far, this new medoid is the best candidate
                 best_loss = loss
@@ -112,7 +111,7 @@ def naive_build(args, imgs):
         best_distances = get_best_distances(medoids, imgs)
         print(medoids)
 
-    print(d_count, args.num_medoids * (N)**2)
+    print("Distances computations:", d_count, "k*n^2:", args.num_medoids * (N)**2)
     return medoids
 
 def UCB_build(args, imgs):
@@ -175,6 +174,7 @@ def UCB_build(args, imgs):
         print("Medoid:", candidates)
         medoids.append(candidates[0])
         best_distances = get_best_distances(medoids, imgs)
+    print(medoids)
 
 
 def gaussian(mu, sigma, x):
@@ -209,7 +209,7 @@ def main(sys_args):
     #estimate_sigma(imgs)
     # Sigma = 0.7 looks ok
 
-    # medoids = naive_build(args, imgs)
+    medoids = naive_build(args, imgs)
     # 595 is true medoid at 6387.411136116143
     # 285 is close second at 6392.1460710 -- not sure why not normalizing gives a problem
     medoids = [595, 306, 392, 319, 23, 558, 251, 118, 448, 529]
@@ -218,7 +218,7 @@ def main(sys_args):
         for m in medoids:
             print(total_images[m].reshape(28, 28) * 255)
 
-    UCB_build(args, imgs)
+    # UCB_build(args, imgs)
 
 
 if __name__ == "__main__":
