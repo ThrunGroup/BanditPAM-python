@@ -29,6 +29,7 @@ def naive_build(args, imgs):
                 d_count += 1
                 loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
+            # print(target, loss)
             if loss < best_loss:
                 # So far, this new medoid is the best candidate
                 best_loss = loss
