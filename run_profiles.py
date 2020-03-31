@@ -15,11 +15,11 @@ def remap_args(args, exp):
 
 def get_filename(exp, args):
     return exp[0] + \
-        '-verbosity-' + str(args.verbose) + \
-        '-num_medoids-' + str(args.num_medoids) + \
-        '-sample_size-' + str(args.sample_size) + \
-        '-seed-' + str(args.seed) + \
-        '-dataset-' + args.dataset
+        '-v-' + str(args.verbose) + \
+        '-k-' + str(args.num_medoids) + \
+        '-N-' + str(args.sample_size) + \
+        '-s-' + str(args.seed) + \
+        '-d-' + args.dataset
 
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
@@ -32,18 +32,22 @@ def main(sys_args):
         imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
         fname = os.path.join('profiles', get_filename(exp, args))
 
-        # NOTE: Save medoids found to file
         if exp[0] == 'naive':
-            cProfile.runctx('medoids = naive_pam.naive_build(args, imgs)', globals(), locals(), fname)
-            print("run_profiles", medoids)
+            prof = cProfile.Profile()
+            # NOTE: This approach is undocumented
+            # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
+            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs])
+            prof.dump_stats(fname)
+            with open(fname + '.medoids', 'w+') as fout:
+                fout.write(','.join(map(str,medoids)))
         elif exp[0] == 'ucb':
-            cProfile.runctx('medoids = ucb_pam.UCB_build(args, imgs, sigma)', globals(), locals(), fname)
-            print("run_profiles", medoids)
+            prof = cProfile.Profile()
+            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+            prof.dump_stats(fname)
+            with open(fname + '.medoids', 'w+') as fout:
+                fout.write(','.join(map(str,medoids)))
         else:
             raise Exception('Invalid algorithm specified')
-
-
-
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from data_utils import *
 # imgs = total_images[np.random.choice(range(len(total_images)), size = sample_size, replace = False)]
 # estimate_sigma(imgs)
 
-naive_dcs = np.array([1476933, 12019267, 75048577])
+naive_dcs = np.array([1476933, 12019267, 75048577, 300000000])
 ucb_dcs = np.array([1837033, 8612167, 32016477])
 
 naive_times = np.array([14.201, 122.213, 122.213])
