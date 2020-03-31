@@ -51,10 +51,12 @@ def UCB_build(args, imgs, sigma):
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
             candidates = np.where(lcbs < ucbs.min())[0]
-        print("Medoid:", candidates)
+
         medoids.append(candidates[0])
+        print("Medoid:", candidates)
         best_distances = get_best_distances(medoids, imgs)
     print(medoids)
+    return medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

@@ -34,9 +34,11 @@ def main(sys_args):
 
         # NOTE: Save medoids found to file
         if exp[0] == 'naive':
-            cProfile.runctx('naive_pam.naive_build(args, imgs)', globals(), locals(), fname)
+            cProfile.runctx('medoids = naive_pam.naive_build(args, imgs)', globals(), locals(), fname)
+            print("run_profiles", medoids)
         elif exp[0] == 'ucb':
-            cProfile.runctx('ucb_pam.UCB_build(args, imgs, sigma)', globals(), locals(), fname)
+            cProfile.runctx('medoids = ucb_pam.UCB_build(args, imgs, sigma)', globals(), locals(), fname)
+            print("run_profiles", medoids)
         else:
             raise Exception('Invalid algorithm specified')
 

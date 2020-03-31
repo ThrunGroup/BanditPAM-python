@@ -42,7 +42,6 @@ def naive_build(args, imgs):
         print("Medoid Found: ", k, best_medoid)
         best_distances = get_best_distances(medoids, imgs)
     print(medoids)
-    print("Distances computations:", d_count, "k*n^2:", args.num_medoids * (N)**2)
     return medoids
 
 
