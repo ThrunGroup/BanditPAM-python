@@ -32,18 +32,16 @@ def main(sys_args):
         imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
         fname = os.path.join('profiles', get_filename(exp, args))
 
+        # NOTE: Save medoids found to file
         if exp[0] == 'naive':
-            # naive_pam.naive_build(args, imgs)
             cProfile.runctx('naive_pam.naive_build(args, imgs)', globals(), locals(), fname)
         elif exp[0] == 'ucb':
-            #ucb_pam.UCB_build(args, imgs, sigma)
             cProfile.runctx('ucb_pam.UCB_build(args, imgs, sigma)', globals(), locals(), fname)
         else:
             raise Exception('Invalid algorithm specified')
 
 
-        # run profile
-        # save results to profiles/name, as well as medoids found
+
 
 
 if __name__ == "__main__":
