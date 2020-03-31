@@ -2,9 +2,6 @@ from data_utils import *
 
 
 def UCB_build(args, imgs):
-    # When to stop sampling an arm? Ans: When lcb >= ucb_1
-    # How to determine sigma? Ans: Seems to be determined manually by looking at distribution of data. Confidence bound scales as sigma (makes sense)
-
     ### Parameters
     N = len(imgs)
     p = 1e-2
@@ -49,7 +46,7 @@ def UCB_build(args, imgs):
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
             print("Step count", step_count, candidates)
             step_count += 1
-            # NOTE: Don't update all estimates, just pulled arms
+            # Don't update all estimates, just pulled arms
             estimates[candidates] = (((step_count - 1) * estimates[candidates]) + sample_for_targets(imgs, candidates, batch_size)) / step_count
             cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
             lcbs[candidates] = estimates[candidates] - cb_delta
@@ -61,4 +58,12 @@ def UCB_build(args, imgs):
         print("Medoid:", candidates)
         medoids.append(candidates[0])
         best_distances = get_best_distances(medoids, imgs)
+    print(medoids)
+
+if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    np.random.seed(args.seed)
+    total_images, total_labels, sigma = load_data(args)
+    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+    medoids = UCB_build(args, imgs)
     print(medoids)

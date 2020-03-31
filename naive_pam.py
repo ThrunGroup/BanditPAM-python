@@ -45,5 +45,9 @@ def naive_build(args, imgs):
 
 
 if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    np.random.seed(args.seed)
+    total_images, total_labels, sigma = load_data(args)
+    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     medoids = naive_build(args, imgs)
     print(medoids)

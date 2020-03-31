@@ -9,7 +9,7 @@ def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-v', '--verbose', help = 'print debugging output', action = 'count', default = 0)
-    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type = int, default = 10)
+    parser.add_argument('-k', '--num_medoids', help = 'Number of medoids', type = int, default = 3)
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
