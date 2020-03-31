@@ -1,16 +1,15 @@
 from data_utils import *
 
 
-def UCB_build(args, imgs):
+def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
     p = 1e-2
-    sigma = 0.7
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
     medoids = []
     best_distances = [float('inf') for _ in range(N)]
-    batch_size = 100 # NOTE: What should this init_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
+    batch_size = 100 # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
 
     def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
@@ -51,10 +50,7 @@ def UCB_build(args, imgs):
             cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
-
-            # Determine arms to pull
-            best_ucb = ucbs.min()
-            candidates = np.where(lcbs < best_ucb)[0]
+            candidates = np.where(lcbs < ucbs.min())[0]
         print("Medoid:", candidates)
         medoids.append(candidates[0])
         best_distances = get_best_distances(medoids, imgs)
@@ -62,8 +58,8 @@ def UCB_build(args, imgs):
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
-    np.random.seed(args.seed)
     total_images, total_labels, sigma = load_data(args)
+    np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     medoids = UCB_build(args, imgs)
     print(medoids)

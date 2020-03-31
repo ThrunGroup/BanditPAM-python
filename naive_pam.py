@@ -19,7 +19,7 @@ def naive_build(args, imgs):
         best_medoid = -1
 
         for target in range(N):
-            if (target + 1) % 100 == 0: print(target)
+            if (target + 1) % 100 == 0 and args.verbose >= 1: print(target)
             # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
             loss = 0
@@ -39,15 +39,17 @@ def naive_build(args, imgs):
         # Otherwise, we would have side-effects when recomputing best_distances and recursively backtracking
         # Also don't include these distance computations in the running metric because they could be computed OTF / tracked
         medoids.append(best_medoid)
+        print("Medoid Found: ", k, best_medoid)
         best_distances = get_best_distances(medoids, imgs)
+    print(medoids)
     print("Distances computations:", d_count, "k*n^2:", args.num_medoids * (N)**2)
     return medoids
 
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
-    np.random.seed(args.seed)
     total_images, total_labels, sigma = load_data(args)
+    np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     medoids = naive_build(args, imgs)
     print(medoids)
