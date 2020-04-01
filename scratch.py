@@ -18,7 +18,7 @@ quadratic =  3*(x**2)
 knlogn = 2.5e2*3*(x*np.log(x))
 
 plt.plot([700, 2000, 5000, 10000], naive_dcs, 'bo')
-plt.plot([700, 2000, 5000, 10000], ucb_dcs, 'ro')
+plt.plot([700, 2000, 5000], ucb_dcs, 'ro')
 plt.plot(x, quadratic, 'b-')
 plt.plot(x, knlogn, 'r-')
 plt.show()

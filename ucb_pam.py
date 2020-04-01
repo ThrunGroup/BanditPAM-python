@@ -43,7 +43,7 @@ def UCB_build(args, imgs, sigma):
 
         # Pull arms, update ucbs and lcbs
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
-            if args.verbose >= 1: print("Step count", step_count, candidates)
+            if args.verbose >= 1: print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
             step_count += 1
             # Don't update all estimates, just pulled arms
             estimates[candidates] = (((step_count - 1) * estimates[candidates]) + sample_for_targets(imgs, candidates, batch_size)) / step_count
