@@ -4,7 +4,7 @@ from data_utils import *
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1e-5
+    p = 1e-6
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
     medoids = []
