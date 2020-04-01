@@ -83,7 +83,6 @@ def UCB_build(args, imgs, sigma):
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         print("New Medoid:", new_medoid)
         medoids.append(new_medoid) #BUG: Choose the lowest lcb (candidates will no longer contain exactly computed points). What about duplicates?
-        print("Medoid:", candidates)
         best_distances = get_best_distances(medoids, imgs)
     print(medoids)
     return medoids
