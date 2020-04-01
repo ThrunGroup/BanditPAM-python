@@ -13,8 +13,8 @@ def remap_args(args, exp):
     args.dataset = exp[5]
     return args
 
-def get_filename(exp, args):
-    return exp[0] + \
+def get_filename(exp_idx, exp, args):
+    return str(exp_idx) + '-' + exp[0] + \
         '-v-' + str(args.verbose) + \
         '-k-' + str(args.num_medoids) + \
         '-N-' + str(args.sample_size) + \
@@ -30,7 +30,7 @@ def main(sys_args):
         args = remap_args(args, exp)
         total_images, total_labels, sigma = load_data(args)
         imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-        fname = os.path.join('profiles', get_filename(exp, args))
+        fname = os.path.join('profiles', get_filename(exp_idx, exp, args))
 
         if exp[0] == 'naive':
             prof = cProfile.Profile()
