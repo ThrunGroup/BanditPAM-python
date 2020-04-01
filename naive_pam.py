@@ -23,6 +23,7 @@ def naive_build(args, imgs):
             # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
             loss = 0
+            # NOTE: SHould reference be allowed to be the target (sample itself)?
             for reference in range(N):
                 # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
                 d_r_t = d(imgs[target], imgs[reference])

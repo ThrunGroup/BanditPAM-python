@@ -4,17 +4,19 @@ from data_utils import *
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1e-2
+    p = 1e-5
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
     medoids = []
     best_distances = [float('inf') for _ in range(N)]
-    batch_size = 100 # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
+    # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
 
     def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
         N = len(imgs)
         estimates = np.zeros(len(targets))
+        # NOTE: Should this sampling be done with replacement? And do I need shuffling?
+        # NOTE: Also, should the point be able to sample itself?
         tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
         for tar_idx, target in enumerate(targets):
             distances = np.zeros(batch_size)
@@ -37,22 +39,50 @@ def UCB_build(args, imgs, sigma):
         print("Finding medoid", k)
         ## Initialization
         step_count = 0
-        candidates = range(N)
+        candidates = range(N) # Initially, consider all points
         lcbs = -100 * np.ones(N)
         ucbs = -100 * np.ones(N)
+        T_samples = np.zeros(N)
+        exact_mask = np.zeros(N)
+
+        original_batch_size = 100
+        base = 1 # Right now, use constant batch size
 
         # Pull arms, update ucbs and lcbs
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
             if args.verbose >= 1: print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
             step_count += 1
+
+            # NOTE: tricky computations below
+            this_batch_size = original_batch_size * (base**step_count)
+
             # Don't update all estimates, just pulled arms
-            estimates[candidates] = (((step_count - 1) * estimates[candidates]) + sample_for_targets(imgs, candidates, batch_size)) / step_count
-            cb_delta = sigma * np.sqrt(np.log(1 / p) / (batch_size * step_count))
+            estimates[candidates] = \
+                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_for_targets(imgs, candidates, this_batch_size))) / (this_batch_size + T_samples[candidates])
+            T_samples[candidates] += this_batch_size
+
+            # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
+            compute_exactly = np.where((T_samples >= N) & (exact_mask == 0))[0]
+            if len(compute_exactly > 0):
+                # import ipdb; ipdb.set_trace()
+                print("COMPUTING EXACTLY ON STEP COUNT", step_count)
+                estimates[compute_exactly] = sample_for_targets(imgs, compute_exactly, N)
+                lcbs[compute_exactly] = estimates[compute_exactly]
+                ucbs[compute_exactly] = estimates[compute_exactly]
+                exact_mask[compute_exactly] = 1
+                T_samples[compute_exactly] += N
+                candidates = np.setdiff1d(candidates, compute_exactly) # Remove compute_exactly points from candidates so they're bounds don't get updated below
+
+            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
-            candidates = np.where(lcbs < ucbs.min())[0]
 
-        medoids.append(candidates[0])
+            candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
+
+        print(np.where( lcbs == lcbs.min() ))
+        new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
+        print("New Medoid:", new_medoid)
+        medoids.append(new_medoid) #BUG: Choose the lowest lcb (candidates will no longer contain exactly computed points). What about duplicates?
         print("Medoid:", candidates)
         best_distances = get_best_distances(medoids, imgs)
     print(medoids)

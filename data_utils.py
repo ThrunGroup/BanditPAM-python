@@ -41,9 +41,9 @@ def load_data(args):
         assert(total_labels.shape == (N,))
         if args.verbose >= 1:
             print(train_images[0])
-        if args.verbose >= 2:
-            plt.imshow(train_images[0], cmap = 'gray')
-            plt.show()
+        # if args.verbose >= 2:
+        #     plt.imshow(train_images[0], cmap = 'gray')
+        #     plt.show()
 
         # NOTE: Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
