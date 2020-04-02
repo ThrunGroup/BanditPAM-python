@@ -14,6 +14,7 @@ def get_args(arguments):
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
+    parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     args = parser.parse_args(arguments)
     return args
 

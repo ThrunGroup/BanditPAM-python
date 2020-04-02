@@ -4,7 +4,7 @@ from data_utils import *
 def UCB_build(args, imgs, sigma, warm_start_medoids = []):
     ### Parameters
     N = len(imgs)
-    p = 1e-6
+    p = 1e-8
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
     medoids = warm_start_medoids
@@ -88,7 +88,9 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
 
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
-        lcbs[new_medoid]
+        # Breaks exact ties with first. Also converts array to int.
+        # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
+        new_medoid = new_medoid[0]
 
         if args.verbose >= 1:
             # BUG: What about duplicates?
