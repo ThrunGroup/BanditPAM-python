@@ -1,6 +1,6 @@
 from data_utils import *
 
-def naive_build(args, imgs):
+def naive_build(args, imgs, warm_start_medoids = []):
     '''
     Naively instantiates the medoids, corresponding to the BUILD step.
     Algorithm does so in a greedy way:
@@ -9,10 +9,16 @@ def naive_build(args, imgs):
             previous medoids being fixed
     '''
     d_count = 0
-    medoids = []
+    medoids = warm_start_medoids
     N = len(imgs)
     best_distances = [float('inf') for _ in range(N)]
-    for k in range(args.num_medoids):
+
+    num_medoids_found = len(warm_start_medoids)
+
+    if num_medoids_found > 0:
+        best_distances = get_best_distances(medoids, imgs)
+
+    for k in range(num_medoids_found, args.num_medoids):
         if args.verbose >= 1:
             print("Finding medoid", k)
 

@@ -39,7 +39,7 @@ def load_data(args):
         assert((total_labels == np.hstack((train_labels, test_labels))).all()) # NOTE: hstack since 1-D
         assert(total_images.shape == (N, m, m))
         assert(total_labels.shape == (N,))
-        if args.verbose >= 1:
+        if args.verbose >= 2:
             print(train_images[0])
         # if args.verbose >= 2:
         #     plt.imshow(train_images[0], cmap = 'gray')

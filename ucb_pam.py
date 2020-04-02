@@ -1,14 +1,18 @@
 from data_utils import *
 
 
-def UCB_build(args, imgs, sigma):
+def UCB_build(args, imgs, sigma, warm_start_medoids = []):
     ### Parameters
     N = len(imgs)
     p = 1e-6
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    medoids = []
+    medoids = warm_start_medoids
     best_distances = [float('inf') for _ in range(N)]
+    num_medoids_found = len(warm_start_medoids)
+
+    if num_medoids_found > 0:
+        best_distances = get_best_distances(medoids, imgs)
 
     def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
@@ -34,7 +38,7 @@ def UCB_build(args, imgs, sigma):
         # If more than n points, just compute exactly -- otherwise, there's a failure mode where
         # Two points very close together require shittons of samples to distinguish their mean distance
 
-    for k in range(args.num_medoids):
+    for k in range(num_medoids_found, args.num_medoids):
         if args.verbose >= 1:
             print("Finding medoid", k)
 

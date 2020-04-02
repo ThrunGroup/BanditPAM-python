@@ -41,13 +41,15 @@ def main(sys_args):
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
+
             medoids = prof.runcall(naive_pam.naive_build, *[args, imgs])
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str,medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
-            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+            warm_start_medoids = exp[-1]
+            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma, warm_start_medoids]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str,medoids)))
