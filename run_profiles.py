@@ -41,8 +41,8 @@ def main(sys_args):
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-
-            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs])
+            warm_start_medoids = exp[-1]
+            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs, warm_start_medoids])
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str,medoids)))
