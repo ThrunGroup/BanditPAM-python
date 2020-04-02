@@ -30,14 +30,15 @@ def naive_build(args, imgs, warm_start_medoids = []):
                 print(target)
             # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
 
-            loss = 0
+            losses = np.zeros(N)
             # NOTE: SHould reference be allowed to be the target (sample itself)?
             for reference in range(N):
                 # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
                 d_r_t = d(imgs[target], imgs[reference])
                 d_count += 1
-                loss += d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
+                losses[reference] = d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
 
+            loss = np.mean(losses)
             if loss < best_loss:
                 best_loss = loss
                 best_medoid = target
@@ -46,6 +47,9 @@ def naive_build(args, imgs, warm_start_medoids = []):
         # Don't do this OTF to avoid overwriting best_distances or requiring deep copy
         # Otherwise, we would have side-effects when recomputing best_distances and recursively backtracking
         # Also don't include these distance computations in the running metric because they could be computed OTF / tracked
+
+            if target == 14 or target == 50:
+                print("CANDIDATE:", target, "LOSS:", loss)
 
         if args.verbose >= 1:
             print("Medoid Found: ", k, best_medoid)

@@ -88,6 +88,7 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
 
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
+        import ipdb; ipdb.set_trace()
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
         new_medoid = new_medoid[0]
