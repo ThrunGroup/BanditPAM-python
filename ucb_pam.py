@@ -88,6 +88,7 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
 
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
+        lcbs[new_medoid]
 
         if args.verbose >= 1:
             # BUG: What about duplicates?
