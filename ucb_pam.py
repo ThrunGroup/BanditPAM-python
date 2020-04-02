@@ -4,7 +4,7 @@ from data_utils import *
 def UCB_build(args, imgs, sigma, warm_start_medoids = []):
     ### Parameters
     N = len(imgs)
-    p = 1e-8
+    p = 1e-6
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
     medoids = warm_start_medoids
