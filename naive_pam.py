@@ -58,11 +58,64 @@ def naive_build(args, imgs, warm_start_medoids = []):
 
     return medoids
 
+def naive_swap(args, imgs, init_medoids):
+    k = len(init_medoids)
+    N = len(imgs)
+    max_iter = 1e4
+    # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
+
+    medoids = init_medoids.copy()
+    loss = np.mean(get_best_distances(medoids, imgs))
+    iter = 0
+    swap_performed = True
+    while swap_performed and iter < max_iter: # not converged
+        iter += 1
+
+        # Identify best of k * (n-k) arms to swap by averaging new loss over all points
+        new_losses = np.inf * np.ones((k, N))
+
+        for k_idx, orig_medoid in enumerate(medoids):
+            for swap_candidate in range(N):
+                new_medoids = medoids.copy()
+                new_medoids.remove(orig_medoid)
+                new_medoids.append(swap_candidate)
+                # NOTE: new_medoids's points no longer need to be sorted!
+
+
+                # NOTE: This get_best_distances fn is going to cost lots of calls! To include them or not? I think yes -- this is indeed what we are trying to cut down?
+                tmp_best_distances = np.mean(get_best_distances(new_medoids, imgs))
+                new_losses[k_idx, swap_candidate] = tmp_best_distances
+
+        # Choose the minimum amongst all losses and perform the swap
+        # NOTE: possible to get first elem of zip object without converting to list?
+        best_swaps = zip( np.where(new_losses == new_losses.min())[0], np.where(new_losses == new_losses.min())[1])
+        best_swaps = list(best_swaps)
+        best_swap = best_swaps[0]
+
+        # Perform best swap
+        print("Swapping", medoids[best_swap[0]], "with", best_swap[1])
+        medoids.remove(medoids[best_swap[0]])
+        medoids.append(best_swap[1])
+        print("New Medoids:", medoids)
+
+        # Check new loss
+        new_loss = np.mean(get_best_distances(new_medoids, imgs))
+        if new_loss < loss:
+            loss = new_loss
+            swap_performed = True
+        else:
+            break # exit loop
+
+    return medoids
+
+
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-    medoids = naive_build(args, imgs)
-    print(medoids)
+    built_medoids = naive_build(args, imgs)
+    print("Built medoids", built_medoids)
+    swapped_medoids = naive_swap(args, imgs, built_medoids)
+    print("Final medoids", swapped_medoids)
