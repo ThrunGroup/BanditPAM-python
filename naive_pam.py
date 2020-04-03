@@ -109,7 +109,7 @@ def naive_swap(args, imgs, init_medoids):
             swap_performed = True
             medoids = new_medoids
         else:
-            print("No swap performed")
+            print("NO SWAP PERFORMED")
             print("Old loss:", loss)
             print("New loss:", new_loss)
             break # exit loop
