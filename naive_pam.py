@@ -92,18 +92,26 @@ def naive_swap(args, imgs, init_medoids):
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
 
+        # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED
         # Perform best swap
-        print("Swapping", medoids[best_swap[0]], "with", best_swap[1])
-        medoids.remove(medoids[best_swap[0]])
-        medoids.append(best_swap[1])
-        print("New Medoids:", medoids)
-
+        print("Trying to swap", medoids[best_swap[0]], "with", best_swap[1])
+        new_medoids = medoids.copy()
+        new_medoids.remove(medoids[best_swap[0]])
+        new_medoids.append(best_swap[1])
+        print("New Medoids:", new_medoids)
         # Check new loss
         new_loss = np.mean(get_best_distances(new_medoids, imgs))
         if new_loss < loss:
+            print("Swap performed")
+            print("Old loss:", loss)
+            print("New loss:", new_loss)
             loss = new_loss
             swap_performed = True
+            medoids = new_medoids
         else:
+            print("No swap performed")
+            print("Old loss:", loss)
+            print("New loss:", new_loss)
             break # exit loop
 
     return medoids
