@@ -101,7 +101,7 @@ def naive_swap(args, imgs, init_medoids):
         print("New Medoids:", new_medoids)
         # Check new loss
         new_loss = np.mean(get_best_distances(new_medoids, imgs))
-        if new_loss >= loss:
+        if new_loss < loss:
             print("Swap performed")
             print("Old loss:", loss)
             print("New loss:", new_loss)
