@@ -47,10 +47,6 @@ def naive_build(args, imgs, warm_start_medoids = []):
         # Don't do this OTF to avoid overwriting best_distances or requiring deep copy
         # Otherwise, we would have side-effects when recomputing best_distances and recursively backtracking
         # Also don't include these distance computations in the running metric because they could be computed OTF / tracked
-
-            if target == 14 or target == 50:
-                print("CANDIDATE:", target, "LOSS:", loss)
-
         if args.verbose >= 1:
             print("Medoid Found: ", k, best_medoid)
 
