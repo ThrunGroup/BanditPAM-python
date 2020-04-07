@@ -216,6 +216,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         # NOTE: possible to get first elem of zip object without converting to list?
         best_swaps = zip( np.where(lcbs == lcbs.min())[0], np.where(lcbs == lcbs.min())[1])
         best_swaps = list(best_swaps)
+        import ipdb; ipdb.set_trace()
         best_swap = best_swaps[0]
 
         # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED
