@@ -46,8 +46,8 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
         ## Initialization
         step_count = 0
         candidates = range(N) # Initially, consider all points
-        lcbs = 1000 * np.ones * np.ones(N)
-        ucbs = 1000 * np.ones * np.ones(N)
+        lcbs = 1000 * np.ones(N)
+        ucbs = 1000 * np.ones(N)
         T_samples = np.zeros(N)
         exact_mask = np.zeros(N)
 
@@ -154,7 +154,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         # Identify Candidates
         # Get samples for candidates
         candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
-        lcbs = 1000 * np.ones((k, N)) # NOTE: Instantiating these as np.inf gives runtime errors and nans
+        lcbs = 1000 * np.ones((k, N)) # NOTE: Instantiating these as np.inf gives runtime errors and nans. Find a better way to do this instead of using 1000
         estimates = 1000 * np.ones((k, N))
         ucbs = 1000 * np.ones((k, N))
 
