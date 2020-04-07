@@ -46,8 +46,8 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
         ## Initialization
         step_count = 0
         candidates = range(N) # Initially, consider all points
-        lcbs = np.inf * np.ones(N)
-        ucbs = np.inf * np.ones(N)
+        lcbs = 1000 * np.ones * np.ones(N)
+        ucbs = 1000 * np.ones * np.ones(N)
         T_samples = np.zeros(N)
         exact_mask = np.zeros(N)
 
@@ -154,9 +154,9 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         # Identify Candidates
         # Get samples for candidates
         candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
-        lcbs = np.inf * np.ones((k, N))
-        estimates = np.inf * np.ones((k, N))
-        ucbs = np.inf * np.ones((k, N))
+        lcbs = 1000 * np.ones((k, N)) # NOTE: Instantiating these as np.inf gives runtime errors and nans
+        estimates = 1000 * np.ones((k, N))
+        ucbs = 1000 * np.ones((k, N))
 
         T_samples = np.zeros((k, N))
         exact_mask = np.zeros((k, N))
@@ -174,6 +174,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             step_count += 1
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
+            # import ipdb; ipdb.set_trace()
 
             # Don't update all estimates, just pulled arms
             for c in candidates:
@@ -183,6 +184,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                     ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * sample_for_targets(imgs, [index_tup], medoids, this_batch_size))) / (this_batch_size + T_samples[index_tup])
                 T_samples[index_tup] += this_batch_size
 
+            # ipdb.set_trace()
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
             comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
             compute_exactly = list(zip(comp_exactly_condition[0], comp_exactly_condition[1]))
@@ -210,13 +212,10 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             candidates = list(zip(cand_condition[0], cand_condition[1]))
 
 
-
-
         # Choose the minimum amongst all losses and perform the swap
         # NOTE: possible to get first elem of zip object without converting to list?
-        best_swaps = zip( np.where(lcbs == lcbs.min())[0], np.where(lcbs == lcbs.min())[1])
+        best_swaps = zip( np.where(lcbs == lcbs.min())[0], np.where(lcbs == lcbs.min())[1] )
         best_swaps = list(best_swaps)
-        import ipdb; ipdb.set_trace()
         best_swap = best_swaps[0]
 
         # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED

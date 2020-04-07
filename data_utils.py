@@ -71,7 +71,9 @@ def cost_fn_difference(dataset, target, ref_idx, best_distances):
     # target should be a PAIR
     c1 = target[0]
     c2 = target[1]
-    return min( d(dataset[c2], dataset[ref_idx]) , best_distances[ref_idx]) - min(d(dataset[c1], dataset[ref_idx]) , best_distances[ref_idx] )
+    # BUG: This function seems wrong
+    return min( d(dataset[c2], dataset[ref_idx]), best_distances[ref_idx] ) - \
+        min(d(dataset[c1], dataset[ref_idx]) , best_distances[ref_idx] )
 
 def get_best_distances(medoids, dataset):
     '''
