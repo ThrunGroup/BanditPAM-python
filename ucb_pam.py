@@ -61,7 +61,6 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             if args.verbose >= 1:
                 print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
 
-            step_count += 1
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
 
@@ -88,6 +87,7 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             ucbs[candidates] = estimates[candidates] + cb_delta
 
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
+            step_count += 1
 
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
@@ -174,8 +174,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
             if args.verbose >= 1:
                 print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
+                print("Candidates:", candidates)
 
-            step_count += 1
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
 
@@ -186,31 +186,33 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 estimates[index_tup] = \
                     ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[index_tup])
                 T_samples[index_tup] += this_batch_size
+                cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[index_tup])
+                lcbs[index_tup] = estimates[index_tup] - cb_delta
+                ucbs[index_tup] = estimates[index_tup] + cb_delta
 
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
-            comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
-            compute_exactly = list(zip(comp_exactly_condition[0], comp_exactly_condition[1]))
-            if len(compute_exactly) > 0:
-                if args.verbose >= 1:
-                    print("COMPUTING EXACTLY ON STEP COUNT", step_count)
+            # comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
+            # compute_exactly = list(zip(comp_exactly_condition[0], comp_exactly_condition[1]))
+            # if len(compute_exactly) > 0:
+            #     if args.verbose >= 1:
+            #         print("COMPUTING EXACTLY ON STEP COUNT", step_count)
+            #
+            #     for c in compute_exactly:
+            #         index_tup = (c[0], c[1])
+            #         estimates[index_tup] = sample_for_targets(imgs, [index_tup], medoids, N)
+            #         lcbs[index_tup] = estimates[index_tup]
+            #         ucbs[index_tup] = estimates[index_tup]
+            #         exact_mask[index_tup] = 1
+            #         T_samples[index_tup] += N
+            #     cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
+            #     candidates = list(zip(cand_condition[0], cand_condition[1]))
 
-                for c in compute_exactly:
-                    index_tup = (c[0], c[1])
-                    # if c == (1, 99): import ipdb; ipdb.set_trace()
-                    estimates[index_tup] = sample_for_targets(imgs, [index_tup], medoids, N)
-                    lcbs[index_tup] = estimates[index_tup]
-                    ucbs[index_tup] = estimates[index_tup]
-                    exact_mask[index_tup] = 1
-                    T_samples[index_tup] += N
-                cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
-                candidates = list(zip(cand_condition[0], cand_condition[1]))
 
-            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[candidates])
-            lcbs[candidates] = estimates[candidates] - cb_delta
-            ucbs[candidates] = estimates[candidates] + cb_delta
 
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
             candidates = list(zip(cand_condition[0], cand_condition[1]))
+            step_count += 1
+
 
         # Choose the minimum amongst all losses and perform the swap
         # NOTE: possible to get first elem of zip object without converting to list?

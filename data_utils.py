@@ -85,7 +85,7 @@ def cost_fn_difference_total(reference_dataset, full_dataset, target, current_me
     #   - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
     #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
     #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
-    # if c1 == 1 and c2 == 99: import ipdb; ipdb.set_trace()
+
     potential_medoids = current_medoids.copy()
     potential_medoids.remove(current_medoids[c1])
     potential_medoids.append(c2)
