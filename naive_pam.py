@@ -79,8 +79,7 @@ def naive_swap(args, imgs, init_medoids):
                 new_medoids = medoids.copy()
                 new_medoids.remove(orig_medoid)
                 new_medoids.append(swap_candidate)
-                # NOTE: new_medoids's points no longer need to be sorted!
-
+                # NOTE: new_medoids's points need not be sorted, like original medoids!
 
                 # NOTE: This get_best_distances fn is going to cost lots of calls! To include them or not? I think yes -- this is indeed what we are trying to cut down?
                 tmp_best_distances = np.mean(get_best_distances(new_medoids, imgs))
@@ -91,6 +90,7 @@ def naive_swap(args, imgs, init_medoids):
         best_swaps = zip( np.where(new_losses == new_losses.min())[0], np.where(new_losses == new_losses.min())[1])
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
+
 
         # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED
         # Perform best swap

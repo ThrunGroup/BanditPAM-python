@@ -26,6 +26,7 @@ def UCB_build(args, imgs, sigma, warm_start_medoids = []):
             for tmp_idx, tmp in enumerate(tmp_refs):
                 ## tmp is the actual index of the reference point, tmp_idx just numerates them)
                 # WARNING: This uses a global best_distances!
+                # NOTE: Should this be a += ?
                 distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
             estimates[tar_idx] = np.mean(distances)
         return estimates
@@ -115,6 +116,11 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     p = 1e-8
 
     def sample_for_targets(imgs, targets, current_medoids, batch_size):
+        '''
+        Note that targets is a TUPLE (original_medoid, new_candidate)
+        This fn should measure the "gain" from performing the swap
+        '''
+
         # NOTE: Fix this with array broadcasting
         # Also generalize and consolidate it with the fn of the same name in the build step
 
@@ -126,12 +132,9 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
         best_distances = get_best_distances(current_medoids, imgs)
         for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
-            distances = np.zeros(batch_size)
-            for tmp_idx, tmp in enumerate(tmp_refs):
-                ## tmp is the actual index of the reference point, tmp_idx just numerates them)
-                # WARNING: This uses a global best_distances!
-                distances[tmp_idx] = cost_fn_difference(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
-            estimates[tar_idx] = np.mean(distances)
+            # WARNING: This uses a global best_distances!
+            estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
+        # NOTE: I don't think estimates is indexed properly, i.e. by tuples
         return estimates
 
     k = len(init_medoids)
@@ -153,6 +156,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         # Identify best of k * (n-k) arms to swap by averaging new loss over all points
         # Identify Candidates
         # Get samples for candidates
+        # NOTE: Right now doing k*N targets, but shouldn't allow medoids to swap each other: get k(n-k)
         candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
         lcbs = 1000 * np.ones((k, N)) # NOTE: Instantiating these as np.inf gives runtime errors and nans. Find a better way to do this instead of using 1000
         estimates = 1000 * np.ones((k, N))
@@ -169,32 +173,30 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         step_count = 0
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
             if args.verbose >= 1:
-                print("SWAP Step count:", step_count, ", Candidates:", len(candidates), candidates)
+                print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
 
             step_count += 1
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
-            # import ipdb; ipdb.set_trace()
 
             # Don't update all estimates, just pulled arms
             for c in candidates:
-                # import ipdb; ipdb.set_trace()
                 index_tup = (c[0], c[1])
+                new_samples = sample_for_targets(imgs, [index_tup], medoids, this_batch_size)
                 estimates[index_tup] = \
-                    ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * sample_for_targets(imgs, [index_tup], medoids, this_batch_size))) / (this_batch_size + T_samples[index_tup])
+                    ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[index_tup])
                 T_samples[index_tup] += this_batch_size
 
-            # ipdb.set_trace()
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
             comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
             compute_exactly = list(zip(comp_exactly_condition[0], comp_exactly_condition[1]))
             if len(compute_exactly) > 0:
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
-                    # import ipdb; ipdb.set_trace()
 
                 for c in compute_exactly:
                     index_tup = (c[0], c[1])
+                    # if c == (1, 99): import ipdb; ipdb.set_trace()
                     estimates[index_tup] = sample_for_targets(imgs, [index_tup], medoids, N)
                     lcbs[index_tup] = estimates[index_tup]
                     ucbs[index_tup] = estimates[index_tup]
@@ -203,14 +205,12 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
                 candidates = list(zip(cand_condition[0], cand_condition[1]))
 
-
             cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
 
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
             candidates = list(zip(cand_condition[0], cand_condition[1]))
-
 
         # Choose the minimum amongst all losses and perform the swap
         # NOTE: possible to get first elem of zip object without converting to list?
