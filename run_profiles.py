@@ -28,14 +28,10 @@ def main(sys_args):
 
     for exp_idx in experiments:
         exp = experiments[exp_idx]
-        np.random.seed(args.seed)
         args = remap_args(args, exp)
-        total_images, total_labels, sigma = load_data(args)
-        imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
         fname = os.path.join('profiles', get_filename(exp, args))
 
         if os.path.exists(fname) and not args.force:
-            # Don't run experiments which have already been run
             print("Already have data for experiment", fname)
             continue
 
@@ -43,13 +39,13 @@ def main(sys_args):
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs])
+            medoids = prof.runcall(naive_pam.naive_build_and_swap, args)
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str, medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
-            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+            medoids = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str, medoids)))

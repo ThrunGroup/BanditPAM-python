@@ -253,6 +253,7 @@ def UCB_build_and_swap(args):
     print(built_medoids)
     swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
     print("Final medoids", swapped_medoids)
+    return swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
