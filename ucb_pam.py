@@ -1,18 +1,23 @@
 from data_utils import *
 import itertools
 
-def UCB_build(args, imgs, sigma, warm_start_medoids = []):
+def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
     p = 1e-6
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    medoids = warm_start_medoids
     best_distances = [float('inf') for _ in range(N)]
-    num_medoids_found = len(warm_start_medoids)
 
-    if num_medoids_found > 0:
+    if len(args.warm_start_medoids) > 0:
+        warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
+        medoids = warm_start_medoids
+        num_medoids_found = len(warm_start_medoids)
         best_distances = get_best_distances(medoids, imgs)
+    else:
+        medoids = []
+        num_medoids_found = 0
+
 
     def sample_for_targets(imgs, targets, batch_size):
         # NOTE: Fix this with array broadcasting
@@ -174,7 +179,6 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
             if args.verbose >= 1:
                 print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
-                print("Candidates:", candidates)
 
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
@@ -241,9 +245,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
     return medoids
 
-
-if __name__ == "__main__":
-    args = get_args(sys.argv[1:])
+def UCB_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
@@ -251,3 +253,7 @@ if __name__ == "__main__":
     print(built_medoids)
     swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
     print("Final medoids", swapped_medoids)
+
+if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    UCB_build_and_swap(args)

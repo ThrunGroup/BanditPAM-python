@@ -11,6 +11,7 @@ def remap_args(args, exp):
     args.sample_size = exp[3]
     args.seed = exp[4]
     args.dataset = exp[5]
+    args.warm_start_medoids = exp[-1] # Usually 6
     return args
 
 def get_filename(exp, args):
@@ -19,7 +20,8 @@ def get_filename(exp, args):
         '-k-' + str(args.num_medoids) + \
         '-N-' + str(args.sample_size) + \
         '-s-' + str(args.seed) + \
-        '-d-' + args.dataset
+        '-d-' + args.dataset + \
+        '-w-' + args.warm_start_medoids
 
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
@@ -41,18 +43,16 @@ def main(sys_args):
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            warm_start_medoids = exp[-1]
-            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs, warm_start_medoids])
+            medoids = prof.runcall(naive_pam.naive_build, *[args, imgs])
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write(','.join(map(str,medoids)))
+                fout.write(','.join(map(str, medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
-            warm_start_medoids = exp[-1]
-            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma, warm_start_medoids]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+            medoids = prof.runcall(ucb_pam.UCB_build, *[args, imgs, sigma]) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write(','.join(map(str,medoids)))
+                fout.write(','.join(map(str, medoids)))
         else:
             raise Exception('Invalid algorithm specified')
 

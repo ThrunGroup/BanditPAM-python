@@ -15,6 +15,7 @@ def get_args(arguments):
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
+    parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
     args = parser.parse_args(arguments)
     return args
 
@@ -40,8 +41,6 @@ def load_data(args):
         assert((total_labels == np.hstack((train_labels, test_labels))).all()) # NOTE: hstack since 1-D
         assert(total_images.shape == (N, m, m))
         assert(total_labels.shape == (N,))
-        if args.verbose >= 2:
-            print(train_images[0])
         # if args.verbose >= 2:
         #     plt.imshow(train_images[0], cmap = 'gray')
         #     plt.show()
@@ -90,6 +89,7 @@ def cost_fn_difference_total(reference_dataset, full_dataset, target, current_me
     potential_medoids.remove(current_medoids[c1])
     potential_medoids.append(c2)
     # NOTE: Very expensive for distance calls!
+    # NOTE: How about using the "gain" in the loss instead?
     new_best_distances = get_best_distances__overload(potential_medoids, reference_dataset, full_dataset)
 
     return np.mean(np.array(new_best_distances))

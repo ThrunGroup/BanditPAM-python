@@ -1,6 +1,6 @@
 from data_utils import *
 
-def naive_build(args, imgs, warm_start_medoids = []):
+def naive_build(args, imgs):
     '''
     Naively instantiates the medoids, corresponding to the BUILD step.
     Algorithm does so in a greedy way:
@@ -9,14 +9,18 @@ def naive_build(args, imgs, warm_start_medoids = []):
             previous medoids being fixed
     '''
     d_count = 0
-    medoids = warm_start_medoids
+
     N = len(imgs)
     best_distances = [float('inf') for _ in range(N)]
 
-    num_medoids_found = len(warm_start_medoids)
-
-    if num_medoids_found > 0:
+    if len(args.warm_start_medoids) > 0:
+        warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
+        medoids = warm_start_medoids
+        num_medoids_found = len(warm_start_medoids)
         best_distances = get_best_distances(medoids, imgs)
+    else:
+        medoids = []
+        num_medoids_found = 0
 
     for k in range(num_medoids_found, args.num_medoids):
         if args.verbose >= 1:
@@ -116,10 +120,7 @@ def naive_swap(args, imgs, init_medoids):
 
     return medoids
 
-
-
-if __name__ == "__main__":
-    args = get_args(sys.argv[1:])
+def naive_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
@@ -127,3 +128,7 @@ if __name__ == "__main__":
     print("Built medoids", built_medoids)
     swapped_medoids = naive_swap(args, imgs, built_medoids)
     print("Final medoids", swapped_medoids)
+
+if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    naive_build_and_swap(args)
