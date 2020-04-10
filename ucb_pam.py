@@ -1,6 +1,21 @@
 from data_utils import *
 import itertools
 
+
+def build_sample_for_targets(imgs, targets, batch_size, best_distances):
+    # NOTE: Fix this with array broadcasting
+    N = len(imgs)
+    estimates = np.zeros(len(targets))
+    # NOTE: Should this sampling be done with replacement? And do I need shuffling?
+    # NOTE: Also, should the point be able to sample itself?
+    tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
+    for tar_idx, target in enumerate(targets):
+        distances = np.zeros(batch_size)
+        for tmp_idx, tmp in enumerate(tmp_refs):
+            distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
+        estimates[tar_idx] = np.mean(distances)
+    return estimates
+
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
@@ -17,24 +32,6 @@ def UCB_build(args, imgs, sigma):
     else:
         medoids = []
         num_medoids_found = 0
-
-
-    def sample_for_targets(imgs, targets, batch_size):
-        # NOTE: Fix this with array broadcasting
-        N = len(imgs)
-        estimates = np.zeros(len(targets))
-        # NOTE: Should this sampling be done with replacement? And do I need shuffling?
-        # NOTE: Also, should the point be able to sample itself?
-        tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-        for tar_idx, target in enumerate(targets):
-            distances = np.zeros(batch_size)
-            for tmp_idx, tmp in enumerate(tmp_refs):
-                ## tmp is the actual index of the reference point, tmp_idx just numerates them)
-                # WARNING: This uses a global best_distances!
-                # NOTE: Should this be a += ?
-                distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
-            estimates[tar_idx] = np.mean(distances)
-        return estimates
 
     # Iteratively:
     # Pretend each previous arm is fixed.
@@ -71,7 +68,7 @@ def UCB_build(args, imgs, sigma):
 
             # Don't update all estimates, just pulled arms
             estimates[candidates] = \
-                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_for_targets(imgs, candidates, this_batch_size))) / (this_batch_size + T_samples[candidates])
+                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * build_sample_for_targets(imgs, candidates, this_batch_size, best_distances))) / (this_batch_size + T_samples[candidates])
             T_samples[candidates] += this_batch_size
 
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
@@ -80,7 +77,7 @@ def UCB_build(args, imgs, sigma):
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
-                estimates[compute_exactly] = sample_for_targets(imgs, compute_exactly, N)
+                estimates[compute_exactly] = build_sample_for_targets(imgs, compute_exactly, N, best_distances)
                 lcbs[compute_exactly] = estimates[compute_exactly]
                 ucbs[compute_exactly] = estimates[compute_exactly]
                 exact_mask[compute_exactly] = 1
@@ -116,31 +113,31 @@ def UCB_build(args, imgs, sigma):
 
 
 
+def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
+    '''
+    Note that targets is a TUPLE (original_medoid, new_candidate)
+    This fn should measure the "gain" from performing the swap
+    '''
+
+    # NOTE: Fix this with array broadcasting
+    # Also generalize and consolidate it with the fn of the same name in the build step
+
+    N = len(imgs)
+    k = len(current_medoids)
+    estimates = np.zeros(len(targets))
+    # NOTE: Should this sampling be done with replacement? And do I need shuffling?
+    # NOTE: Also, should the point be able to sample itself?
+    tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
+    best_distances = get_best_distances(current_medoids, imgs)
+    for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
+        # WARNING: This uses a global best_distances!
+        estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
+    # NOTE: I don't think estimates is indexed properly, i.e. by tuples
+    return estimates
+
 
 def UCB_swap(args, imgs, sigma, init_medoids):
     p = 1e-8
-
-    def sample_for_targets(imgs, targets, current_medoids, batch_size):
-        '''
-        Note that targets is a TUPLE (original_medoid, new_candidate)
-        This fn should measure the "gain" from performing the swap
-        '''
-
-        # NOTE: Fix this with array broadcasting
-        # Also generalize and consolidate it with the fn of the same name in the build step
-
-        N = len(imgs)
-        k = len(current_medoids)
-        estimates = np.zeros(len(targets))
-        # NOTE: Should this sampling be done with replacement? And do I need shuffling?
-        # NOTE: Also, should the point be able to sample itself?
-        tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-        best_distances = get_best_distances(current_medoids, imgs)
-        for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
-            # WARNING: This uses a global best_distances!
-            estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
-        # NOTE: I don't think estimates is indexed properly, i.e. by tuples
-        return estimates
 
     k = len(init_medoids)
     N = len(imgs)
@@ -186,7 +183,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             # Don't update all estimates, just pulled arms
             for c in candidates:
                 index_tup = (c[0], c[1])
-                new_samples = sample_for_targets(imgs, [index_tup], medoids, this_batch_size)
+                new_samples = swap_sample_for_targets(imgs, [index_tup], medoids, this_batch_size)
                 estimates[index_tup] = \
                     ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[index_tup])
                 T_samples[index_tup] += this_batch_size
@@ -203,7 +200,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
                 for c in compute_exactly:
                     index_tup = (c[0], c[1])
-                    estimates[index_tup] = sample_for_targets(imgs, [index_tup], medoids, N)
+                    estimates[index_tup] = swap_sample_for_targets(imgs, [index_tup], medoids, N)
                     lcbs[index_tup] = estimates[index_tup]
                     ucbs[index_tup] = estimates[index_tup]
                     exact_mask[index_tup] = 1
@@ -250,7 +247,7 @@ def UCB_build_and_swap(args):
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     built_medoids = UCB_build(args, imgs, sigma)
-    print(built_medoids)
+    print("Built medoids", built_medoids)
     swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
     print("Final medoids", swapped_medoids)
     return swapped_medoids
