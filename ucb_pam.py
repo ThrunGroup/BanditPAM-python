@@ -22,7 +22,6 @@ def UCB_build(args, imgs, sigma):
     p = 1e-6
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    best_distances = [float('inf') for _ in range(N)]
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
@@ -32,6 +31,7 @@ def UCB_build(args, imgs, sigma):
     else:
         medoids = []
         num_medoids_found = 0
+        best_distances = [float('inf') for _ in range(N)]
 
     # Iteratively:
     # Pretend each previous arm is fixed.
@@ -118,10 +118,9 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     Note that targets is a TUPLE (original_medoid, new_candidate)
     This fn should measure the "gain" from performing the swap
     '''
-
     # NOTE: Fix this with array broadcasting
     # Also generalize and consolidate it with the fn of the same name in the build step
-
+    assert len(targets) == 1, "This function is not indexed properly for more than 1 target"
     N = len(imgs)
     k = len(current_medoids)
     estimates = np.zeros(len(targets))
@@ -130,7 +129,6 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
     best_distances = get_best_distances(current_medoids, imgs)
     for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
-        # WARNING: This uses a global best_distances!
         estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
     # NOTE: I don't think estimates is indexed properly, i.e. by tuples
     return estimates
@@ -138,7 +136,6 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
 
 def UCB_swap(args, imgs, sigma, init_medoids):
     p = 1e-8
-
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e4
@@ -218,28 +215,27 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
 
-        # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED
-        # Perform best swap
-        print("Trying to swap", medoids[best_swap[0]], "with", best_swap[1])
+
         new_medoids = medoids.copy()
         new_medoids.remove(medoids[best_swap[0]])
         new_medoids.append(best_swap[1])
-        print("New Medoids:", new_medoids)
         # Check new loss
         new_loss = np.mean(get_best_distances(new_medoids, imgs))
+        performed_or_not = ''
         if new_loss < loss:
-            print("Swap performed")
-            print("Old loss:", loss)
-            print("New loss:", new_loss)
+            performed_or_not = "SWAP PERFORMED"
             loss = new_loss
             swap_performed = True
             medoids = new_medoids
         else:
-            print("NO SWAP PERFORMED")
+            performed_or_not = "NO SWAP PERFORMED"
+            break
+
+        if args.verbose >= 1:
+            print("Tried to swap", medoids[best_swap[0]], "with", best_swap[1])
+            print(performed_or_not)
             print("Old loss:", loss)
             print("New loss:", new_loss)
-            break # exit loop
-
     return medoids
 
 def UCB_build_and_swap(args):

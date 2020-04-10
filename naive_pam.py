@@ -9,9 +9,7 @@ def naive_build(args, imgs):
             previous medoids being fixed
     '''
     d_count = 0
-
     N = len(imgs)
-    best_distances = [float('inf') for _ in range(N)]
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
@@ -21,6 +19,7 @@ def naive_build(args, imgs):
     else:
         medoids = []
         num_medoids_found = 0
+        best_distances = [float('inf') for _ in range(N)]
 
     for k in range(num_medoids_found, args.num_medoids):
         if args.verbose >= 1:
@@ -96,27 +95,26 @@ def naive_swap(args, imgs, init_medoids):
         best_swap = best_swaps[0]
 
 
-        # BIG BUG::::: DON'T PERFORM THE SWAP IF THE LOSS HAS INCREASED
-        # Perform best swap
-        print("Trying to swap", medoids[best_swap[0]], "with", best_swap[1])
         new_medoids = medoids.copy()
         new_medoids.remove(medoids[best_swap[0]])
         new_medoids.append(best_swap[1])
-        print("New Medoids:", new_medoids)
         # Check new loss
         new_loss = np.mean(get_best_distances(new_medoids, imgs))
+        performed_or_not = ''
         if new_loss < loss:
-            print("Swap performed")
-            print("Old loss:", loss)
-            print("New loss:", new_loss)
+            performed_or_not = "SWAP PERFORMED"
             loss = new_loss
             swap_performed = True
             medoids = new_medoids
         else:
-            print("NO SWAP PERFORMED")
+            performed_or_not = "NO SWAP PERFORMED"
+            break
+
+        if args.verbose >= 1:
+            print("Tried to swap", medoids[best_swap[0]], "with", best_swap[1])
+            print(performed_or_not)
             print("Old loss:", loss)
             print("New loss:", new_loss)
-            break # exit loop
 
     return medoids
 
