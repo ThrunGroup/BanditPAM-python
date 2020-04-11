@@ -32,7 +32,7 @@ def main(sys_args):
         fname = os.path.join('profiles', get_filename(exp, args))
 
         if os.path.exists(fname) and not args.force:
-            print("Already have data for experiment:", fname)
+            print("Already have data for experiment", fname)
             continue
 
         if exp[0] == 'naive':
