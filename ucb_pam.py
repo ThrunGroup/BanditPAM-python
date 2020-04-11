@@ -44,7 +44,6 @@ def UCB_build(args, imgs, sigma):
         # Two points very close together require shittons of samples to distinguish their mean distance
 
     for k in range(num_medoids_found, args.num_medoids):
-        if k == 43: import ipdb; ipdb.set_trace()
         if args.verbose >= 1:
             print("Finding medoid", k)
 
@@ -93,7 +92,6 @@ def UCB_build(args, imgs, sigma):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
             step_count += 1
 
-        if k == 43: import ipdb; ipdb.set_trace()
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
