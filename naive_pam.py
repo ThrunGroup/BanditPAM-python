@@ -21,6 +21,7 @@ def naive_build(args, imgs):
         num_medoids_found = 0
         best_distances = [float('inf') for _ in range(N)]
 
+    import ipdb
     for k in range(num_medoids_found, args.num_medoids):
         if args.verbose >= 1:
             print("Finding medoid", k)
@@ -28,6 +29,7 @@ def naive_build(args, imgs):
         # Greedily choose the point which minimizes the loss
         best_loss = float('inf')
         best_medoid = -1
+        # if k == 43: ipdb.set_trace()
         for target in range(N):
             if (target + 1) % 100 == 0 and args.verbose >= 1:
                 print(target)
@@ -39,9 +41,10 @@ def naive_build(args, imgs):
                 # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
                 d_r_t = d(imgs[target], imgs[reference])
                 d_count += 1
-                losses[reference] = d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
+                losses[reference] = min(d_r_t, best_distances[reference])
 
-            loss = np.mean(losses)
+            # if target == 26 or target == 39: ipdb.set_trace()
+            loss = np.mean(losses).round(DECIMAL_DIGITS)
             if loss < best_loss:
                 best_loss = loss
                 best_medoid = target

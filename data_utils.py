@@ -5,6 +5,7 @@ import mnist
 import matplotlib.pyplot as plt
 import argparse
 
+DECIMAL_DIGITS = 5
 
 def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,

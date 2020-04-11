@@ -2,6 +2,7 @@ from data_utils import *
 import itertools
 
 
+
 def build_sample_for_targets(imgs, targets, batch_size, best_distances):
     # NOTE: Fix this with array broadcasting
     N = len(imgs)
@@ -14,7 +15,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
         for tmp_idx, tmp in enumerate(tmp_refs):
             distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
         estimates[tar_idx] = np.mean(distances)
-    return estimates
+    return estimates.round(DECIMAL_DIGITS)
 
 def UCB_build(args, imgs, sigma):
     ### Parameters
@@ -25,8 +26,8 @@ def UCB_build(args, imgs, sigma):
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
-        medoids = warm_start_medoids
-        num_medoids_found = len(warm_start_medoids)
+        medoids = warm_start_medoids.copy()
+        num_medoids_found = len(medoids)
         best_distances = get_best_distances(medoids, imgs)
     else:
         medoids = []
@@ -43,6 +44,7 @@ def UCB_build(args, imgs, sigma):
         # Two points very close together require shittons of samples to distinguish their mean distance
 
     for k in range(num_medoids_found, args.num_medoids):
+        if k == 43: import ipdb; ipdb.set_trace()
         if args.verbose >= 1:
             print("Finding medoid", k)
 
@@ -91,6 +93,7 @@ def UCB_build(args, imgs, sigma):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
             step_count += 1
 
+        if k == 43: import ipdb; ipdb.set_trace()
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
@@ -131,7 +134,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
         estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
     # NOTE: I don't think estimates is indexed properly, i.e. by tuples
-    return estimates
+    return estimates.round(DECIMAL_DIGITS)
 
 
 def UCB_swap(args, imgs, sigma, init_medoids):
