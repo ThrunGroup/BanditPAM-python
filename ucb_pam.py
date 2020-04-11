@@ -59,8 +59,8 @@ def UCB_build(args, imgs, sigma):
         original_batch_size = 100
         base = 1 # Right now, use constant batch size
 
-        # Pull arms, update ucbs and lcbs
-        while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
+        while(len(candidates) > 0):
+
             if args.verbose >= 1:
                 print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
 
@@ -91,7 +91,7 @@ def UCB_build(args, imgs, sigma):
 
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
             step_count += 1
-
+    
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
@@ -170,7 +170,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         base = 1 # Right now, use constant batch size
 
         step_count = 0
-        while(len(candidates) > 1):
+        while(len(candidates) > 0):
             if args.verbose >= 1:
                 print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
 
@@ -236,6 +236,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             print(performed_or_not)
             print("Old loss:", loss)
             print("New loss:", new_loss)
+
     return medoids
 
 def UCB_build_and_swap(args):
