@@ -168,9 +168,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         original_batch_size = 100
         base = 1 # Right now, use constant batch size
 
-        # Pull arms, update ucbs and lcbs
         step_count = 0
-        while(len(candidates) > 1): # NOTE: Should also probably restrict absolute distance in cb_delta?
+        while(len(candidates) > 1):
             if args.verbose >= 1:
                 print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
 
@@ -244,9 +243,10 @@ def UCB_build_and_swap(args):
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     built_medoids = UCB_build(args, imgs, sigma)
     print("Built medoids", built_medoids)
-    swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
-    print("Final medoids", swapped_medoids)
-    return swapped_medoids
+    return built_medoids
+    # swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
+    # print("Final medoids", swapped_medoids)
+    # return swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

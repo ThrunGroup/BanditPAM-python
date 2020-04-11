@@ -124,9 +124,10 @@ def naive_build_and_swap(args):
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     built_medoids = naive_build(args, imgs)
     print("Built medoids", built_medoids)
-    swapped_medoids = naive_swap(args, imgs, built_medoids)
-    print("Final medoids", swapped_medoids)
-    return swapped_medoids
+    return built_medoids
+    # swapped_medoids = naive_swap(args, imgs, built_medoids)
+    # print("Final medoids", swapped_medoids)
+    # return swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
