@@ -120,6 +120,7 @@ def naive_swap(args, imgs, init_medoids):
     return medoids
 
 def naive_build_and_swap(args):
+    # import ipdb; ipdb.set_trace()
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
