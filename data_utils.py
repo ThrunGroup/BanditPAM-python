@@ -161,3 +161,29 @@ def estimate_sigma(dataset):
         y = gaussian(0, sigma, x)
         plt.plot(x, y * N)
         plt.show()
+
+def medoid_swap(medoids, best_swap, imgs, loss, args):
+    # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
+    orig_medoid = medoids[best_swap[0]]
+    new_medoid = best_swap[1]
+
+    new_medoids = medoids.copy()
+    new_medoids.remove(orig_medoid)
+    new_medoids.append(new_medoid)
+    new_loss = np.mean(get_best_distances(new_medoids, imgs))
+    performed_or_not = ''
+    if new_loss < loss:
+        performed_or_not = "SWAP PERFORMED"
+        swap_performed = True
+        # WARNING: Modifying a list by passing it as reference
+    else:
+        performed_or_not = "NO SWAP PERFORMED"
+        new_medoids = medoids
+
+    if args.verbose >= 1:
+        print("Tried to swap", orig_medoid, "with", new_medoid)
+        print(performed_or_not)
+        print("Old loss:", loss)
+        print("New loss:", new_loss)
+
+    return performed_or_not, new_medoids, min(new_loss, loss)
