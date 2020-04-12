@@ -116,22 +116,30 @@ def UCB_build(args, imgs, sigma):
 
 def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     '''
-    Note that targets is a TUPLE (original_medoid, new_candidate)
+    Note that targets is a TUPLE ( [o_1, o_2, o_3, ... o_m], [n_1, n_2, ... n_m] )
+    The corresponding target swaps are [o_1, n_1], [o_2, n_2], .... [o_m, n_m]
+
     This fn should measure the "gain" from performing the swap
     '''
     # NOTE: Fix this with array broadcasting
     # Also generalize and consolidate it with the fn of the same name in the build step
-    assert len(targets) == 1, "This function is not indexed properly for more than 1 target"
+    orig_medoids = targets[0]
+    new_medoids = targets[1]
+    assert len(orig_medoids) == len(new_medoids), "Must pass equal number of original medoids and new medoids"
+    # NOTE: Need to preserve order of swaps that are passed!!! Otherwise estimates will be for the wrong swaps!
+    # NOTE: Otherwise, estimates won't be indexed properly -- only ok if we do 1 target at a time
+
+    swaps = zip(orig_medoids, new_medoids) # Zip doesn't throw an error for unequal lengths, it just drops extraneous points
+
     N = len(imgs)
     k = len(current_medoids)
-    estimates = np.zeros(len(targets))
+
+    estimates = np.zeros(len(swaps))
     # NOTE: Should this sampling be done with replacement? And do I need shuffling?
-    # NOTE: Also, should the point be able to sample itself?
+    # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
+
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-    best_distances = get_best_distances(current_medoids, imgs)
-    for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
-        estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
-    # NOTE: I don't think estimates is indexed properly, i.e. by tuples -- only ok if we do 1 target at a time
+    estimates = cost_fn_difference_total(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
     return estimates.round(DECIMAL_DIGITS)
 
 
@@ -180,7 +188,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             # Don't update all estimates, just pulled arms
             accesses = (candidates[:, 0], candidates[:, 1])
 
-            new_samples = swap_sample_for_targets(imgs, [accesses], medoids, this_batch_size)
+            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size)
             estimates[accesses] = \
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
             T_samples[accesses] += this_batch_size
@@ -196,7 +204,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
                 exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-                estimates[exact_accesses] = swap_sample_for_targets(imgs, [exact_accesses], medoids, N)
+                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N)
                 lcbs[exact_accesses] = estimates[exact_accesses]
                 ucbs[exact_accesses] = estimates[exact_accesses]
                 exact_mask[exact_accesses] = 1
