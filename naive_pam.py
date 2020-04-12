@@ -39,8 +39,7 @@ def naive_build(args, imgs):
                 # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
                 d_r_t = d(imgs[target], imgs[reference])
                 d_count += 1
-                losses[reference] = d_r_t if d_r_t < best_distances[reference] else best_distances[reference]
-                # losses[reference] = min(d_r_t, best_distances[reference])
+                losses[reference] = min(d_r_t, best_distances[reference])
 
             loss = np.mean(losses).round(DECIMAL_DIGITS)
             if loss < best_loss:
