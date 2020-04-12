@@ -127,8 +127,8 @@ def get_best_distances__overload(medoids_list, ref_dataset, full_dataset):
     '''
     assert len(medoids_list) >= 1, "Need to pass at least one medoid"
     medoids = full_dataset[medoids_list]
-    N = len(ref_dataset)
-    best_distances = [float('inf') for _ in range(N)]
+    N_ref = len(ref_dataset)
+    best_distances = [float('inf') for _ in range(N_ref)]
     for p, ref_datapoint in enumerate(ref_dataset):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!

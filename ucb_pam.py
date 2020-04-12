@@ -131,7 +131,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     best_distances = get_best_distances(current_medoids, imgs)
     for tar_idx, target in enumerate(targets): # NOTE: Here, target is a PAIR
         estimates[tar_idx] = cost_fn_difference_total(imgs[tmp_refs], imgs, target, current_medoids, best_distances) # NOTE: depends on other medoids too!
-    # NOTE: I don't think estimates is indexed properly, i.e. by tuples
+    # NOTE: I don't think estimates is indexed properly, i.e. by tuples -- only ok if we do 1 target at a time
     return estimates.round(DECIMAL_DIGITS)
 
 
