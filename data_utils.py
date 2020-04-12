@@ -52,7 +52,12 @@ def load_data(args):
         raise Exception("Didn't specify a valid dataset")
 
 def d(x1, x2):
-    return np.linalg.norm(x1 - x2, ord = 2)
+    assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
+    if len(x1.shape) > 1:
+        # NOTE: Assume first coordinate indexes tuples
+        return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
+    else:
+        return np.linalg.norm(x1 - x2, ord = 2)
 
 def cost_fn(dataset, tar_idx, ref_idx, best_distances):
     '''
@@ -102,18 +107,19 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     #           if ref_point would be assigned to n: delta_loss += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
     #           else: delta_loss += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
     #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
+    N = len(imgs)
     for s_idx, s in enumerate(swaps):
         print(s)
-        #import ipdb; ipdb.set_trace()
         # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]
         new_medoid = s[1]
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
-        delta_loss[s_idx] += np.sum( np.minimum(reference_best_distances[case1], d(new_medoid, imgs[tmp_refs[case1]]) )) #case1
-        delta_loss[s_idx] += np.sum( np.minimum( d(new_medoid, imgs[tmp_refs[case2]]), reference_second_best_distances[case2] ) ) #case2
-        delta_loss[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
+        delta_loss[s_idx] += np.sum( np.minimum(reference_best_distances[case1], d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs[case1]]) ) ) #case1
+        delta_loss[s_idx] += np.sum( np.minimum( d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs[case2]]), reference_second_best_distances[case2] ) ) #case2
+        # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
+        # delta_loss[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
 
     delta_loss /= len(tmp_refs)
 
