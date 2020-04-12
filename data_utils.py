@@ -175,7 +175,6 @@ def medoid_swap(medoids, best_swap, imgs, loss, args):
     if new_loss < loss:
         performed_or_not = "SWAP PERFORMED"
         swap_performed = True
-        # WARNING: Modifying a list by passing it as reference
     else:
         performed_or_not = "NO SWAP PERFORMED"
         new_medoids = medoids
