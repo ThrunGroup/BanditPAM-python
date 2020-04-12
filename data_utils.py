@@ -64,15 +64,17 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances):
     '''
     return min(d(dataset[tar_idx], dataset[ref_idx]), best_distances[ref_idx])
 
-def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
+# def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
+def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     '''
     Returns the "cost" of point tar as a medoid:
     Distances from tar to ref if it's less than the existing best distance,
     best distance otherwise
     '''
-    # target should be a PAIR
-    c1 = target[0]
-    c2 = target[1]
+    # Each member of swap is a PAIR
+
+    num_targets = len(swaps)
+    reference_best_distances = get_best_distances(current_medoids, dataset, subset = None)
     # BUG: This function seems wrong
     # The gain is the difference between min(new_medoid, best_distance) - min(old_medoid, best_distance)
     # i.e. the difference in loss/distance for each point
@@ -86,16 +88,17 @@ def cost_fn_difference_total(reference_dataset, full_dataset, target, current_me
     #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
     #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
 
-    potential_medoids = current_medoids.copy()
-    potential_medoids.remove(current_medoids[c1])
-    potential_medoids.append(c2)
+    # NOTE: need to avoid performing this list modification; it's too expensive
     # NOTE: Very expensive for distance calls!
     # NOTE: How about using the "gain" in the loss instead?
+    gains = np.zeros(num_targets)
+
+
     new_best_distances = get_best_distances__overload(potential_medoids, reference_dataset, full_dataset)
 
-    return np.mean(np.array(new_best_distances))
+    return gains
 
-def get_best_distances(medoids, dataset):
+def get_best_distances(medoids, dataset, subset = None):
     '''
     For each point, calculate the minimum distance to any medoid
 
@@ -105,9 +108,17 @@ def get_best_distances(medoids, dataset):
     DO NOT CALL THIS FROM RANDOM FNS WHICH SAMPLE THE DATASET, E.G. UCB
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
-    N = len(dataset)
-    best_distances = [float('inf') for _ in range(N)]
-    for p in range(N):
+
+
+    if subset is None:
+        N = len(dataset)
+        refs = range(N)
+    else:
+        refs = subset
+
+    best_distances = [float('inf') for _ in refs]
+
+    for p in refs:
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
             if d(dataset[m], dataset[p]) < best_distances[p]:
