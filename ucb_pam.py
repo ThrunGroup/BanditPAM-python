@@ -178,15 +178,15 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             this_batch_size = original_batch_size * (base**step_count)
 
             # Don't update all estimates, just pulled arms
-            for c in candidates:
-                index_tup = (c[0], c[1])
-                new_samples = swap_sample_for_targets(imgs, [index_tup], medoids, this_batch_size)
-                estimates[index_tup] = \
-                    ((T_samples[index_tup] * estimates[index_tup]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[index_tup])
-                T_samples[index_tup] += this_batch_size
-                cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[index_tup])
-                lcbs[index_tup] = estimates[index_tup] - cb_delta
-                ucbs[index_tup] = estimates[index_tup] + cb_delta
+            accesses = (candidates[:, 0], candidates[:, 1])
+
+            new_samples = swap_sample_for_targets(imgs, [accesses], medoids, this_batch_size)
+            estimates[accesses] = \
+                ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
+            T_samples[accesses] += this_batch_size
+            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[accesses])
+            lcbs[accesses] = estimates[accesses] - cb_delta
+            ucbs[accesses] = estimates[accesses] + cb_delta
 
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
             comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
@@ -195,13 +195,13 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
-                for c in compute_exactly:
-                    index_tup = (c[0], c[1])
-                    estimates[index_tup] = swap_sample_for_targets(imgs, [index_tup], medoids, N)
-                    lcbs[index_tup] = estimates[index_tup]
-                    ucbs[index_tup] = estimates[index_tup]
-                    exact_mask[index_tup] = 1
-                    T_samples[index_tup] += N
+                exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
+                estimates[exact_accesses] = swap_sample_for_targets(imgs, [exact_accesses], medoids, N)
+                lcbs[exact_accesses] = estimates[exact_accesses]
+                ucbs[exact_accesses] = estimates[exact_accesses]
+                exact_mask[exact_accesses] = 1
+                T_samples[exact_accesses] += N
+
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
                 candidates = list(zip(cand_condition[0], cand_condition[1]))
 
