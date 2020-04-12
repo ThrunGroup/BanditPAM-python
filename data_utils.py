@@ -99,7 +99,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
 
     return gains
 
-def get_best_distances(medoids, dataset, subset = None):
+def get_best_distances(medoids, dataset, subset = None, return_second_best = False):
     '''
     For each point, calculate the minimum distance to any medoid
 
@@ -109,6 +109,7 @@ def get_best_distances(medoids, dataset, subset = None):
     DO NOT CALL THIS FROM RANDOM FNS WHICH SAMPLE THE DATASET, E.G. UCB
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
+    assert not (return_second_best and len(medoids) < 2), "Need at least 2 medoids to avoid infs when asking for return_second_best"
 
     if subset is None:
         N = len(dataset)
@@ -116,7 +117,10 @@ def get_best_distances(medoids, dataset, subset = None):
     else:
         refs = subset
 
+    # NOTE: use a SORTED linked list for BD, 2BD, 3BD etc and eject as necessary
+
     best_distances = [float('inf') for _ in refs]
+    second_best_distances = [float('inf') for _ in refs]
     closest_medoids = [-1 for _ in refs]
 
     # Example: subset = [15, 32, 57] then loop is (p_idx, point) = (1, 15), (2, 32), (3, 57)
@@ -124,8 +128,15 @@ def get_best_distances(medoids, dataset, subset = None):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
             if d(dataset[m], dataset[point]) < best_distances[p_idx]:
+                second_best_distances[p_idx] = best_distances[p_idx]
                 best_distances[p_idx] = d(dataset[m], dataset[point])
                 closest_medoids[p_idx] = m
+            elif d(dataset[m], dataset[point]) < second_best_distances[p_idx]:
+                # Reach this case if the new medoid is between current 2nd and first, but not better than first
+                second_best_distances[p_idx] = d(dataset[m], dataset[point])
+
+    if return_second_best:
+        return best_distances, closest_medoids, second_best_distances
     return best_distances, closest_medoids
 
 
