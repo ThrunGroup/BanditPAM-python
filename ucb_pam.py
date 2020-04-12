@@ -28,7 +28,7 @@ def UCB_build(args, imgs, sigma):
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
         medoids = warm_start_medoids.copy()
         num_medoids_found = len(medoids)
-        best_distances = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs)
     else:
         medoids = []
         num_medoids_found = 0
@@ -103,7 +103,7 @@ def UCB_build(args, imgs, sigma):
             print("New Medoid:", new_medoid)
 
         medoids.append(new_medoid)
-        best_distances = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs)
 
     if args.verbose >=1:
         print(medoids)
@@ -151,7 +151,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
     medoids = init_medoids.copy()
-    loss = np.mean(get_best_distances(medoids, imgs))
+    best_distances, closest_medoids = get_best_distances(medoids, imgs)
+    loss = np.mean(best_distances)
     iter = 0
     swap_performed = True
     while swap_performed and iter < max_iter: # not converged

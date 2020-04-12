@@ -71,10 +71,8 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     Distances from tar to ref if it's less than the existing best distance,
     best distance otherwise
     '''
-    # Each member of swap is a PAIR
+    # NOTE: Each member of swap is a PAIR
 
-    num_targets = len(swaps)
-    reference_best_distances = get_best_distances(current_medoids, dataset, subset = None)
     # BUG: This function seems wrong
     # The gain is the difference between min(new_medoid, best_distance) - min(old_medoid, best_distance)
     # i.e. the difference in loss/distance for each point
@@ -91,8 +89,11 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     # NOTE: need to avoid performing this list modification; it's too expensive
     # NOTE: Very expensive for distance calls!
     # NOTE: How about using the "gain" in the loss instead?
-    gains = np.zeros(num_targets)
+    num_targets = len(swaps)
+    reference_best_distances, reference_closest_medoids = get_best_distances(current_medoids, dataset, subset = tmp_refs)
 
+    # gains = new - old .... should negative
+    gains = np.zeros(num_targets)
 
     new_best_distances = get_best_distances__overload(potential_medoids, reference_dataset, full_dataset)
 
@@ -109,7 +110,6 @@ def get_best_distances(medoids, dataset, subset = None):
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
 
-
     if subset is None:
         N = len(dataset)
         refs = range(N)
@@ -117,35 +117,17 @@ def get_best_distances(medoids, dataset, subset = None):
         refs = subset
 
     best_distances = [float('inf') for _ in refs]
+    closest_medoids = [-1 for _ in refs]
 
-    for p in refs:
+    # Example: subset = [15, 32, 57] then loop is (p_idx, point) = (1, 15), (2, 32), (3, 57)
+    for p_idx, point in enumerate(refs):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
-            if d(dataset[m], dataset[p]) < best_distances[p]:
-                best_distances[p] = d(dataset[m], dataset[p])
-    return best_distances
+            if d(dataset[m], dataset[point]) < best_distances[p_idx]:
+                best_distances[p_idx] = d(dataset[m], dataset[point])
+                closest_medoids[p_idx] = m
+    return best_distances, closest_medoids
 
-# NOTE: Change this name
-def get_best_distances__overload(medoids_list, ref_dataset, full_dataset):
-    '''
-    For each point, calculate the minimum distance to any medoid
-
-    medoids_list: a list of medoid INDICES in the full_dataset
-    ref_dataset: a numpy array of DATAPOINTS which we use to compute loss
-    full_dataset: exists only for identifying the properly MEDOID DATAPOINTS
-
-    DO NOT CALL THIS FROM RANDOM FNS WHICH SAMPLE THE DATASET, E.G. UCB
-    '''
-    assert len(medoids_list) >= 1, "Need to pass at least one medoid"
-    medoids = full_dataset[medoids_list]
-    N_ref = len(ref_dataset)
-    best_distances = [float('inf') for _ in range(N_ref)]
-    for p, ref_datapoint in enumerate(ref_dataset):
-        for m in medoids:
-            # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
-            if d(m, ref_datapoint) < best_distances[p]:
-                best_distances[p] = d(m, ref_datapoint)
-    return best_distances
 
 def gaussian(mu, sigma, x):
     # NOTE: Could use scipy.stats.norm for this
@@ -181,7 +163,8 @@ def medoid_swap(medoids, best_swap, imgs, loss, args):
     new_medoids = medoids.copy()
     new_medoids.remove(orig_medoid)
     new_medoids.append(new_medoid)
-    new_loss = np.mean(get_best_distances(new_medoids, imgs))
+    new_best_distances, new_closest_medoids = get_best_distances(new_medoids, imgs)
+    new_loss = np.mean(new_best_distances)
     performed_or_not = ''
     if new_loss < loss:
         performed_or_not = "SWAP PERFORMED"

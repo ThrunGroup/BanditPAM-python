@@ -15,7 +15,7 @@ def naive_build(args, imgs):
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
         medoids = warm_start_medoids
         num_medoids_found = len(warm_start_medoids)
-        best_distances = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs)
     else:
         medoids = []
         num_medoids_found = 0
@@ -54,7 +54,7 @@ def naive_build(args, imgs):
             print("Medoid Found: ", k, best_medoid)
 
         medoids.append(best_medoid)
-        best_distances = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs)
 
     if args.verbose >= 1:
         print(medoids)
@@ -68,7 +68,8 @@ def naive_swap(args, imgs, init_medoids):
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
     medoids = init_medoids.copy()
-    loss = np.mean(get_best_distances(medoids, imgs))
+    best_distances, closest_medoids = get_best_distances(medoids, imgs)
+    loss = np.mean(best_distances)
     iter = 0
     swap_performed = True
     while swap_performed and iter < max_iter: # not converged
@@ -85,8 +86,9 @@ def naive_swap(args, imgs, init_medoids):
                 # NOTE: new_medoids's points need not be sorted, like original medoids!
 
                 # NOTE: This get_best_distances fn is going to cost lots of calls! To include them or not? I think yes -- this is indeed what we are trying to cut down?
-                tmp_best_distances = np.mean(get_best_distances(new_medoids, imgs))
-                new_losses[k_idx, swap_candidate] = tmp_best_distances
+                tmp_best_distances, tmp_closest_medoids = get_best_distances(new_medoids, imgs)
+                tmp_loss = np.mean(tmp_best_distances)
+                new_losses[k_idx, swap_candidate] = tmp_loss
 
         # Choose the minimum amongst all losses and perform the swap
         # NOTE: possible to get first elem of zip object without converting to list?
