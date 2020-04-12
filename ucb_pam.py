@@ -129,7 +129,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     # NOTE: Need to preserve order of swaps that are passed!!! Otherwise estimates will be for the wrong swaps!
     # NOTE: Otherwise, estimates won't be indexed properly -- only ok if we do 1 target at a time
 
-    swaps = zip(orig_medoids, new_medoids) # Zip doesn't throw an error for unequal lengths, it just drops extraneous points
+    swaps = list(zip(orig_medoids, new_medoids)) # Zip doesn't throw an error for unequal lengths, it just drops extraneous points
 
     N = len(imgs)
     k = len(current_medoids)
@@ -139,7 +139,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
 
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-    estimates = cost_fn_difference_total(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
+    estimates = cost_fn_difference(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
     return estimates.round(DECIMAL_DIGITS)
 
 
@@ -199,11 +199,12 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
             comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
-            compute_exactly = list(zip(comp_exactly_condition[0], comp_exactly_condition[1]))
+            compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
             if len(compute_exactly) > 0:
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
+                # import ipdb; ipdb.set_trace()
                 exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
                 estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N)
                 lcbs[exact_accesses] = estimates[exact_accesses]
@@ -212,10 +213,10 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 T_samples[exact_accesses] += N
 
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
-                candidates = list(zip(cand_condition[0], cand_condition[1]))
+                candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
-            candidates = list(zip(cand_condition[0], cand_condition[1]))
+            candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
             step_count += 1
 
         # Choose the minimum amongst all losses and perform the swap
