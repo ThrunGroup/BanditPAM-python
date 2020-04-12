@@ -196,8 +196,6 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             lcbs[accesses] = estimates[accesses] - cb_delta
             ucbs[accesses] = estimates[accesses] + cb_delta
 
-            import ipdb; ipdb.set_trace()
-
             # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
             comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
             compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
@@ -215,8 +213,6 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-
-            import ipdb; ipdb.set_trace()
 
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
