@@ -91,7 +91,7 @@ def UCB_build(args, imgs, sigma):
 
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
             step_count += 1
-    
+
         new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
@@ -246,10 +246,9 @@ def UCB_build_and_swap(args):
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     built_medoids = UCB_build(args, imgs, sigma)
     print("Built medoids", built_medoids)
-    return built_medoids
-    # swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
-    # print("Final medoids", swapped_medoids)
-    # return swapped_medoids
+    swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
+    print("Final medoids", swapped_medoids)
+    return swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

@@ -26,8 +26,7 @@ def get_filename(exp, args):
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
 
-    for exp_idx in experiments:
-        exp = experiments[exp_idx]
+    for exp in experiments:
         args = remap_args(args, exp)
         fname = os.path.join('profiles', get_filename(exp, args))
 
