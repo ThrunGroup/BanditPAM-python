@@ -116,8 +116,9 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
         new_medoid = s[1]
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
-        delta_loss[s_idx] += np.sum( np.minimum(reference_best_distances[case1], d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs[case1]]) ) ) #case1
-        delta_loss[s_idx] += np.sum( np.minimum( d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs[case2]]), reference_second_best_distances[case2] ) ) #case2
+        new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs])
+        delta_loss[s_idx] += np.sum( np.minimum(reference_best_distances[case1], new_medoid_distances[case1] ) ) #case1
+        delta_loss[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_second_best_distances[case2] ) ) #case2
         # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
         # delta_loss[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
 

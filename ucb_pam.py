@@ -134,7 +134,6 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     N = len(imgs)
     k = len(current_medoids)
 
-    estimates = np.zeros(len(swaps))
     # NOTE: Should this sampling be done with replacement? And do I need shuffling?
     # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
 
@@ -218,7 +217,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
             import ipdb; ipdb.set_trace()
-            
+
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
             step_count += 1
