@@ -98,14 +98,14 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True)
 
     # gains = new - old .... should negative
-    delta_loss = np.zeros(num_targets)
+    new_losses = np.zeros(num_targets)
 
     # for each swap
     #   for each ref point -- cases are on REF points
-    #       if ref point is NOT assigned to o, delta_loss += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
+    #       if ref point is NOT assigned to o, new_losses += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
     #       if ref point IS assigned to o:
-    #           if ref_point would be assigned to n: delta_loss += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
-    #           else: delta_loss += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
+    #           if ref_point would be assigned to n: new_losses += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
+    #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
     #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
     N = len(imgs)
     for s_idx, s in enumerate(swaps):
@@ -117,14 +117,14 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
         new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs])
-        delta_loss[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
-        delta_loss[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
+        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
+        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
         # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
-        # delta_loss[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
+        # new_losses[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
 
-    delta_loss /= len(tmp_refs)
+    new_losses /= len(tmp_refs)
 
-    return delta_loss
+    return new_losses
 
 def get_best_distances(medoids, dataset, subset = None, return_second_best = False):
     '''
@@ -144,7 +144,7 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     else:
         refs = subset
 
-    # NOTE: use a SORTED linked list for BD, 2BD, 3BD etc and eject as necessary if doing multiple swaps
+    # NOTE: use a *Heap* or sorted linked list for BD, 2BD, 3BD etc and eject as necessary if doing multiple swaps
 
     best_distances = np.array([float('inf') for _ in refs])
     second_best_distances = np.array([float('inf') for _ in refs])
