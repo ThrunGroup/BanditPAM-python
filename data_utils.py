@@ -124,7 +124,6 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     #######################
     # Approach 2:
     for s_idx, s in enumerate(swaps):
-        print(s)
         # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]

@@ -1,12 +1,12 @@
 '''
-This is an ultra-naive version of PAM, and should ONLY be used to certify
-correctness (in the slowest way possible).
+This is an "optimized" version of PAM, and should be used to certify
+correctness (in a relatively slow way).
 
-In particular, it does NOT contain the following optimizations:
-1. n --> (n-k)
-2. Array broadcasting instead of looping over losses
-3. FastPAM1
-4. FastPAM2
+In particular, it contains the following optimizations over naive_pam:
+1. n --> (n-k) [WIP]
+2. Array broadcasting instead of looping over losses [WIP]
+3. FastPAM1 [WIP]
+4. FastPAM2 [WIP]
 '''
 
 

@@ -33,7 +33,9 @@ def main(sys_args):
         if os.path.exists(fname) and not args.force:
             print("Already have data for experiment", fname)
             continue
-
+        else:
+            print("Running exp:", fname)
+            
         if exp[0] == 'naive':
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
