@@ -34,44 +34,29 @@ def naive_build(args, imgs):
         best_distances = [float('inf') for _ in range(N)]
 
     for k in range(num_medoids_found, args.num_medoids):
-        if args.verbose >= 1:
-            print("Finding medoid", k)
+        target_idcs = np.arange(N)
+        target_idcs = np.delete(target_idcs, medoids) # n --> (n-k)
 
-        # Greedily choose the point which minimizes the loss
-        best_loss = float('inf')
-        best_medoid = -1
-        for target in range(N):
-            if (target + 1) % 100 == 0 and args.verbose >= 1:
-                print(target)
-            # if target in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
+        target_imgs = imgs[target_idcs]
+        losses = np.zeros(len(target_idcs))
+        for t_reidx, t in enumerate(target_idcs):
+            refs = np.arange(N)
+            ref_imgs = imgs[refs] # should be == imgs, since sampling all reference points #NOTE: what if we randomly choose subsample? Impt baseline
+            losses[t_reidx] = np.mean( np.minimum(d(imgs[t].reshape(1, -1), ref_imgs), best_distances)).round(DECIMAL_DIGITS)
 
-            losses = np.zeros(N)
-            # NOTE: SHould reference be allowed to be the target (sample itself)?
-            for reference in range(N):
-                # if reference in medoids: continue # Skip existing medoids NOTE: removing this optimization for complexity comparison
-                d_r_t = d(imgs[target], imgs[reference])
-                d_count += 1
-                losses[reference] = min(d_r_t, best_distances[reference])
-
-            loss = np.mean(losses).round(DECIMAL_DIGITS)
-            if loss < best_loss:
-                best_loss = loss
-                best_medoid = target
-
-        # Once we have chosen the best medoid, reupdate the best distances
-        # Don't do this OTF to avoid overwriting best_distances or requiring deep copy
-        # Otherwise, we would have side-effects when recomputing best_distances and recursively backtracking
-        # Also don't include these distance computations in the running metric because they could be computed OTF / tracked
-        if args.verbose >= 1:
-            print("Medoid Found: ", k, best_medoid)
+        best_loss_reidx = np.where(losses == losses.min())[0][0] # NOTE: what about duplicates? Chooses first I believe
+        best_medoid = target_idcs[best_loss_reidx]
 
         medoids.append(best_medoid)
         best_distances, closest_medoids = get_best_distances(medoids, imgs)
 
-    if args.verbose >= 1:
-        print(medoids)
+        if args.verbose >= 1:
+            print("Medoid Found: ", k, best_medoid)
+            print(medoids)
 
     return medoids
+
+
 
 def naive_swap(args, imgs, init_medoids):
     k = len(init_medoids)
