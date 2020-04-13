@@ -3,14 +3,15 @@ This is an "optimized" version of PAM, and should be used to certify
 correctness (in a relatively slow way).
 
 In particular, it contains the following optimizations over naive_pam:
-1. n --> (n-k) [WIP]
-2. Array broadcasting instead of looping over losses [WIP]
+1. n --> (n-k) [BUILD, WIP]
+2. Array broadcasting instead of looping over losses [BUILD, WIP]
 3. FastPAM1 [WIP]
 4. FastPAM2 [WIP]
 '''
 
 
 from data_utils import *
+import itertools
 
 def naive_build(args, imgs):
     '''
@@ -62,36 +63,25 @@ def naive_swap(args, imgs, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e4
-    # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
+    # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k) -- don't consider swapping medoid w medoid
 
     medoids = init_medoids.copy()
-    best_distances, closest_medoids = get_best_distances(medoids, imgs)
+    best_distances, closest_medoids, second_best_distances = get_best_distances(medoids, imgs, return_second_best = True)
     loss = np.mean(best_distances)
     iter = 0
     swap_performed = True
     while swap_performed and iter < max_iter: # not converged
         iter += 1
-
-        # Identify best of k * (n-k) arms to swap by averaging new loss over all points
         new_losses = np.inf * np.ones((k, N))
 
-        for k_idx, orig_medoid in enumerate(medoids):
-            for swap_candidate in range(N):
-                new_medoids = medoids.copy()
-                new_medoids.remove(orig_medoid)
-                new_medoids.append(swap_candidate)
-                # NOTE: new_medoids's points need not be sorted, like original medoids!
+        swap_candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
 
-                # NOTE: This get_best_distances fn is going to cost lots of calls! To include them or not? I think yes -- this is indeed what we are trying to cut down?
-                tmp_best_distances, tmp_closest_medoids = get_best_distances(new_medoids, imgs)
-                tmp_loss = np.mean(tmp_best_distances)
-                new_losses[k_idx, swap_candidate] = tmp_loss
+        new_losses = cost_fn_difference(imgs, swap_candidates, range(N), medoids).reshape(k, N)
 
-        # Choose the minimum amongst all losses and perform the swap
-        # NOTE: possible to get first elem of zip object without converting to list?
         new_losses.round(DECIMAL_DIGITS)
+
         best_swaps = zip( np.where(new_losses == new_losses.min())[0], np.where(new_losses == new_losses.min())[1])
-        best_swaps = list(best_swaps)
+        best_swaps = list(best_swaps) # NOTE: possible to get first elem of zip object without converting to list?
         best_swap = best_swaps[0]
 
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
@@ -101,7 +91,6 @@ def naive_swap(args, imgs, init_medoids):
     return medoids
 
 def naive_build_and_swap(args):
-    # import ipdb; ipdb.set_trace()
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
