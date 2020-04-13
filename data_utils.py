@@ -108,6 +108,21 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
     #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
     N = len(imgs)
+
+    #############
+    # Approach 1: DOESN'T WORK
+    # import ipdb; ipdb.set_trace()
+    #
+    # # NOTE: right now loop is over for s in swaps. Actually only need to compute it for distinct old_medoids (hope compiler gets this)
+    # case1s = np.array([np.where(reference_closest_medoids == current_medoids[s[0]])[0] for s in swaps]) # Non-square... only depends on s[0]
+    # case2s = np.array([np.where(reference_closest_medoids != current_medoids[s[0]])[0] for s in swaps]) # Non-square... only depends on s[0]
+    # # NOTE: right now loop is over for s in swaps. Could change this to be for only distinct new_medoids (hope compiler gets this)
+    # new_medoid_distances = np.array([d(imgs[s[1]].reshape(1, -1), imgs[tmp_refs]) for s in swaps]) # Square... only depends on s[1]
+    # new_losses += np.sum( np.minimum( new_medoid_distances[:, case1s], reference_second_best_distances[case1s] ), axis = 1) #case1
+    # new_losses += np.sum( np.minimum( new_medoid_distances[:, case2s], reference_best_distances[case2s] ), axis = 1 ) #case2
+
+    #######################
+    # Approach 2:
     for s_idx, s in enumerate(swaps):
         print(s)
         # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
@@ -121,6 +136,8 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
         # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
         # new_losses[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
+    ##########################
+
 
     new_losses /= len(tmp_refs)
 
