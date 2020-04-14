@@ -7,16 +7,18 @@ import naive_pam_v1
 import ucb_pam
 
 def remap_args(args, exp):
-    args.verbose = exp[1]
-    args.num_medoids = exp[2]
-    args.sample_size = exp[3]
-    args.seed = exp[4]
-    args.dataset = exp[5]
+    args.build_ao_swap = exp[1]
+    args.verbose = exp[2]
+    args.num_medoids = exp[3]
+    args.sample_size = exp[4]
+    args.seed = exp[5]
+    args.dataset = exp[6]
     args.warm_start_medoids = exp[-1] # Usually 6
     return args
 
 def get_filename(exp, args):
     return exp[0] + \
+        '-' + args.build_ao_swap + \
         '-v-' + str(args.verbose) + \
         '-k-' + str(args.num_medoids) + \
         '-N-' + str(args.sample_size) + \
@@ -37,28 +39,22 @@ def main(sys_args):
         else:
             print("Running exp:", fname)
 
-        if exp[0] == 'naive_v0':
+        if exp[0] == 'naive_v1':
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            medoids = prof.runcall(naive_pam_v0.naive_build_and_swap, args)
+            built_medoids, swapped_medoids = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write(','.join(map(str, medoids)))
-        elif exp[0] == 'naive_v1':
-            prof = cProfile.Profile()
-            # NOTE: This approach is undocumented
-            # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            medoids = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
-            prof.dump_stats(fname)
-            with open(fname + '.medoids', 'w+') as fout:
-                fout.write(','.join(map(str, medoids)))
+                fout.write("Built:", + ','.join(map(str, built_medoids)))
+                fout.write("Swapped:", + ','.join(map(str, swapped_medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
-            medoids = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+            built_medoids, swapped_medoids = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write(','.join(map(str, medoids)))
+                fout.write("Built:", + ','.join(map(str, built_medoids)))
+                fout.write("Swapped:" + ','.join(map(str, swapped_medoids)))
         else:
             raise Exception('Invalid algorithm specified')
 

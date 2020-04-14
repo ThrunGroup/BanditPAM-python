@@ -17,6 +17,7 @@ def get_args(arguments):
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
+    parser.add_argument('-B', '--build_ao_swap', help = 'Build or Swap, B = just build, S = just swap, BS = both', type = str, default = 'BS')
     args = parser.parse_args(arguments)
     return args
 

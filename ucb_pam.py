@@ -235,11 +235,18 @@ def UCB_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-    built_medoids = UCB_build(args, imgs, sigma)
-    print("Built medoids", built_medoids)
-    swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids)
-    print("Final medoids", swapped_medoids)
-    return swapped_medoids
+    if 'B' in args.build_ao_swap:
+        built_medoids = UCB_build(args, imgs, sigma)
+        print("Built medoids", built_medoids)
+
+    if 'S' in args.build_ao_swap:
+        if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
+            raise Exception("Invalid call to Swap step")
+
+        swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids.copy())
+        print("Final medoids", swapped_medoids)
+
+    return built_medoids, swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
