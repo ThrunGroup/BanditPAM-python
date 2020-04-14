@@ -20,7 +20,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1e-6
+    p = 1e-2
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
@@ -56,7 +56,7 @@ def UCB_build(args, imgs, sigma):
         exact_mask = np.zeros(N)
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 100
+        original_batch_size = 5
         base = 1 # Right now, use constant batch size
 
         while(len(candidates) > 0):
@@ -104,6 +104,7 @@ def UCB_build(args, imgs, sigma):
 
         medoids.append(new_medoid)
         best_distances, closest_medoids = get_best_distances(medoids, imgs)
+        print("Computed exactly for:", exact_mask.sum())
 
     if args.verbose >=1:
         print(medoids)
@@ -143,7 +144,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
 
 
 def UCB_swap(args, imgs, sigma, init_medoids):
-    p = 1e-8
+    p = 1e-3
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e4
@@ -174,7 +175,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         exact_mask = np.zeros((k, N))
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 100
+        original_batch_size = 5
         base = 1 # Right now, use constant batch size
 
         step_count = 0

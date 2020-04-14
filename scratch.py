@@ -30,11 +30,19 @@ from data_utils import *
 # plt.show()
 
 naive_B_times = np.array([10200, 40400, 90600, 160800, 251000])
-# ucb_B_times = np.array([103430, 756373, 6836248, 24680055])
-x = np.arange(100, 600, 100)
+ucb_B_times = np.array([4025, 5540, 10635, 14105, 36325, 44560, 80720])
+
+x = np.array([100, 200, 300, 400, 500, 1000, 2000])
 q_x = np.arange(100, 501)
+
 quadratic = (x**2) + 2*x
-plt.plot(x, naive_B_times, 'bo')
-plt.plot(x, quadratic, 'b-')
-# plt.plot(x, ucb_B_times, 'ro')
+quadratic_ucb = (x**2)
+qlogq_ucb = 5*x*np.log(x)
+
+# plt.plot(x[:-2], naive_B_times, 'bo')
+# plt.plot(x, quadratic, 'b-')
+
+plt.plot(x, ucb_B_times, 'go')
+plt.plot(x, qlogq_ucb, 'r-')
+
 plt.show()
