@@ -52,12 +52,19 @@ def load_data(args):
     else:
         raise Exception("Didn't specify a valid dataset")
 
+def empty_counter():
+    pass
+
 def d(x1, x2):
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
+        for _unused in x1.shape[0]:
+            empty_counter()
+
         # NOTE: Assume first coordinate indexes tuples
         return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
     else:
+        empty_counter()
         return np.linalg.norm(x1 - x2, ord = 2)
 
 def cost_fn(dataset, tar_idx, ref_idx, best_distances):
