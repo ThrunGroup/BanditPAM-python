@@ -2,7 +2,8 @@ from data_utils import *
 from exp_config import experiments
 import cProfile
 
-import naive_pam
+import naive_pam_v0
+import naive_pam_v1
 import ucb_pam
 
 def remap_args(args, exp):
@@ -35,12 +36,20 @@ def main(sys_args):
             continue
         else:
             print("Running exp:", fname)
-            
-        if exp[0] == 'naive':
+
+        if exp[0] == 'naive_v0':
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            medoids = prof.runcall(naive_pam.naive_build_and_swap, args)
+            medoids = prof.runcall(naive_pam_v0.naive_build_and_swap, args)
+            prof.dump_stats(fname)
+            with open(fname + '.medoids', 'w+') as fout:
+                fout.write(','.join(map(str, medoids)))
+        elif exp[0] == 'naive_v1':
+            prof = cProfile.Profile()
+            # NOTE: This approach is undocumented
+            # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
+            medoids = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
                 fout.write(','.join(map(str, medoids)))
