@@ -58,7 +58,9 @@ def empty_counter():
 def d(x1, x2):
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
-        for _unused in range(x1.shape[0]):
+        # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
+        # NOTE: SO MAKE SURE YOU KNOW WHAT YOU'RE DOING -- X1 AND X2 ARE NOT SYMMETRIC
+        for _unused in range(x2.shape[0]):
             empty_counter()
 
         # NOTE: Assume first coordinate indexes tuples
