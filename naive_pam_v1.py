@@ -88,7 +88,7 @@ def naive_swap(args, imgs, init_medoids):
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
-    return medoids
+    return medoids, iter
 
 def naive_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
@@ -99,14 +99,15 @@ def naive_build_and_swap(args):
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
+    swap_iters = 0
     if 'S' in args.build_ao_swap:
         if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
             raise Exception("Invalid call to Swap step")
 
-        swapped_medoids = naive_swap(args, imgs, built_medoids.copy())
+        swapped_medoids, swap_iters = naive_swap(args, imgs, built_medoids.copy())
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids
+    return built_medoids, swapped_medoids, swap_iters
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

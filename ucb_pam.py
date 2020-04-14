@@ -53,7 +53,7 @@ def UCB_build(args, imgs, sigma):
         exact_mask = np.zeros(N)
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 5
+        original_batch_size = 20
         base = 1 # Right now, use constant batch size
 
         while(len(candidates) > 0):
@@ -173,7 +173,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         exact_mask = np.zeros((k, N))
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 5
+        original_batch_size = 20
         base = 1 # Right now, use constant batch size
 
         step_count = 0
@@ -227,7 +227,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
-    return medoids
+    return medoids, iter
 
 def UCB_build_and_swap(args):
     # import ipdb; ipdb.set_trace()
@@ -239,14 +239,15 @@ def UCB_build_and_swap(args):
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
+    swap_iters = 0
     if 'S' in args.build_ao_swap:
         if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
             raise Exception("Invalid call to Swap step")
 
-        swapped_medoids = UCB_swap(args, imgs, sigma, built_medoids.copy())
+        swapped_medoids, swap_iters = UCB_swap(args, imgs, sigma, built_medoids.copy())
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids
+    return built_medoids, swapped_medoids, swap_iters
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
