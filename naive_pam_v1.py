@@ -98,6 +98,7 @@ def naive_build_and_swap(args):
         built_medoids = naive_build(args, imgs)
         print("Built medoids", built_medoids)
 
+    swapped_medoids = []
     if 'S' in args.build_ao_swap:
         if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
             raise Exception("Invalid call to Swap step")
