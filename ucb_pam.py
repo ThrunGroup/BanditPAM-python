@@ -185,19 +185,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
 
-            # Don't update all estimates, just pulled arms
-            accesses = (candidates[:, 0], candidates[:, 1])
-
-            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size)
-            estimates[accesses] = \
-                ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
-            T_samples[accesses] += this_batch_size
-            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[accesses])
-            lcbs[accesses] = estimates[accesses] - cb_delta
-            ucbs[accesses] = estimates[accesses] + cb_delta
-
-            # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
-            comp_exactly_condition = np.where((T_samples >= N) & (exact_mask == 0))
+            comp_exactly_condition = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))
             compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
             if len(compute_exactly) > 0:
                 if args.verbose >= 1:
@@ -213,6 +201,18 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+
+            if len(candidates) == 0: break # The last candidates were computed exactly
+
+            # Don't update all estimates, just pulled arms
+            accesses = (candidates[:, 0], candidates[:, 1])
+            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size)
+            estimates[accesses] = \
+                ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
+            T_samples[accesses] += this_batch_size
+            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[accesses])
+            lcbs[accesses] = estimates[accesses] - cb_delta
+            ucbs[accesses] = estimates[accesses] + cb_delta
 
             cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
             candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))

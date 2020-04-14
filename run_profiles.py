@@ -46,15 +46,15 @@ def main(sys_args):
             built_medoids, swapped_medoids = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write("Built:", + ','.join(map(str, built_medoids)))
-                fout.write("Swapped:", + ','.join(map(str, swapped_medoids)))
+                fout.write("Built:" + ','.join(map(str, built_medoids)))
+                fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
             built_medoids, swapped_medoids = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(fname)
             with open(fname + '.medoids', 'w+') as fout:
-                fout.write("Built:", + ','.join(map(str, built_medoids)))
-                fout.write("Swapped:" + ','.join(map(str, swapped_medoids)))
+                fout.write("Built:" + ','.join(map(str, built_medoids)))
+                fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         else:
             raise Exception('Invalid algorithm specified')
 

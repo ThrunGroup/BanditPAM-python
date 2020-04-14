@@ -12,27 +12,49 @@ experiments = [
     # GRID Search:
     # n = 20, 100, 500, 2000, 5000, 10000, 30000, 70000
     # k = 1, 3, 10, 50
+
+    # Scaling with N for both Build, and Build and Swap -- run UCB first for speed
     ['ucb', 'B', 0, 5, 100, 42, 'MNIST', ''],
     ['ucb', 'B', 0, 5, 300, 42, 'MNIST', ''],
     ['ucb', 'B', 0, 5, 1000, 42, 'MNIST', ''],
     ['ucb', 'B', 0, 5, 3000, 42, 'MNIST', ''],
-    ['ucb', 'B', 0, 5, 10000, 42, 'MNIST', ''],
 
     ['ucb', 'BS', 0, 5, 100, 42, 'MNIST', ''],
     ['ucb', 'BS', 0, 5, 300, 42, 'MNIST', ''],
     ['ucb', 'BS', 0, 5, 1000, 42, 'MNIST', ''],
     ['ucb', 'BS', 0, 5, 3000, 42, 'MNIST', ''],
-    ['ucb', 'BS', 0, 5, 10000, 42, 'MNIST', ''],
 
     ['naive_v1', 'B', 0, 5, 100, 42, 'MNIST', ''],
     ['naive_v1', 'B', 0, 5, 300, 42, 'MNIST', ''],
     ['naive_v1', 'B', 0, 5, 1000, 42, 'MNIST', ''],
     ['naive_v1', 'B', 0, 5, 3000, 42, 'MNIST', ''],
-    ['naive_v1', 'B', 0, 5, 10000, 42, 'MNIST', ''],
 
     ['naive_v1', 'BS', 0, 5, 100, 42, 'MNIST', ''],
     ['naive_v1', 'BS', 0, 5, 300, 42, 'MNIST', ''],
     ['naive_v1', 'BS', 0, 5, 1000, 42, 'MNIST', ''],
     ['naive_v1', 'BS', 0, 5, 3000, 42, 'MNIST', ''],
+
+    # Scaling with K for build
+    ['ucb', 'B', 0, 10, 300, 42, 'MNIST', ''],
+    ['ucb', 'B', 0, 20, 300, 42, 'MNIST', ''],
+    ['ucb', 'B', 0, 30, 300, 42, 'MNIST', ''],
+
+    ['naive_v1', 'B', 0, 10, 300, 42, 'MNIST', ''],
+    ['naive_v1', 'B', 0, 20, 300, 42, 'MNIST', ''],
+    ['naive_v1', 'B', 0, 30, 300, 42, 'MNIST', ''],
+
+    # Scaling with K for build and Swap
+    ['ucb', 'BS', 0, 10, 300, 42, 'MNIST', ''],
+    ['ucb', 'BS', 0, 20, 300, 42, 'MNIST', ''],
+    ['ucb', 'BS', 0, 30, 300, 42, 'MNIST', ''],
+
+    ['naive_v1', 'BS', 0, 10, 300, 42, 'MNIST', ''],
+    ['naive_v1', 'BS', 0, 20, 300, 42, 'MNIST', ''],
+    ['naive_v1', 'BS', 0, 30, 300, 42, 'MNIST', ''],
+
+    # Reach for the stars
+    ['ucb', 'B', 0, 5, 10000, 42, 'MNIST', ''],
+    ['ucb', 'BS', 0, 5, 10000, 42, 'MNIST', ''],
+    ['naive_v1', 'B', 0, 5, 10000, 42, 'MNIST', ''],
     ['naive_v1', 'BS', 0, 5, 10000, 42, 'MNIST', ''],
 ]
