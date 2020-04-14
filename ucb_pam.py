@@ -20,7 +20,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1e-2
+    p = 1. / (N * args.num_medoids * 100)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
@@ -144,9 +144,9 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
 
 
 def UCB_swap(args, imgs, sigma, init_medoids):
-    p = 1e-3
     k = len(init_medoids)
     N = len(imgs)
+    p = 1. / (N * k * 10)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
