@@ -17,7 +17,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1. / (N * args.num_medoids * 1000)
+    p = 1. / (N * args.num_medoids * 10000)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
@@ -64,13 +64,7 @@ def UCB_build(args, imgs, sigma):
             # NOTE: tricky computations below
             this_batch_size = original_batch_size * (base**step_count)
 
-            # Don't update all estimates, just pulled arms
-            estimates[candidates] = \
-                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * build_sample_for_targets(imgs, candidates, this_batch_size, best_distances))) / (this_batch_size + T_samples[candidates])
-            T_samples[candidates] += this_batch_size
-
-            # NOTE: Can further optimize this by putting this above the sampling paragraph just above this.
-            compute_exactly = np.where((T_samples >= N) & (exact_mask == 0))[0]
+            compute_exactly = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))[0]
             if len(compute_exactly) > 0:
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
@@ -81,6 +75,13 @@ def UCB_build(args, imgs, sigma):
                 exact_mask[compute_exactly] = 1
                 T_samples[compute_exactly] += N
                 candidates = np.setdiff1d(candidates, compute_exactly) # Remove compute_exactly points from candidates so they're bounds don't get updated below
+
+            if len(candidates) == 0: break # The last candidates were computed exactly
+
+            # Don't update all estimates, just pulled arms
+            estimates[candidates] = \
+                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * build_sample_for_targets(imgs, candidates, this_batch_size, best_distances))) / (this_batch_size + T_samples[candidates])
+            T_samples[candidates] += this_batch_size
 
             cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
@@ -143,7 +144,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
 def UCB_swap(args, imgs, sigma, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
-    p = 1. / (N * k * 10)
+    p = 1. / (N * k * 10000)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
