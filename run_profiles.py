@@ -31,28 +31,29 @@ def main(sys_args):
 
     for exp in experiments:
         args = remap_args(args, exp)
-        fname = os.path.join('profiles', get_filename(exp, args))
+        prof_fname = os.path.join('profiles', get_filename(exp, args))
+        medoids_fname = os.path.join('profiles', 'medoids.' + get_filename(exp, args))
 
-        if os.path.exists(fname) and not args.force:
-            print("Already have data for experiment", fname)
+        if os.path.exists(prof_fname) and not args.force:
+            print("Already have data for experiment", prof_fname)
             continue
         else:
-            print("Running exp:", fname)
+            print("Running exp:", prof_fname)
 
         if exp[0] == 'naive_v1':
             prof = cProfile.Profile()
             # NOTE: This approach is undocumented
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
             built_medoids, swapped_medoids = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
-            prof.dump_stats(fname)
-            with open('medoids.' + fname, 'w+') as fout:
+            prof.dump_stats(prof_fname)
+            with open(medoids_fname, 'w+') as fout:
                 fout.write("Built:" + ','.join(map(str, built_medoids)))
                 fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
             built_medoids, swapped_medoids = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
-            prof.dump_stats(fname)
-            with open('medoids.' + fname, 'w+') as fout:
+            prof.dump_stats(prof_fname)
+            with open(medoids_fname, 'w+') as fout:
                 fout.write("Built:" + ','.join(map(str, built_medoids)))
                 fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         else:

@@ -11,16 +11,13 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
     # NOTE: Also, should the point be able to sample itself?
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
     for tar_idx, target in enumerate(targets):
-        distances = np.zeros(batch_size)
-        for tmp_idx, tmp in enumerate(tmp_refs):
-            distances[tmp_idx] = cost_fn(imgs, target, tmp, best_distances) # NOTE: depends on other medoids too!
-        estimates[tar_idx] = np.mean(distances)
+        estimates[tar_idx] = np.mean(cost_fn(imgs, target, tmp_refs, best_distances))
     return estimates.round(DECIMAL_DIGITS)
 
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1. / (N * args.num_medoids * 100)
+    p = 1. / (N * args.num_medoids * 1000)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
@@ -28,11 +25,11 @@ def UCB_build(args, imgs, sigma):
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
         medoids = warm_start_medoids.copy()
         num_medoids_found = len(medoids)
-        best_distances, closest_medoids = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = np.array(get_best_distances(medoids, imgs))
     else:
         medoids = []
         num_medoids_found = 0
-        best_distances = [float('inf') for _ in range(N)]
+        best_distances = np.inf * np.ones(N)
 
     # Iteratively:
     # Pretend each previous arm is fixed.

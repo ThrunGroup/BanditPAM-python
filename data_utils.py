@@ -77,7 +77,8 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances):
 
     Use this only in the BUILD step
     '''
-    return min(d(dataset[tar_idx], dataset[ref_idx]), best_distances[ref_idx])
+    # import ipdb; ipdb.set_trace()
+    return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx]), best_distances[ref_idx])
 
 # def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
 def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
