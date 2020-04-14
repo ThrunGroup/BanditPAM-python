@@ -29,9 +29,12 @@ from data_utils import *
 # plt.plot([700, 2000, 5000], ucb_times)
 # plt.show()
 
-naive_B_times = np.array([1.19, 2.48, 21.1, 322.3])
-ucb_B_times = np.array([2.34, 14.1, 101.54, 368.81])
-x = [100, 300, 1000, 3000]
+naive_B_times = np.array([300, 600, 900, 1200, 1500])
+# ucb_B_times = np.array([103430, 756373, 6836248, 24680055])
+x = np.arange(100, 600, 100)
+q_x = np.arange(100, 501)
+quadratic = 3*(x**2)
 plt.plot(x, naive_B_times, 'bo')
-plt.plot(x, ucb_B_times, 'ro')
+plt.plot(x, quadratic, 'b-')
+# plt.plot(x, ucb_B_times, 'ro')
 plt.show()

@@ -58,7 +58,7 @@ def empty_counter():
 def d(x1, x2):
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
-        for _unused in x1.shape[0]:
+        for _unused in range(x1.shape[0]):
             empty_counter()
 
         # NOTE: Assume first coordinate indexes tuples
