@@ -106,7 +106,7 @@ def naive_build_and_swap(args):
         swapped_medoids = naive_swap(args, imgs, built_medoids.copy())
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, wapped_medoids
+    return built_medoids, swapped_medoids
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
