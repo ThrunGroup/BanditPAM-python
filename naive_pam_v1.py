@@ -76,7 +76,10 @@ def naive_swap(args, imgs, init_medoids):
 
         swap_candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
 
-        new_losses = cost_fn_difference(imgs, swap_candidates, range(N), medoids).reshape(k, N)
+        if args.fast_pam1:
+            new_losses = cost_fn_difference_FP1(imgs, swap_candidates, range(N), medoids).reshape(k, N)
+        else:
+            new_losses = cost_fn_difference(imgs, swap_candidates, range(N), medoids).reshape(k, N)
 
         new_losses.round(DECIMAL_DIGITS)
 

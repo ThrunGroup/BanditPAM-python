@@ -113,7 +113,7 @@ def UCB_build(args, imgs, sigma):
 
 
 
-def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
+def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False):
     '''
     Note that targets is a TUPLE ( [o_1, o_2, o_3, ... o_m], [n_1, n_2, ... n_m] )
     The corresponding target swaps are [o_1, n_1], [o_2, n_2], .... [o_m, n_m]
@@ -137,7 +137,11 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
 
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-    estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
+    if FastPAM1:
+        estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
+    else:
+        estimates = cost_fn_difference(imgs, swaps, tmp_refs, current_medoids)
+
     return estimates.round(DECIMAL_DIGITS)
 
 
@@ -192,7 +196,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
                 # import ipdb; ipdb.set_trace()
                 exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N)
+                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N, args.fast_pam1)
                 lcbs[exact_accesses] = estimates[exact_accesses]
                 ucbs[exact_accesses] = estimates[exact_accesses]
                 exact_mask[exact_accesses] = 1
@@ -205,7 +209,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
             # Don't update all estimates, just pulled arms
             accesses = (candidates[:, 0], candidates[:, 1])
-            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size)
+            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1)
             estimates[accesses] = \
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
             T_samples[accesses] += this_batch_size

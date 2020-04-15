@@ -16,6 +16,7 @@ def get_args(arguments):
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
+    parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
     parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
     parser.add_argument('-B', '--build_ao_swap', help = 'Build or Swap, B = just build, S = just swap, BS = both', type = str, default = 'BS')
     parser.add_argument('-e', '--exp_config', help = 'Experiment configuration file to use', required = True)
@@ -194,7 +195,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
 
     # Full FastPAM1 approach:
     distinct_new_medoids = set([s[1] for s in swaps])
-    ALL_new_med_distances = np.zeros(len(distinct_new_medoids)) ## NOTE: Re-indexing distinct elems!!
+    ALL_new_med_distances = np.zeros((len(distinct_new_medoids), len(tmp_refs))) ## NOTE: Re-indexing distinct elems!!
     reidx_lookup = {}
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
