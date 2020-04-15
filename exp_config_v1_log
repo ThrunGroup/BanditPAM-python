@@ -1,0 +1,184 @@
+(p36-default)➜  FastPam git:(master) ✗ p run_profiles.py
+Running exp: profiles/ucb-B-v-0-k-1-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Built medoids [16]
+Running exp: profiles/naive_v1-B-v-0-k-1-N-100-s-42-d-MNIST-w-
+Built medoids [16]
+Running exp: profiles/ucb-B-v-0-k-1-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Built medoids [285]
+Running exp: profiles/naive_v1-B-v-0-k-1-N-300-s-42-d-MNIST-w-
+Built medoids [285]
+Already have data for experiment profiles/ucb-B-v-0-k-1-N-1000-s-42-d-MNIST-w-
+Already have data for experiment profiles/naive_v1-B-v-0-k-1-N-1000-s-42-d-MNIST-w-
+Running exp: profiles/ucb-B-v-0-k-1-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Built medoids [891]
+Running exp: profiles/naive_v1-B-v-0-k-1-N-3000-s-42-d-MNIST-w-
+Built medoids [891]
+Running exp: profiles/ucb-B-v-0-k-1-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Built medoids [3276]
+Running exp: profiles/naive_v1-B-v-0-k-1-N-10000-s-42-d-MNIST-w-
+Built medoids [3276]
+Running exp: profiles/ucb-B-v-0-k-1-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Built medoids [14369]
+Running exp: profiles/ucb-B-v-0-k-2-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Built medoids [16, 32]
+Running exp: profiles/naive_v1-B-v-0-k-2-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32]
+Running exp: profiles/ucb-B-v-0-k-2-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Built medoids [285, 41]
+Running exp: profiles/naive_v1-B-v-0-k-2-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41]
+Running exp: profiles/ucb-B-v-0-k-2-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Built medoids [891, 392]
+Running exp: profiles/naive_v1-B-v-0-k-2-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392]
+Running exp: profiles/ucb-B-v-0-k-2-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Built medoids [891, 2763]
+Running exp: profiles/naive_v1-B-v-0-k-2-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763]
+Running exp: profiles/ucb-B-v-0-k-2-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Built medoids [3276, 5207]
+Running exp: profiles/ucb-B-v-0-k-2-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Built medoids [14369, 11847]
+Running exp: profiles/ucb-B-v-0-k-3-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Computed exactly for: 99.0
+Built medoids [16, 32, 70]
+Running exp: profiles/naive_v1-B-v-0-k-3-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32, 70]
+Running exp: profiles/ucb-B-v-0-k-3-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Computed exactly for: 143.0
+Built medoids [285, 41, 23]
+Running exp: profiles/naive_v1-B-v-0-k-3-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41, 23]
+Running exp: profiles/ucb-B-v-0-k-3-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Built medoids [891, 392, 354]
+Running exp: profiles/naive_v1-B-v-0-k-3-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354]
+Running exp: profiles/ucb-B-v-0-k-3-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Built medoids [891, 2763, 2658]
+Running exp: profiles/naive_v1-B-v-0-k-3-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763, 2658]
+Running exp: profiles/ucb-B-v-0-k-3-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Computed exactly for: 311.0
+Built medoids [3276, 5207, 5553]
+Running exp: profiles/ucb-B-v-0-k-3-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Computed exactly for: 80.0
+Built medoids [14369, 11847, 22723]
+Running exp: profiles/ucb-B-v-0-k-4-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Computed exactly for: 99.0
+Computed exactly for: 53.0
+Built medoids [16, 32, 70, 87]
+Running exp: profiles/naive_v1-B-v-0-k-4-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32, 70, 87]
+Running exp: profiles/ucb-B-v-0-k-4-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Computed exactly for: 143.0
+Computed exactly for: 191.0
+Built medoids [285, 41, 23, 4]
+Running exp: profiles/naive_v1-B-v-0-k-4-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41, 23, 4]
+Running exp: profiles/ucb-B-v-0-k-4-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Built medoids [891, 392, 354, 714]
+Running exp: profiles/naive_v1-B-v-0-k-4-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714]
+Running exp: profiles/ucb-B-v-0-k-4-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Computed exactly for: 296.0
+Built medoids [891, 2763, 2658, 1567]
+Running exp: profiles/naive_v1-B-v-0-k-4-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763, 2658, 1567]
+Running exp: profiles/ucb-B-v-0-k-4-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Computed exactly for: 311.0
+Computed exactly for: 326.0
+Built medoids [3276, 5207, 5553, 9781]
+Running exp: profiles/ucb-B-v-0-k-4-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Computed exactly for: 80.0
+Computed exactly for: 196.0
+Built medoids [14369, 11847, 22723, 6175]
+Running exp: profiles/ucb-B-v-0-k-5-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Computed exactly for: 99.0
+Computed exactly for: 53.0
+Computed exactly for: 100.0
+Built medoids [16, 32, 70, 87, 24]
+Running exp: profiles/naive_v1-B-v-0-k-5-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32, 70, 87, 24]
+Running exp: profiles/ucb-B-v-0-k-5-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Computed exactly for: 143.0
+Computed exactly for: 191.0
+Computed exactly for: 62.0
+Built medoids [285, 41, 23, 4, 99]
+Running exp: profiles/naive_v1-B-v-0-k-5-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41, 23, 4, 99]
+Already have data for experiment profiles/ucb-B-v-0-k-5-N-1000-s-42-d-MNIST-w-
+Already have data for experiment profiles/naive_v1-B-v-0-k-5-N-1000-s-42-d-MNIST-w-
+Running exp: profiles/ucb-B-v-0-k-5-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Computed exactly for: 296.0
+Computed exactly for: 242.0
+Built medoids [891, 2763, 2658, 1567, 2325]
+Running exp: profiles/naive_v1-B-v-0-k-5-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763, 2658, 1567, 2325]
+Running exp: profiles/ucb-B-v-0-k-5-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Computed exactly for: 311.0
+Computed exactly for: 326.0
+Computed exactly for: 378.0
+Built medoids [3276, 5207, 5553, 9781, 1567]
+Running exp: profiles/ucb-B-v-0-k-5-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Computed exactly for: 80.0
+Computed exactly for: 196.0
+Computed exactly for: 123.0
+Built medoids [14369, 11847, 22723, 6175, 13400]
+(p36-default)➜  FastPam git:(master) ✗
