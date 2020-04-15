@@ -71,7 +71,7 @@ from data_utils import *
 
 
 
-# Build only, k = 3, N = 300, 1000, 3000, 10000
+# Build only, k = 3, N = 300, 1000, 3000, 10000, 30000
 x = [300, 1000, 3000, 10000, 30000]
 xticks = np.arange(100, 3100, 100)
 
@@ -108,7 +108,28 @@ plt.plot(k, linear_naive)
 plt.plot(k, linear_ucb)
 plt.show()
 
-# Build and Swap, k = 3, N = 1000, 3000, 10000
+#Scaling with N, Build and SWAP
+# k = 3, N = 1000, 3000, 10000, 30000
+# Need to check naive is nlogn when counts are (d_calls_total - d_calls_build ) / Swap count
+x = np.array([300, 1000, 3000, 10000, 30000])
+xticks = np.arange(300, 30100, 100)
+xticks_short = np.arange(300, 4100, 100)
 
+naive_BS_calls = np.array([549143, 12059082, 81163507])
+naive_Bonly_calls = np.array([273035, 3011023, 27032741])
+naive_swaps = np.array([1, 3, 2])
 
+UCB_BS_calls = np.array([444573, 8159738, 20099646, 72461593, 463636348])
+UCB_swaps = np.array([1, 3, 2, 2, 5])
+UCB_Bonly_calls = np.array([230455, 2124463, 7012741, 34433219, 112562578])
+
+nlogn = 2e2*xticks*np.log(xticks)
+quadratic = 3*(xticks_short)**2
+
+plt.plot(x[:-2], (naive_BS_calls - naive_Bonly_calls)/naive_swaps, 'bo')
+plt.plot(x, (UCB_BS_calls - UCB_Bonly_calls)/UCB_swaps , 'ro')
+plt.plot(xticks_short, quadratic, 'b-')
+plt.plot(xticks, nlogn, 'r-')
+plt.plot()
+plt.show()
 # Build and Swap, scaling with k: 1, 2, 3 and N = 3000
