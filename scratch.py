@@ -95,14 +95,14 @@ plt.show()
 
 
 # Build only, scaling with k: 1, 2, 3 and N = 3000
-k = [1, 2, 3, 4, 5, 10, 20]
+k = [1, 2, 3, 4, 5, 10, 20, 30]
 
 naive_B_calls = np.array([9006000, 18017194, 27032741, 36051842, 45074455, 90236487])
-ucb_B_calls = np.array([284820, 4345814, 7012741, 12470922, 17469475, 95086987, 275484806])
+ucb_B_calls = np.array([284820, 4345814, 7012741, 12470922, 17469475, 95086987, 275484806, 456494000])
 
 linear_naive = 9e6*np.array(k)
-linear_ucb = 1e7*(np.array(k))
-plt.plot(k[:-1], naive_B_calls, 'bo')
+linear_ucb = 1.9e7*(np.array(k) - 5)
+plt.plot(k[:-2], naive_B_calls, 'bo')
 plt.plot(k, ucb_B_calls, 'ro')
 plt.plot(k, linear_naive)
 plt.plot(k, linear_ucb)
