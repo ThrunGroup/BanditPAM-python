@@ -142,6 +142,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
         new_medoid = s[1]
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
+        # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
         new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs])
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
@@ -153,6 +154,69 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     new_losses /= len(tmp_refs)
 
     return new_losses
+
+def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
+    '''
+    Returns the new losses if we were to perform the swaps in swaps
+
+    NOTE:
+    The FastPAM1 optimization consists of two mini-optimizations:
+        (a) Cache d(x_old, x_ref) for every pair x_old and x_ref, since this doesn't change with x_n -- and keep track of the second best distance in case you're gonna use that
+        (b) Cache d(x_new, x_ref) for every pair x_new and x_ref, since this doesn't change with old
+    Then compute Delta_TD for every pair (x_old, x_new) using these CACHED values
+
+    You have already incorporated the optimization (a) by keeping track of the second_best_distances and
+    using the selector in your loop; this optimization is already included in the above function, cost_fn_difference
+
+    You just need to implement optimization (b) -- should be easy!
+    '''
+    # IDEA: I think the best way to do this is to keep track of the medoid a point is assigned to,
+    # to avoid re-assigning the medoids every time
+    # Cases:
+    #   - The current best distance uses c1, a currently assigned medoid, and c2 would become the new closest medoid
+    #   - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
+    #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
+    #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
+
+    num_targets = len(swaps)
+    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True)
+
+    new_losses = np.zeros(num_targets)
+
+    # for each swap
+    #   for each ref point -- cases are on REF points
+    #       if ref point is NOT assigned to o, new_losses += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
+    #       if ref point IS assigned to o:
+    #           if ref_point would be assigned to n: new_losses += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
+    #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
+    #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
+    N = len(imgs)
+
+    # Full FastPAM1 approach:
+    distinct_new_medoids = set([s[1] for s in swaps])
+    ALL_new_med_distances = np.zeros(len(distinct_new_medoids)) ## NOTE: Re-indexing distinct elems!!
+    reidx_lookup = {}
+    for d_n_idx, d_n in enumerate(distinct_new_medoids):
+        reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
+        ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs])
+
+
+    for s_idx, s in enumerate(swaps):
+        # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
+        # This is because best_distance is computed above and only returns the re-indexed subset
+        old_medoid = current_medoids[s[0]]
+        new_medoid = s[1]
+        case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
+        case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
+        # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
+        new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
+        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
+        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
+
+    new_losses /= len(tmp_refs)
+
+    return new_losses
+
 
 def get_best_distances(medoids, dataset, subset = None, return_second_best = False):
     '''

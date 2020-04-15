@@ -137,7 +137,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size):
     # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
 
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
-    estimates = cost_fn_difference(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
+    estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids) # NOTE: depends on other medoids too!
     return estimates.round(DECIMAL_DIGITS)
 
 

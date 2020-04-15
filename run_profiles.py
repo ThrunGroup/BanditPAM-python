@@ -54,11 +54,11 @@ def main(sys_args):
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
             built_medoids, swapped_medoids, swap_iters = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
-            prof.dump_stats(prof_fname)
-            with open(medoids_fname, 'w+') as fout:
-                fout.write("Built:" + ','.join(map(str, built_medoids)))
-                fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
-                fout.write("\nSwap Iterations:" + str(swap_iters))
+            # prof.dump_stats(prof_fname)
+            # with open(medoids_fname, 'w+') as fout:
+            #     fout.write("Built:" + ','.join(map(str, built_medoids)))
+            #     fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
+            #     fout.write("\nSwap Iterations:" + str(swap_iters))
         else:
             raise Exception('Invalid algorithm specified')
 
