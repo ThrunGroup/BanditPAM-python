@@ -29,20 +29,42 @@ from data_utils import *
 # plt.plot([700, 2000, 5000], ucb_times)
 # plt.show()
 
-naive_B_times = np.array([10200, 40400, 90600, 160800, 251000])
-ucb_B_times = np.array([7210, 13045, 21095, 28155, 56225, 79390, 325300, 909715, 4470955])
 
-x = np.array([100, 200, 300, 400, 500, 1000, 2000, 10000, 70000])
-q_x = np.arange(100, 501)
+### For k = 1
+# naive_B_times = np.array([10200, 40400, 90600, 160800, 251000])
+# ucb_B_times = np.array([7210, 13045, 21095, 28155, 56225, 79390, 325300, 909715, 4470955])
+#
+# x = np.array([100, 200, 300, 400, 500, 1000, 2000, 10000, 70000])
+# q_x = np.arange(100, 501)
+#
+# quadratic = (x**2) + 2*x
+# quadratic_ucb = (x**2)
+# qlogq_ucb = 5*x*np.log(x)
+#
+# # plt.plot(x[:-3], naive_B_times, 'bo')
+# # plt.plot(x, quadratic, 'b-')
+#
+# plt.plot(x, ucb_B_times, 'go')
+# plt.plot(x, qlogq_ucb, 'r-')
+#
+# plt.show()
 
-quadratic = (x**2) + 2*x
-quadratic_ucb = (x**2)
-qlogq_ucb = 5*x*np.log(x)
 
-# plt.plot(x[:-3], naive_B_times, 'bo')
-# plt.plot(x, quadratic, 'b-')
+#### for k = 10, build only
+x = [100, 300, 1000, 3000]
+xticks = np.arange(100, 3100, 100)
 
-plt.plot(x, ucb_B_times, 'go')
-plt.plot(x, qlogq_ucb, 'r-')
+naive_B_calls = np.array([107759, 922363, 10079346, 90236487])
+ucb_B_calls = np.array([167319, 1330223, 15952226, 95086987])
 
+plt.plot(x, np.log(naive_B_calls), 'bo')
+plt.plot(x, np.log(ucb_B_calls), 'ro')
+quadratic = (3*xticks)**2
+nlogn = (xticks*np.log(xticks))
+
+plt.plot(xticks, np.log(quadratic), 'b-')
+plt.plot(xticks, np.log(nlogn), 'r-')
+plt.title("Number of distance calls for k = 10 medoids")
+plt.xlabel("N")
+plt.ylabel("Calls to d")
 plt.show()

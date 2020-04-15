@@ -1,5 +1,5 @@
 from data_utils import *
-from exp_config import experiments
+from exp_config_v1 import experiments
 import cProfile
 
 import naive_pam_v0

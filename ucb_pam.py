@@ -17,7 +17,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances):
 def UCB_build(args, imgs, sigma):
     ### Parameters
     N = len(imgs)
-    p = 1. / (N * args.num_medoids * 10)
+    p = 1. / (N * 10)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
