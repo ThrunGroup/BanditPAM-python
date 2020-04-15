@@ -95,14 +95,14 @@ plt.show()
 
 
 # Build only, scaling with k: 1, 2, 3 and N = 3000
-k = [1, 2, 3, 4, 5, 10]
+k = [1, 2, 3, 4, 5, 10, 20]
 
 naive_B_calls = np.array([9006000, 18017194, 27032741, 36051842, 45074455, 90236487])
-ucb_B_calls = np.array([284820, 4345814, 7012741, 12470922, 17469475, 95086987])
+ucb_B_calls = np.array([284820, 4345814, 7012741, 12470922, 17469475, 95086987, 275484806])
 
 linear_naive = 9e6*np.array(k)
-linear_ucb = 3.5e6*(np.array(k))
-plt.plot(k, naive_B_calls, 'bo')
+linear_ucb = 1e7*(np.array(k))
+plt.plot(k[:-1], naive_B_calls, 'bo')
 plt.plot(k, ucb_B_calls, 'ro')
 plt.plot(k, linear_naive)
 plt.plot(k, linear_ucb)
@@ -123,7 +123,7 @@ UCB_BS_calls = np.array([444573, 8159738, 20099646, 72461593, 463636348])
 UCB_swaps = np.array([1, 3, 2, 2, 5])
 UCB_Bonly_calls = np.array([230455, 2124463, 7012741, 34433219, 112562578])
 
-nlogn = 2e2*xticks*np.log(xticks)
+nlogn = 2.2e2*xticks*np.log(xticks)
 quadratic = 3*(xticks_short)**2
 
 plt.plot(x[:-2], (naive_BS_calls - naive_Bonly_calls)/naive_swaps, 'bo')

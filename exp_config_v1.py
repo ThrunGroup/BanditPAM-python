@@ -126,4 +126,9 @@ experiments = [
 
     ['ucb', 'B', 0, 5, 30000, 42, 'MNIST', ''],
     # ['naive_v1', 'B', 0, 5, 30000, 42, 'MNIST', ''],
+
+
+    # Random to verify scaling with k in build only is linear:
+    ['ucb', 'B', 0, 20, 3000, 42, 'MNIST', ''],
+    ['ucb', 'B', 0, 30, 3000, 42, 'MNIST', ''],
 ]

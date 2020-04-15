@@ -182,3 +182,26 @@ Computed exactly for: 196.0
 Computed exactly for: 123.0
 Built medoids [14369, 11847, 22723, 6175, 13400]
 (p36-default)➜  FastPam git:(master) ✗
+
+Running additional exp:
+Running exp: profiles/ucb-B-v-0-k-20-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Computed exactly for: 296.0
+Computed exactly for: 242.0
+Computed exactly for: 1239.0
+Computed exactly for: 2725.0
+Computed exactly for: 2192.0
+Computed exactly for: 2187.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0

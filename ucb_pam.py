@@ -223,6 +223,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
 
+        print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
         if performed_or_not == "NO SWAP PERFORMED":
             break

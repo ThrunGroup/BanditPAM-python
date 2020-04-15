@@ -1,6 +1,6 @@
 from data_utils import *
-from exp_config_v2 import experiments
 import cProfile
+import importlib
 
 import naive_pam_v0
 import naive_pam_v1
@@ -29,7 +29,8 @@ def get_filename(exp, args):
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
 
-    for exp in experiments:
+    imported_config = importlib.import_module(args.exp_config.strip('.py'))
+    for exp in imported_config.experiments:
         args = remap_args(args, exp)
         prof_fname = os.path.join('profiles', get_filename(exp, args))
         medoids_fname = os.path.join('profiles', 'medoids.' + get_filename(exp, args))
