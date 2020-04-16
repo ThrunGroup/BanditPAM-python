@@ -71,7 +71,7 @@ from data_utils import *
 
 
 
-# Build only, k = 3, N = 300, 1000, 3000, 10000, 30000
+# BUILD ONLY, SCALING WITH N, k = 3, N = 300, 1000, 3000, 10000, 30000
 x = [300, 1000, 3000, 10000, 30000]
 xticks = np.arange(100, 3100, 100)
 
@@ -94,7 +94,7 @@ plt.ylabel("Calls to d")
 plt.show()
 
 
-# Build only, scaling with k: 1, 2, 3 and N = 3000
+# BUILD ONLY, SCALING WITH K: 1, 2, 3 and N = 3000
 k = [1, 2, 3, 4, 5, 10, 20, 30]
 
 naive_B_calls = np.array([9006000, 18017194, 27032741, 36051842, 45074455, 90236487])
@@ -108,28 +108,66 @@ plt.plot(k, linear_naive)
 plt.plot(k, linear_ucb)
 plt.show()
 
-#Scaling with N, Build and SWAP
-# k = 3, N = 1000, 3000, 10000, 30000
-# Need to check naive is nlogn when counts are (d_calls_total - d_calls_build ) / Swap count
+
+
+
+
+
+# BUILD and SWAP, SCALING WITH N:
+# k = 3, N = 300, 1000, 3000, 10000, 30000
+# Need to check UCB is nlogn when counts are (d_calls_total - d_calls_build ) / Swap count
 x = np.array([300, 1000, 3000, 10000, 30000])
 xticks = np.arange(300, 30100, 100)
 xticks_short = np.arange(300, 4100, 100)
 
 naive_BS_calls = np.array([549143, 12059082, 81163507])
+naive_BS_FP1_calls = np.array([369143, 6059082, 45136507])
 naive_Bonly_calls = np.array([273035, 3011023, 27032741])
 naive_swaps = np.array([1, 3, 2])
 
 UCB_BS_calls = np.array([444573, 8159738, 20099646, 72461593, 463636348])
+UCB_BS_FP1_calls = np.array([387773, 6325418, 15565246, 61494053, 363785788])
+
 UCB_swaps = np.array([1, 3, 2, 2, 5])
 UCB_Bonly_calls = np.array([230455, 2124463, 7012741, 34433219, 112562578])
 
-nlogn = 2.2e2*xticks*np.log(xticks)
+
 quadratic = 3*(xticks_short)**2
+quadratic_FP1 = 1*(xticks_short)**2
+
+nlogn = 2.2e2*xticks*np.log(xticks)
+nlogn_FP1 = 1.5e2*xticks*np.log(xticks)
 
 plt.plot(x[:-2], (naive_BS_calls - naive_Bonly_calls)/naive_swaps, 'bo')
+plt.plot(x[:-2], (naive_BS_FP1_calls - naive_Bonly_calls)/naive_swaps, 'go')
 plt.plot(x, (UCB_BS_calls - UCB_Bonly_calls)/UCB_swaps , 'ro')
+plt.plot(x, (UCB_BS_FP1_calls - UCB_Bonly_calls)/UCB_swaps , 'yo')
 plt.plot(xticks_short, quadratic, 'b-')
+plt.plot(xticks_short, quadratic_FP1, 'g-')
 plt.plot(xticks, nlogn, 'r-')
+plt.plot(xticks, nlogn_FP1, 'y-')
 plt.plot()
 plt.show()
-# Build and Swap, scaling with k: 1, 2, 3 and N = 3000
+
+
+# BUILD AND SWAP, SCALING WITH K: k: 2, 3, 4 and N = 3000
+k = [2, 3, 4]
+
+naive_BS_calls_FP1 = np.array([27058388, 45136507, 63244050])
+ucb_BS_calls_FP1 = np.array([6889761, 15565246, 32008308])
+
+naive_Bonly_calls_FP1 = np.array([18017194, 27032741, 36051842]) # This is the same as without FP1 since FP1 isn't used in build
+ucb_Bonly_calls_FP1 = np.array([4345814, 7012741, 12470922]) # This is the same as without FP1 since FP1 isn't used in build
+
+# Subtract p=True, N = 3000, Build only, k = 2, 3, 4
+
+naive_swaps_FP1 = np.array([1, 2, 3])
+
+# linear_naive = 9e6*np.array(k)
+# linear_ucb = 1.9e7*(np.array(k) - 5)
+plt.plot(k, (naive_BS_calls_FP1 - naive_Bonly_calls_FP1)/naive_swaps_FP1, 'bo')
+plt.plot(k, (ucb_BS_calls_FP1 - ucb_Bonly_calls_FP1)/naive_swaps_FP1, 'ro')
+# plt.plot(k, (ucb_BS_calls_FP1 - ucb_Bonly_calls_FP1), 'go')
+# plt.plot(k, linear_naive)
+# plt.plot(k, linear_ucb)
+plt.show()

@@ -7,6 +7,7 @@ import naive_pam_v1
 import ucb_pam
 
 def remap_args(args, exp):
+    # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
     args.build_ao_swap = exp[1]
     args.verbose = exp[2]
     args.num_medoids = exp[3]
@@ -18,7 +19,7 @@ def remap_args(args, exp):
 
 def get_filename(exp, args):
     return exp[0] + \
-        '-' + args.fast_pam1 + \
+        '-' + str(args.fast_pam1) + \
         '-' + args.build_ao_swap + \
         '-v-' + str(args.verbose) + \
         '-k-' + str(args.num_medoids) + \
