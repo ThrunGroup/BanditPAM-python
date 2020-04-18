@@ -1,0 +1,249 @@
+(p36-default)➜  FastPam git:(master) ✗ p run_profiles.py -f
+Running exp: profiles/ucb-B-v-0-k-10-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Computed exactly for: 99.0
+Computed exactly for: 53.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Computed exactly for: 85.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Built medoids [16, 32, 70, 87, 24, 90, 49, 99, 82, 94]
+Running exp: profiles/naive_v1-B-v-0-k-10-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32, 70, 87, 24, 90, 49, 99, 82, 94]
+Running exp: profiles/ucb-B-v-0-k-10-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Computed exactly for: 143.0
+Computed exactly for: 191.0
+Computed exactly for: 62.0
+Computed exactly for: 224.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Built medoids [285, 41, 23, 4, 99, 31, 193, 273, 124, 129]
+Running exp: profiles/naive_v1-B-v-0-k-10-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41, 23, 4, 99, 31, 193, 273, 124, 129]
+Running exp: profiles/ucb-B-v-0-k-10-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Computed exactly for: 978.0
+Computed exactly for: 927.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972]
+Running exp: profiles/naive_v1-B-v-0-k-10-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972]
+Running exp: profiles/ucb-B-v-0-k-10-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Computed exactly for: 296.0
+Computed exactly for: 242.0
+Computed exactly for: 1239.0
+Computed exactly for: 2725.0
+Computed exactly for: 2192.0
+Computed exactly for: 2187.0
+Computed exactly for: 3000.0
+Built medoids [891, 2763, 2658, 1567, 2325, 1172, 2932, 251, 2268, 1056]
+Running exp: profiles/naive_v1-B-v-0-k-10-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763, 2658, 1567, 2325, 1172, 2932, 251, 2268, 1056]
+Running exp: profiles/ucb-B-v-0-k-10-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Computed exactly for: 311.0
+Computed exactly for: 326.0
+Computed exactly for: 378.0
+Computed exactly for: 1182.0
+Computed exactly for: 1311.0
+Computed exactly for: 1148.0
+Computed exactly for: 1501.0
+Computed exactly for: 3206.0
+Built medoids [3276, 5207, 5553, 9781, 1567, 1172, 6175, 5406, 3662, 2268]
+Running exp: profiles/ucb-B-v-0-k-10-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Computed exactly for: 80.0
+Computed exactly for: 196.0
+Computed exactly for: 123.0
+Computed exactly for: 550.0
+Computed exactly for: 182.0
+Computed exactly for: 260.0
+Computed exactly for: 1241.0
+Computed exactly for: 1962.0
+Built medoids [14369, 11847, 22723, 6175, 13400, 17220, 21807, 13430, 3952, 7614]
+Running exp: profiles/ucb-B-v-0-k-1-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Built medoids [891]
+Running exp: profiles/naive_v1-B-v-0-k-1-N-1000-s-42-d-MNIST-w-
+Built medoids [891]
+Running exp: profiles/ucb-B-v-0-k-5-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Computed exactly for: 978.0
+Built medoids [891, 392, 354, 714, 23]
+Running exp: profiles/naive_v1-B-v-0-k-5-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714, 23]
+Running exp: profiles/ucb-B-v-0-k-15-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Computed exactly for: 978.0
+Computed exactly for: 927.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972, 87, 118, 516, 168, 529]
+Running exp: profiles/naive_v1-B-v-0-k-15-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972, 87, 118, 516, 168, 529]
+Running exp: profiles/ucb-B-v-0-k-20-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Computed exactly for: 978.0
+Computed exactly for: 927.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972, 87, 118, 516, 168, 529, 875, 912, 951, 256, 324]
+Running exp: profiles/naive_v1-B-v-0-k-20-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972, 87, 118, 516, 168, 529, 875, 912, 951, 256, 324]
+Running exp: profiles/ucb-BS-v-0-k-10-N-100-s-42-d-MNIST-w-
+Computed exactly for: 26.0
+Computed exactly for: 58.0
+Computed exactly for: 99.0
+Computed exactly for: 53.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Computed exactly for: 85.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Computed exactly for: 100.0
+Built medoids [16, 32, 70, 87, 24, 90, 49, 99, 82, 94]
+Final medoids [16, 70, 87, 24, 90, 49, 99, 82, 94, 77]
+Running exp: profiles/naive_v1-BS-v-0-k-10-N-100-s-42-d-MNIST-w-
+Built medoids [16, 32, 70, 87, 24, 90, 49, 99, 82, 94]
+Final medoids [16, 70, 90, 49, 99, 82, 94, 25, 63, 31]
+Running exp: profiles/ucb-BS-v-0-k-10-N-300-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 99.0
+Computed exactly for: 143.0
+Computed exactly for: 191.0
+Computed exactly for: 62.0
+Computed exactly for: 224.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Computed exactly for: 300.0
+Built medoids [285, 41, 23, 4, 99, 31, 193, 273, 124, 129]
+Final medoids [41, 23, 99, 31, 193, 273, 124, 129, 116, 297]
+Running exp: profiles/naive_v1-BS-v-0-k-10-N-300-s-42-d-MNIST-w-
+Built medoids [285, 41, 23, 4, 99, 31, 193, 273, 124, 129]
+Final medoids [41, 23, 99, 31, 193, 273, 124, 129, 116, 297]
+Running exp: profiles/ucb-BS-v-0-k-10-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Computed exactly for: 277.0
+Computed exactly for: 325.0
+Computed exactly for: 960.0
+Computed exactly for: 978.0
+Computed exactly for: 927.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972]
+Final medoids [714, 527, 251, 168, 959, 324, 694, 800, 306, 737]
+Running exp: profiles/naive_v1-BS-v-0-k-10-N-1000-s-42-d-MNIST-w-
+Built medoids [891, 392, 354, 714, 23, 805, 527, 777, 251, 972]
+Final medoids [714, 527, 251, 168, 959, 324, 694, 800, 306, 737]
+Running exp: profiles/ucb-BS-v-0-k-10-N-3000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 198.0
+Computed exactly for: 169.0
+Computed exactly for: 296.0
+Computed exactly for: 242.0
+Computed exactly for: 1239.0
+Computed exactly for: 2725.0
+Computed exactly for: 2192.0
+Computed exactly for: 2187.0
+Computed exactly for: 3000.0
+Built medoids [891, 2763, 2658, 1567, 2325, 1172, 2932, 251, 2268, 1056]
+Final medoids [2325, 1172, 2932, 251, 1056, 527, 777, 2895, 972, 2813]
+Running exp: profiles/naive_v1-BS-v-0-k-10-N-3000-s-42-d-MNIST-w-
+Built medoids [891, 2763, 2658, 1567, 2325, 1172, 2932, 251, 2268, 1056]
+Final medoids [2325, 1172, 2932, 251, 1056, 527, 777, 2895, 972, 2813]
+Running exp: profiles/ucb-BS-v-0-k-10-N-10000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 152.0
+Computed exactly for: 311.0
+Computed exactly for: 326.0
+Computed exactly for: 378.0
+Computed exactly for: 1182.0
+Computed exactly for: 1311.0
+Computed exactly for: 1148.0
+Computed exactly for: 1501.0
+Computed exactly for: 3206.0
+Built medoids [3276, 5207, 5553, 9781, 1567, 1172, 6175, 5406, 3662, 2268]
+Final medoids [3276, 9781, 1172, 6175, 3662, 2268, 7310, 324, 6227, 3417]
+Running exp: profiles/ucb-BS-v-0-k-10-N-30000-s-42-d-MNIST-w-
+Computed exactly for: 2.0
+Computed exactly for: 44.0
+Computed exactly for: 80.0
+Computed exactly for: 196.0
+Computed exactly for: 123.0
+Computed exactly for: 550.0
+Computed exactly for: 182.0
+Computed exactly for: 260.0
+Computed exactly for: 1241.0
+Computed exactly for: 1962.0
+Built medoids [14369, 11847, 22723, 6175, 13400, 17220, 21807, 13430, 3952, 7614]
+Final medoids [11847, 13400, 17220, 13430, 3952, 7614, 25028, 3662, 14332, 27921]
+Running exp: profiles/ucb-BS-v-0-k-1-N-1000-s-42-d-MNIST-w-
+Computed exactly for: 11.0
+Built medoids [891]
+Traceback (most recent call last):
+  File "run_profiles.py", line 66, in <module>
+
+  File "run_profiles.py", line 55, in main
+    fout.write("\nSwap Iterations:" + str(swap_iters))
+  File "/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/cProfile.py", line 109, in runcall
+    return func(*args, **kw)
+  File "/Users/motiwari/Desktop/FastPAM/ucb_pam.py", line 247, in UCB_build_and_swap
+    swap_iters = 0
+  File "/Users/motiwari/Desktop/FastPAM/ucb_pam.py", line 208, in UCB_swap
+    if len(candidates) == 0: break # The last candidates were computed exactly
+  File "/Users/motiwari/Desktop/FastPAM/ucb_pam.py", line 140, in swap_sample_for_targets
+    if FastPAM1:
+  File "/Users/motiwari/Desktop/FastPAM/data_utils.py", line 109, in cost_fn_difference
+    # NOTE: How about using the "gain" in the loss instead?
+  File "/Users/motiwari/Desktop/FastPAM/data_utils.py", line 166, in get_best_distances
+    (b) Cache d(x_new, x_ref) for every pair x_new and x_ref, since this doesn't change with old
+AssertionError: Need at least 2 medoids to avoid infs when asking for return_second_best
