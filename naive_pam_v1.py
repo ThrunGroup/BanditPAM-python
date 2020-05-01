@@ -97,6 +97,7 @@ def naive_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+    
     if 'B' in args.build_ao_swap:
         built_medoids = naive_build(args, imgs)
         print("Built medoids", built_medoids)
