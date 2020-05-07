@@ -57,7 +57,7 @@ def load_data(args):
 def empty_counter():
     pass
 
-def d(x1, x2):
+def d(x1, x2, metric="L2"):
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
         # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
@@ -66,10 +66,22 @@ def d(x1, x2):
             empty_counter()
 
         # NOTE: Assume first coordinate indexes tuples
-        return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
+        if metric == "L2":
+            return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
+        elif metric == "L1":
+            return np.linalg.norm(x1 - x2, ord = 1, axis = 1)
+        else:
+            raise Error("Bad metric specified")
+
     else:
         empty_counter()
-        return np.linalg.norm(x1 - x2, ord = 2)
+
+        if metric == "L2":
+            return np.linalg.norm(x1 - x2, ord = 2)
+        elif metric == "L1":
+            return np.linalg.norm(x1 - x2, ord = 1)
+        else:
+            raise Error("Bad metric specified")
 
 def cost_fn(dataset, tar_idx, ref_idx, best_distances):
     '''
