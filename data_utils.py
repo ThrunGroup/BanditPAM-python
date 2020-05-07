@@ -4,6 +4,7 @@ import numpy as np
 import mnist
 import matplotlib.pyplot as plt
 import argparse
+import pandas as pd
 
 DECIMAL_DIGITS = 5
 
@@ -51,6 +52,11 @@ def load_data(args):
 
         # NOTE: Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
+    elif args.dataset == "SCRNA":
+        N = 40000
+        d = 10000
+        # temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv.gz', sep=',', compression='gzip', index_col=0)
+        return None, None, None
     else:
         raise Exception("Didn't specify a valid dataset")
 
