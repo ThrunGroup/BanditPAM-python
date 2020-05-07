@@ -148,7 +148,7 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1
 def UCB_swap(args, imgs, sigma, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
-    p = 1. / (N * k * 10)
+    p = 1. / (N * k * 1000)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
@@ -235,7 +235,6 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     return medoids, iter
 
 def UCB_build_and_swap(args):
-    import ipdb; ipdb.set_trace()
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]

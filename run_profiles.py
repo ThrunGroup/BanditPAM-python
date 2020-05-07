@@ -14,7 +14,7 @@ def remap_args(args, exp):
     args.sample_size = exp[4]
     args.seed = exp[5]
     args.dataset = exp[6]
-    args.warm_start_medoids = exp[-1] # Usually 6
+    args.warm_start_medoids = exp[7]
     return args
 
 def get_filename(exp, args):
