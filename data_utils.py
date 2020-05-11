@@ -70,7 +70,7 @@ def load_data(args):
         file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
         data_ = np.load(file)
         # sigma = estimate_sigma(data_, 1000, metric="L1")
-        sigma = 15 # NOTE: Really need to optimize this...
+        sigma = 50 # NOTE: Really need to optimize this...
         return data_, None, sigma
     else:
         raise Exception("Didn't specify a valid dataset")
