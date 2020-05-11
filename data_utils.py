@@ -8,6 +8,16 @@ import pandas as pd
 
 DECIMAL_DIGITS = 5
 
+
+'''
+There are 5 functions that call d and therefore require the metric specification:
+- cost_fn
+- cost_fn_difference
+- cost_fn_difference_FP1
+- get_best_distances
+- estimate_sigma
+'''
+
 def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -16,6 +26,7 @@ def get_args(arguments):
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
+    parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str, required = True)
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
     parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
@@ -53,17 +64,21 @@ def load_data(args):
         # NOTE: Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
     elif args.dataset == "SCRNA":
-        N = 40000
-        d = 10000
-        # temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv.gz', sep=',', compression='gzip', index_col=0)
-        return None, None, None
+        #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv.gz', sep=',', compression='gzip', index_col=0)
+        #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv', sep=',', index_col=0)
+        # import ipdb; ipdb.set_trace()
+        file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
+        data_ = np.load(file)
+        # sigma = estimate_sigma(data_, 1000, metric="L1")
+        sigma = 15 # NOTE: Really need to optimize this...
+        return data_, None, sigma
     else:
         raise Exception("Didn't specify a valid dataset")
 
 def empty_counter():
     pass
 
-def d(x1, x2, metric="L2"):
+def d(x1, x2, metric = None):
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
         # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
@@ -77,7 +92,7 @@ def d(x1, x2, metric="L2"):
         elif metric == "L1":
             return np.linalg.norm(x1 - x2, ord = 1, axis = 1)
         else:
-            raise Error("Bad metric specified")
+            raise Exception("Bad metric specified")
 
     else:
         empty_counter()
@@ -87,9 +102,9 @@ def d(x1, x2, metric="L2"):
         elif metric == "L1":
             return np.linalg.norm(x1 - x2, ord = 1)
         else:
-            raise Error("Bad metric specified")
+            raise Exception("Bad metric specified")
 
-def cost_fn(dataset, tar_idx, ref_idx, best_distances):
+def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None):
     '''
     Returns the "cost" of point tar as a medoid:
     Distances from tar to ref if it's less than the existing best distance,
@@ -98,10 +113,10 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances):
     Use this only in the BUILD step
     '''
     # import ipdb; ipdb.set_trace()
-    return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx]), best_distances[ref_idx])
+    return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx])
 
 # def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
-def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
+def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
     '''
     Returns the "cost" of point tar as a medoid:
     Distances from tar to ref if it's less than the existing best distance,
@@ -126,7 +141,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
     # NOTE: Very expensive for distance calls!
     # NOTE: How about using the "gain" in the loss instead?
     num_targets = len(swaps)
-    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True)
+    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric)
 
     # gains = new - old .... should negative
     new_losses = np.zeros(num_targets)
@@ -162,7 +177,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
         # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
-        new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs])
+        new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs], metric)
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
         # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
@@ -174,7 +189,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids):
 
     return new_losses
 
-def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
+def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None):
     '''
     Returns the new losses if we were to perform the swaps in swaps
 
@@ -198,7 +213,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
     #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
 
     num_targets = len(swaps)
-    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True)
+    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric)
 
     new_losses = np.zeros(num_targets)
 
@@ -217,7 +232,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
     reidx_lookup = {}
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
-        ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs])
+        ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
 
 
     for s_idx, s in enumerate(swaps):
@@ -237,7 +252,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids):
     return new_losses
 
 
-def get_best_distances(medoids, dataset, subset = None, return_second_best = False):
+def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None):
     '''
     For each point, calculate the minimum distance to any medoid
 
@@ -265,13 +280,13 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     for p_idx, point in enumerate(refs):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
-            if d(dataset[m], dataset[point]) < best_distances[p_idx]:
+            if d(dataset[m], dataset[point], metric) < best_distances[p_idx]:
                 second_best_distances[p_idx] = best_distances[p_idx]
-                best_distances[p_idx] = d(dataset[m], dataset[point])
+                best_distances[p_idx] = d(dataset[m], dataset[point], metric)
                 closest_medoids[p_idx] = m
-            elif d(dataset[m], dataset[point]) < second_best_distances[p_idx]:
+            elif d(dataset[m], dataset[point], metric) < second_best_distances[p_idx]:
                 # Reach this case if the new medoid is between current 2nd and first, but not better than first
-                second_best_distances[p_idx] = d(dataset[m], dataset[point])
+                second_best_distances[p_idx] = d(dataset[m], dataset[point], metric)
 
     if return_second_best:
         return best_distances, closest_medoids, second_best_distances
@@ -283,26 +298,33 @@ def gaussian(mu, sigma, x):
     exponent = (-0.5 * ((x - mu) / sigma)**2)
     return np.exp( exponent ) / (sigma * np.sqrt(2 * np.pi))
 
-def estimate_sigma(dataset):
+def estimate_sigma(dataset, N = None, metric = None):
     '''
     Use this to estimate sigma, as in sigma-sub-Gaussian
     '''
-    N = len(dataset)
-    if N > 1000: print("Warning, this is going to be very slow for lots of images!")
+    if N is None:
+        N = len(dataset)
+
+    if N > 1000:
+        print("Warning, this is going to be very slow for lots of images!")
+
+    sample = dataset[np.random.choice(len(dataset), size = N, replace = False)]
+
     distances = np.zeros(N)
-    for tar_idx, tar in enumerate(dataset):
+    for tar_idx, tar in enumerate(sample):
         this_tar_distances = np.zeros(N)
-        for ref_idx, ref in enumerate(dataset):
-            this_tar_distances[ref_idx] = d(dataset[tar_idx], dataset[ref_idx])
+        for ref_idx, ref in enumerate(sample):
+            this_tar_distances[ref_idx] = d(sample[tar_idx], sample[ref_idx], metric = metric)
         distances[tar_idx] = np.mean(this_tar_distances)
 
     distances -= np.mean(distances) # Center distances
-    for sigma in np.arange(0.1, 1, 0.1):
-        plt.hist(distances)
-        x = np.arange(-3, 3, 0.1)
+    plt.hist(distances)
+    for sigma in np.arange(5, 50, 5):
+        x = np.arange(-200, 200, 0.1)
         y = gaussian(0, sigma, x)
-        plt.plot(x, y * N)
-        plt.show()
+        plt.plot(x, 30 * y * N, label=sigma)
+    plt.legend()
+    plt.show()
 
 def medoid_swap(medoids, best_swap, imgs, loss, args):
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
@@ -312,7 +334,7 @@ def medoid_swap(medoids, best_swap, imgs, loss, args):
     new_medoids = medoids.copy()
     new_medoids.remove(orig_medoid)
     new_medoids.append(new_medoid)
-    new_best_distances, new_closest_medoids = get_best_distances(new_medoids, imgs)
+    new_best_distances, new_closest_medoids = get_best_distances(new_medoids, imgs, metric = args.metric)
     new_loss = np.mean(new_best_distances)
     performed_or_not = ''
     if new_loss < loss:

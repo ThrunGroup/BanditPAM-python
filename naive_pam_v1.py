@@ -21,6 +21,7 @@ def naive_build(args, imgs):
             Add the medoid that will lead to lowest lost, conditioned on the
             previous medoids being fixed
     '''
+    metric = args.metric
     d_count = 0
     N = len(imgs)
 
@@ -28,7 +29,7 @@ def naive_build(args, imgs):
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
         medoids = warm_start_medoids
         num_medoids_found = len(warm_start_medoids)
-        best_distances, closest_medoids = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
     else:
         medoids = []
         num_medoids_found = 0
@@ -43,13 +44,13 @@ def naive_build(args, imgs):
         for t_reidx, t in enumerate(target_idcs):
             refs = np.arange(N)
             ref_imgs = imgs[refs] # should be == imgs, since sampling all reference points #NOTE: what if we randomly choose subsample? Impt baseline
-            losses[t_reidx] = np.mean( np.minimum(d(imgs[t].reshape(1, -1), ref_imgs), best_distances)).round(DECIMAL_DIGITS)
+            losses[t_reidx] = np.mean( np.minimum(d(imgs[t].reshape(1, -1), ref_imgs, metric = metric), best_distances)).round(DECIMAL_DIGITS)
 
         best_loss_reidx = np.where(losses == losses.min())[0][0] # NOTE: what about duplicates? Chooses first I believe
         best_medoid = target_idcs[best_loss_reidx]
 
         medoids.append(best_medoid)
-        best_distances, closest_medoids = get_best_distances(medoids, imgs)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
 
         if args.verbose >= 1:
             print("Medoid Found: ", k, best_medoid)
@@ -60,13 +61,14 @@ def naive_build(args, imgs):
 
 
 def naive_swap(args, imgs, init_medoids):
+    metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k) -- don't consider swapping medoid w medoid
 
     medoids = init_medoids.copy()
-    best_distances, closest_medoids, second_best_distances = get_best_distances(medoids, imgs, return_second_best = True)
+    best_distances, closest_medoids, second_best_distances = get_best_distances(medoids, imgs, return_second_best = True, metric = metric)
     loss = np.mean(best_distances)
     iter = 0
     swap_performed = True
@@ -77,9 +79,9 @@ def naive_swap(args, imgs, init_medoids):
         swap_candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
 
         if args.fast_pam1:
-            new_losses = cost_fn_difference_FP1(imgs, swap_candidates, range(N), medoids).reshape(k, N)
+            new_losses = cost_fn_difference_FP1(imgs, swap_candidates, range(N), medoids, metric = metric).reshape(k, N)
         else:
-            new_losses = cost_fn_difference(imgs, swap_candidates, range(N), medoids).reshape(k, N)
+            new_losses = cost_fn_difference(imgs, swap_candidates, range(N), medoids, metric = metric).reshape(k, N)
 
         new_losses.round(DECIMAL_DIGITS)
 
