@@ -8,6 +8,7 @@ import ucb_pam
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
+    # NOTE: To use FP1 optimization, call p run_profiles -e exp_config.py -p 
     args.build_ao_swap = exp[1]
     args.verbose = exp[2]
     args.num_medoids = exp[3]

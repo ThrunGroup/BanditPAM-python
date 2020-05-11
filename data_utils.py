@@ -26,7 +26,7 @@ def get_args(arguments):
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
-    parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str, required = True)
+    parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str)
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
     parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
@@ -70,7 +70,7 @@ def load_data(args):
         file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
         data_ = np.load(file)
         # sigma = estimate_sigma(data_, 1000, metric="L1")
-        sigma = 50 # NOTE: Really need to optimize this...
+        sigma = 30 # NOTE: Really need to optimize this...
         return data_, None, sigma
     else:
         raise Exception("Didn't specify a valid dataset")

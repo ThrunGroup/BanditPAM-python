@@ -18,7 +18,7 @@ def UCB_build(args, imgs, sigma):
     ### Parameters
     metric = args.metric
     N = len(imgs)
-    p = 1. / (N * 10)
+    p = 1. / (N * 100)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 
@@ -54,8 +54,8 @@ def UCB_build(args, imgs, sigma):
         exact_mask = np.zeros(N)
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 20
-        base = 1 # Right now, use constant batch size
+        original_batch_size = 100
+        base = 1.3 # Right now, use constant batch size
 
         while(len(candidates) > 0):
 
@@ -63,7 +63,7 @@ def UCB_build(args, imgs, sigma):
                 print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
 
             # NOTE: tricky computations below
-            this_batch_size = original_batch_size * (base**step_count)
+            this_batch_size = int(original_batch_size * (base**step_count))
 
             compute_exactly = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))[0]
             if len(compute_exactly) > 0:
@@ -179,8 +179,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         exact_mask = np.zeros((k, N))
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 20
-        base = 1 # Right now, use constant batch size
+        original_batch_size = 100
+        base = 1.3 # Right now, use constant batch size
 
         step_count = 0
         while(len(candidates) > 0):
@@ -188,7 +188,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
 
             # NOTE: tricky computations below
-            this_batch_size = original_batch_size * (base**step_count)
+            this_batch_size = int(original_batch_size * (base**step_count))
 
             comp_exactly_condition = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))
             compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
