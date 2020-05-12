@@ -1,0 +1,44 @@
+(p36-default)➜  FastPam git:(master) ✗ p run_profiles.py -e rna_exps.py -f -p
+Running exp: profiles/ucb-True-B-v-0-k-3-N-300-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 3.0
+Computed exactly for: 192.0
+Computed exactly for: 300.0
+Built medoids [27, 255, 277]
+Running exp: profiles/ucb-True-B-v-0-k-3-N-1000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 5.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [944, 27, 277]
+Running exp: profiles/ucb-True-B-v-0-k-3-N-3000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 1.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Built medoids [1633, 1121, 1949]
+Running exp: profiles/ucb-True-B-v-0-k-3-N-10000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 1.0
+Computed exactly for: 116.0
+Computed exactly for: 10000.0
+Built medoids [1633, 6624, 1427]
+Running exp: profiles/naive_v1-True-B-v-0-k-3-N-300-s-42-d-SCRNA-m-L1-w-
+Built medoids [27, 255, 277]
+Running exp: profiles/naive_v1-True-B-v-0-k-3-N-1000-s-42-d-SCRNA-m-L1-w-
+Built medoids [944, 27, 277]
+Running exp: profiles/naive_v1-True-B-v-0-k-3-N-3000-s-42-d-SCRNA-m-L1-w-
+Built medoids [1633, 1121, 1949]
+Running exp: profiles/ucb-True-BS-v-0-k-3-N-1000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 5.0
+Computed exactly for: 1000.0
+Computed exactly for: 1000.0
+Built medoids [944, 27, 277]
+Computed exactly for: 3000.0
+Final medoids [944, 27, 277]
+Running exp: profiles/ucb-True-BS-v-0-k-3-N-3000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 1.0
+Computed exactly for: 3000.0
+Computed exactly for: 3000.0
+Built medoids [1633, 1121, 1949]
+Computed exactly for: 6001.0
+Final medoids [1633, 1121, 1949]
+Running exp: profiles/ucb-True-BS-v-0-k-3-N-10000-s-42-d-SCRNA-m-L1-w-
+Computed exactly for: 1.0
+Computed exactly for: 116.0
