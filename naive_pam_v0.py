@@ -7,6 +7,7 @@ In particular, it does NOT contain the following optimizations:
 2. Array broadcasting instead of looping over losses
 3. FastPAM1
 4. FastPAM2
+5. LAB
 '''
 
 

@@ -3,10 +3,11 @@ This is an "optimized" version of PAM, and should be used to certify
 correctness (in a relatively slow way).
 
 In particular, it contains the following optimizations over naive_pam:
-1. n --> (n-k) [BUILD, WIP]
-2. Array broadcasting instead of looping over losses [BUILD, WIP]
-3. FastPAM1 [WIP]
+1. n --> (n-k) [BUILD done, SWAP not gonna do]
+2. Array broadcasting instead of looping over losses [BUILD done, SWAP done]
+3. FastPAM1 [SWAP done]
 4. FastPAM2 [WIP]
+5. LAB [WIP]
 '''
 
 
