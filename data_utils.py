@@ -66,12 +66,20 @@ def load_data(args):
     elif args.dataset == "SCRNA":
         #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv.gz', sep=',', compression='gzip', index_col=0)
         #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv', sep=',', index_col=0)
-        # import ipdb; ipdb.set_trace()
         file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
         data_ = np.load(file)
-        # sigma = estimate_sigma(data_, 1000, metric="L1")
-        sigma = 30 # NOTE: Really need to optimize this...
+
+        # sigma = estimate_sigma(data_, 300, metric="L2")
+        sigma = 25 # NOTE: Really need to optimize this...
         return data_, None, sigma
+    elif args.dataset == "SCRNAPCA":
+        file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/analysis_csv/pca/projection.csv'
+        df = pd.read_csv(file, sep=',', index_col = 0)
+        np_arr = df.to_numpy()
+        # import ipdb; ipdb.set_trace()
+        # sigma = estimate_sigma(np_arr, 300, metric = "L2")
+        sigma = 0.01
+        return np_arr, None, sigma
     else:
         raise Exception("Didn't specify a valid dataset")
 
@@ -319,12 +327,22 @@ def estimate_sigma(dataset, N = None, metric = None):
 
     distances -= np.mean(distances) # Center distances
     plt.hist(distances)
-    for sigma in np.arange(5, 50, 5):
-        x = np.arange(-200, 200, 0.1)
-        y = gaussian(0, sigma, x)
-        plt.plot(x, 30 * y * N, label=sigma)
-    plt.legend()
-    plt.show()
+    if metric == "L1":
+        for sigma in np.arange(5, 50, 5):
+            x = np.arange(-200, 200, 0.1)
+            y = gaussian(0, sigma, x)
+            plt.plot(x, y * N, label=sigma)
+        plt.legend()
+        plt.show()
+    elif metric == "L2":
+        for sigma in np.arange(0.001, .01, 0.001):
+            x = np.arange(-.1, 0.1, 0.001)
+            y = gaussian(0, sigma, x)
+            plt.plot(x, y , label=sigma)
+        plt.legend()
+        plt.show()
+    else:
+        raise Exception("bad metric in estimate_sigma")
 
 def medoid_swap(medoids, best_swap, imgs, loss, args):
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
