@@ -6,7 +6,7 @@ In particular, it contains the following optimizations over naive_pam:
 1. n --> (n-k) [BUILD done, SWAP not gonna do]
 2. Array broadcasting instead of looping over losses [BUILD done, SWAP done]
 3. FastPAM1 [SWAP done]
-4. FastPAM2 [WIP]
+4. FastPAM2 [SWAP WIP]
 5. LAB [WIP]
 '''
 

@@ -105,7 +105,7 @@ def naive_swap(args, imgs, init_medoids):
 
         # Choose the minimum amongst all losses and perform the swap
         # NOTE: possible to get first elem of zip object without converting to list?
-        new_losses.round(DECIMAL_DIGITS)
+        new_losses = new_losses.round(DECIMAL_DIGITS)
         best_swaps = zip( np.where(new_losses == new_losses.min())[0], np.where(new_losses == new_losses.min())[1])
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
