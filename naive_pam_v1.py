@@ -22,6 +22,7 @@ def naive_build(args, imgs):
             Add the medoid that will lead to lowest lost, conditioned on the
             previous medoids being fixed
     '''
+    B_logstring = init_logstring()
     metric = args.metric
     d_count = 0
     N = len(imgs)
@@ -57,11 +58,14 @@ def naive_build(args, imgs):
             print("Medoid Found: ", k, best_medoid)
             print(medoids)
 
-    return medoids
+        B_logstring = update_logstring(B_logstring, k, best_distances, N, None, None)
+
+    return medoids, B_logstring
 
 
 
 def naive_swap(args, imgs, init_medoids):
+    S_logstring = init_logstring()
     metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
@@ -91,30 +95,39 @@ def naive_swap(args, imgs, init_medoids):
         best_swap = best_swaps[0]
 
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, N * k, None, None)
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
-    return medoids, iter
+    return medoids, S_logstring
 
 def naive_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-    # import ipdb; ipdb.set_trace()
+
+    built_medoids = []
+    B_logstring = {}
     if 'B' in args.build_ao_swap:
-        built_medoids = naive_build(args, imgs)
+        built_medoids, B_logstring = naive_build(args, imgs)
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
-    swap_iters = 0
+    S_logstring = {}
     if 'S' in args.build_ao_swap:
-        if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
+        if built_medoids == [] and len(args.warm_start_medoids) < args.num_medoids:
             raise Exception("Invalid call to Swap step")
 
-        swapped_medoids, swap_iters = naive_swap(args, imgs, built_medoids.copy())
+        if built_medoids == []:
+            init_medoids = list(map(int, args.warm_start_medoids.split(',')))
+            print("Swap init medoids:", init_medoids)
+        else:
+            init_medoids = built_medoids.copy()
+
+        swapped_medoids, S_logstring = naive_swap(args, imgs, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids, swap_iters
+    return built_medoids, swapped_medoids, B_logstring, S_logstring
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

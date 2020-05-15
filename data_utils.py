@@ -84,6 +84,22 @@ def load_data(args):
     else:
         raise Exception("Didn't specify a valid dataset")
 
+def init_logstring():
+    logstring = {
+        'loss' : {},
+        'compute_exactly' : {},
+        'p' : {},
+        'sigma' : {},
+    }
+    return logstring
+
+def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
+    logstring['loss'][k] = np.mean(best_distances)
+    logstring['compute_exactly'][k] = compute_exactly
+    logstring['p'][k] = p
+    logstring['sigma'][k] = sigma
+    return logstring
+
 def empty_counter():
     pass
 

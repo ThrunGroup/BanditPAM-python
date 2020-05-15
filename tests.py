@@ -18,9 +18,9 @@ def test_exps():
         args.fast_pam1 = True
 
         if exp[0] == 'naive_v1':
-            built_medoids, swapped_medoids, swap_iters = naive_pam_v1.naive_build_and_swap(args)
+            built_medoids, swapped_medoids, _1, _2 = naive_pam_v1.naive_build_and_swap(args)
         elif exp[0] == 'ucb':
-            built_medoids, swapped_medoids, swap_iters = ucb_pam.UCB_build_and_swap(args)
+            built_medoids, swapped_medoids, _1, _2 = ucb_pam.UCB_build_and_swap(args)
         else:
             raise Exception('Invalid algorithm specified')
 

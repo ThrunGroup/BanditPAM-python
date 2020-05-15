@@ -1,4 +1,10 @@
 '''
+THIS CODE IS UNIFINISHED. FP2 IS NOT WORKING.
+NEED TO MERGE THIS with  NAIVE_PAM_v1 (many changes made to Naive_PAM_v1)
+'''
+
+
+'''
 This is an "optimized" version of PAM, and should be used to certify
 correctness (in a relatively slow way).
 

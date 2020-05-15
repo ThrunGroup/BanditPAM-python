@@ -31,11 +31,19 @@ def get_filename(exp, args):
         '-m-' + args.metric + \
         '-w-' + args.warm_start_medoids
 
-def write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters):
+def parse_logstring(logstring):
+    output = "\n"
+    for k in logstring:
+        output += "\t" + str(k) + ":\n"
+        for round in logstring[k]:
+            output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
+    return output
+def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring):
     with open(medoids_fname, 'w+') as fout:
         fout.write("Built:" + ','.join(map(str, built_medoids)))
         fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
-        fout.write("\nSwap Iterations:" + str(swap_iters))
+        fout.write("\nBuild Logstring:" + parse_logstring(B_logstring))
+        fout.write("\nSwap Logstring:" + parse_logstring(S_logstring))
 
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
@@ -43,27 +51,54 @@ def main(sys_args):
     imported_config = importlib.import_module(args.exp_config.strip('.py'))
     for exp in imported_config.experiments:
         args = remap_args(args, exp)
-        prof_fname = os.path.join('profiles', get_filename(exp, args))
+        B_prof_fname = os.path.join('profiles', 'B-' + get_filename(exp, args))
+        S_prof_fname = os.path.join('profiles', 'S-' + get_filename(exp, args))
         medoids_fname = os.path.join('profiles', 'medoids.' + get_filename(exp, args))
 
-        if os.path.exists(prof_fname) and not args.force:
-            print("Already have data for experiment", prof_fname)
+        if (os.path.exists(B_prof_fname) or os.path.exists(S_prof_fname)) and not args.force:
+            print("Warning: already have data for experiment", B_prof_fname)
+            print("Warning: already have data for experiment", S_prof_fname)
             continue
         else:
-            print("Running exp:", prof_fname)
+            print("Running exp:", B_prof_fname, S_prof_fname)
 
+        # NOTE: This approach to profiling is undocumented
+        # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
+        tmp = args.build_ao_swap # Store as tmp variable because we modify below
         if exp[0] == 'naive_v1':
-            prof = cProfile.Profile()
-            # NOTE: This approach is undocumented
-            # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
-            built_medoids, swapped_medoids, swap_iters = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
-            prof.dump_stats(prof_fname)
-            write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters)
+            computed_B = False
+            if 'B' in tmp:
+                args.build_ao_swap = 'B'
+                prof = cProfile.Profile()
+                built_medoids, _1, B_logstring, _2 = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
+                prof.dump_stats(B_prof_fname)
+                computed_B = True
+            if 'S' in tmp:
+                args.build_ao_swap = 'S'
+                assert computed_B, "ERROR: Using warm start medoids from a previous experiment"
+                print(list(built_medoids))
+                args.warm_start_medoids = ','.join(map(str,list(built_medoids)))
+                prof = cProfile.Profile()
+                _1, swapped_medoids, _2, S_logstring = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
+                prof.dump_stats(S_prof_fname)
+            write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring)
         elif exp[0] == 'ucb':
-            prof = cProfile.Profile()
-            built_medoids, swapped_medoids, swap_iters = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
-            prof.dump_stats(prof_fname)
-            write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters)
+            computed_B = False
+            if 'B' in tmp:
+                args.build_ao_swap = 'B'
+                prof = cProfile.Profile()
+                built_medoids, _1, B_logstring, _2 = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+                prof.dump_stats(B_prof_fname)
+                computed_B = True
+            if 'S' in tmp:
+                args.build_ao_swap = 'S'
+                assert computed_B, "ERROR: Using warm start medoids from a previous experiment"
+                print(list(built_medoids))
+                args.warm_start_medoids = ','.join(map(str,list(built_medoids)))
+                prof = cProfile.Profile()
+                _1, swapped_medoids, _2, S_logstring = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+                prof.dump_stats(S_prof_fname)
+            write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring)
         else:
             raise Exception('Invalid algorithm specified')
 

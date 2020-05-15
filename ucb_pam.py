@@ -1,8 +1,6 @@
 from data_utils import *
 import itertools
 
-
-
 def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None):
     # NOTE: Fix this with array broadcasting
     N = len(imgs)
@@ -15,6 +13,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
     return estimates.round(DECIMAL_DIGITS)
 
 def UCB_build(args, imgs, sigma):
+    B_logstring = init_logstring()
     ### Parameters
     metric = args.metric
     N = len(imgs)
@@ -97,18 +96,15 @@ def UCB_build(args, imgs, sigma):
         new_medoid = new_medoid[0]
 
         if args.verbose >= 1:
-            # BUG: What about duplicates?
-            print(np.where( lcbs == lcbs.min() ))
             print("New Medoid:", new_medoid)
 
         medoids.append(new_medoid)
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
         print("Computed exactly for:", exact_mask.sum())
 
-    if args.verbose >=1:
-        print(medoids)
+        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma)
 
-    return medoids
+    return medoids, B_logstring
 
 
 
@@ -147,14 +143,16 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1
 
 
 def UCB_swap(args, imgs, sigma, init_medoids):
+    S_logstring = init_logstring()
     metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
-    p = 1. / (N * k * 1000)
+    p = 1. / (N * k * 10)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
 
     medoids = init_medoids.copy()
+    # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
     best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
     loss = np.mean(best_distances)
     iter = 0
@@ -231,29 +229,40 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
+
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma)
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
-    return medoids, iter
+    return medoids, S_logstring
 
 def UCB_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+
+    built_medoids = []
+    B_logstring = {}
     if 'B' in args.build_ao_swap:
-        built_medoids = UCB_build(args, imgs, sigma)
+        built_medoids, B_logstring = UCB_build(args, imgs, sigma)
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
-    swap_iters = 0
+    S_logstring = {}
     if 'S' in args.build_ao_swap:
-        if built_medoids is None and len(args.warm_start_medoids) < args.num_medoids:
+        if built_medoids == [] and len(args.warm_start_medoids) < args.num_medoids:
             raise Exception("Invalid call to Swap step")
 
-        swapped_medoids, swap_iters = UCB_swap(args, imgs, sigma, built_medoids.copy())
+        if built_medoids == []:
+            init_medoids = list(map(int, args.warm_start_medoids.split(',')))
+            print("Swap init medoids:", init_medoids)
+        else:
+            init_medoids = built_medoids.copy()
+
+        swapped_medoids, S_logstring = UCB_swap(args, imgs, sigma, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids, swap_iters
+    return built_medoids, swapped_medoids, B_logstring, S_logstring
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
