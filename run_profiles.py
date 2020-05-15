@@ -38,6 +38,7 @@ def parse_logstring(logstring):
         for round in logstring[k]:
             output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
     return output
+
 def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring):
     with open(medoids_fname, 'w+') as fout:
         fout.write("Built:" + ','.join(map(str, built_medoids)))
@@ -93,8 +94,7 @@ def main(sys_args):
             if 'S' in tmp:
                 args.build_ao_swap = 'S'
                 assert computed_B, "ERROR: Using warm start medoids from a previous experiment"
-                print(list(built_medoids))
-                args.warm_start_medoids = ','.join(map(str,list(built_medoids)))
+                args.warm_start_medoids = ','.join(map(str, list(built_medoids)))
                 prof = cProfile.Profile()
                 _1, swapped_medoids, _2, S_logstring = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
                 prof.dump_stats(S_prof_fname)
