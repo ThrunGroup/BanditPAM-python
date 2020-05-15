@@ -51,9 +51,9 @@ def main(sys_args):
     imported_config = importlib.import_module(args.exp_config.strip('.py'))
     for exp in imported_config.experiments:
         args = remap_args(args, exp)
-        B_prof_fname = os.path.join('profiles', 'B-' + get_filename(exp, args))
-        S_prof_fname = os.path.join('profiles', 'S-' + get_filename(exp, args))
-        medoids_fname = os.path.join('profiles', 'medoids.' + get_filename(exp, args))
+        B_prof_fname = os.path.join('profiles', 'p-B-' + get_filename(exp, args))
+        S_prof_fname = os.path.join('profiles', 'p-S-' + get_filename(exp, args))
+        medoids_fname = os.path.join('profiles', 'L-' + get_filename(exp, args))
 
         if (os.path.exists(B_prof_fname) or os.path.exists(S_prof_fname)) and not args.force:
             print("Warning: already have data for experiment", B_prof_fname)

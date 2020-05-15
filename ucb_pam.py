@@ -147,10 +147,10 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
-    p = 1. / (N * k * 10)
+    p = 1. / (N * k * 1000)
     max_iter = 1e4
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
-
+    
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
     best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
