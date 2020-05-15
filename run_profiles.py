@@ -8,7 +8,7 @@ import ucb_pam
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
-    # NOTE: To use FP1 optimization, call p run_profiles -e exp_config.py -p 
+    # NOTE: To use FP1 optimization, call p run_profiles -e exp_config.py -p
     args.build_ao_swap = exp[1]
     args.verbose = exp[2]
     args.num_medoids = exp[3]
@@ -31,6 +31,12 @@ def get_filename(exp, args):
         '-m-' + args.metric + \
         '-w-' + args.warm_start_medoids
 
+def write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters):
+    with open(medoids_fname, 'w+') as fout:
+        fout.write("Built:" + ','.join(map(str, built_medoids)))
+        fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
+        fout.write("\nSwap Iterations:" + str(swap_iters))
+
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
 
@@ -52,18 +58,12 @@ def main(sys_args):
             # See https://stackoverflow.com/questions/1584425/return-value-while-using-cprofile
             built_medoids, swapped_medoids, swap_iters = prof.runcall(naive_pam_v1.naive_build_and_swap, args)
             prof.dump_stats(prof_fname)
-            with open(medoids_fname, 'w+') as fout:
-                fout.write("Built:" + ','.join(map(str, built_medoids)))
-                fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
-                fout.write("\nSwap Iterations:" + str(swap_iters))
+            write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters)
         elif exp[0] == 'ucb':
             prof = cProfile.Profile()
             built_medoids, swapped_medoids, swap_iters = prof.runcall(ucb_pam.UCB_build_and_swap, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
             prof.dump_stats(prof_fname)
-            with open(medoids_fname, 'w+') as fout:
-                fout.write("Built:" + ','.join(map(str, built_medoids)))
-                fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
-                fout.write("\nSwap Iterations:" + str(swap_iters))
+            write_medoids(medoids_fname, built_medoids, swapped_medoids, swap_iters)
         else:
             raise Exception('Invalid algorithm specified')
 
