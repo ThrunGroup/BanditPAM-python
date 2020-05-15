@@ -29,6 +29,7 @@ def get_args(arguments):
     parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str)
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
+    parser.add_argument('-r', '--fast_pam2', help = 'Use FastPAM2 optimization', action = 'store_true')
     parser.add_argument('-w', '--warm_start_medoids', help = 'Initial medoids to start with', type = str, default = '')
     parser.add_argument('-B', '--build_ao_swap', help = 'Build or Swap, B = just build, S = just swap, BS = both', type = str, default = 'BS')
     parser.add_argument('-e', '--exp_config', help = 'Experiment configuration file to use', required = False)

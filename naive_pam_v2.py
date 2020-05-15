@@ -74,6 +74,7 @@ def naive_swap(args, imgs, init_medoids):
     iter = 0
     swap_performed = True
     while swap_performed and iter < max_iter: # not converged
+        print("SWAP iter:", iter)
         iter += 1
         new_losses = np.inf * np.ones((k, N))
 
@@ -86,13 +87,59 @@ def naive_swap(args, imgs, init_medoids):
 
         new_losses = new_losses.round(DECIMAL_DIGITS)
 
-        best_swaps = zip( np.where(new_losses == new_losses.min())[0], np.where(new_losses == new_losses.min())[1])
-        best_swaps = list(best_swaps) # NOTE: possible to get first elem of zip object without converting to list?
-        best_swap = best_swaps[0]
 
-        performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
-        if performed_or_not == "NO SWAP PERFORMED":
-            break
+        if args.fast_pam2:
+            '''
+            NOTE: This does not work yet!! Just performs original swaps
+            '''
+            tau = 0.0
+            best_k_swaps_row = new_losses.argmin(axis = 1) # k potential swaps to perform
+
+            # NOTE: Can simplify best_k_swaps to remove k in first column, it's redundant
+            best_k_swaps = np.array(list(zip(range(k), best_k_swaps_row)))
+            parent_losses = np.copy(new_losses[best_k_swaps.T[0], best_k_swaps.T[1]]) #NOTE: Fancy
+
+            best_swap = np.unravel_index(new_losses.argmin(), new_losses.shape)
+            performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args) # perform the best swap
+            if performed_or_not == "NO SWAP PERFORMED":
+                break
+            else:
+                child_swap_performed = True
+                # for the remaining <= k candidates, compute the new cost_fn_difference (for at most k swaps now, not k*N)
+                while child_swap_performed:
+                    if args.fast_pam1:
+                        child_losses = cost_fn_difference_FP1(imgs, best_k_swaps, range(N), medoids, metric = metric).reshape(k)
+                    else:
+                        child_losses = cost_fn_difference(imgs, best_k_swaps, range(N), medoids, metric = metric).reshape(k)
+
+                    if child_losses.min() >= 0:
+                        child_swap_performed = False
+                        break # only exit condition
+
+                    assert child_losses.min() < 0, "Something's wrong"
+                    # Take the one with the best new DTD
+                    best_swap_idx = child_losses.argmin()
+                    best_child_swap = best_k_swaps[best_swap_idx]
+                    best_child_swap_loss = child_losses[best_swap_idx]
+
+                    # if it's at least tau * new_losses of its swap, then:
+                    #   perform the swap and repeat
+                    if best_child_swap_loss < tau * child_losses[best_swap_idx]: # NOTE: < instead of <= to avoid errors with 0s
+                        performed_or_not, medoids, loss = medoid_swap(medoids, best_child_swap, imgs, loss, args) # perform the best swap
+                        if performed_or_not == "NO SWAP PERFORMED":
+                            raise Exception("This should never happen")
+                    else:
+                        # delete best_swap_idx from best_k_swaps
+                        best_k_swaps = np.delete(best_k_swaps, best_swap_idx, axis = 0)
+
+                    parent_losses = np.copy(child_losses)
+
+
+        else:
+            best_swap = np.unravel_index(new_losses.argmin(), new_losses.shape)
+            performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
+            if performed_or_not == "NO SWAP PERFORMED":
+                break
 
     return medoids, iter
 
