@@ -13,7 +13,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
         costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric)
         estimates[tar_idx] = np.mean(costs)
         if return_sigma:
-            sigmas[tar_idx] = np.std(costs)
+            sigmas[tar_idx] = np.std(costs) / 5
 
     if return_sigma:
         return estimates.round(DECIMAL_DIGITS), sigmas

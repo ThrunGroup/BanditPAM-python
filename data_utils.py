@@ -279,7 +279,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
             # the new loss, not the CHANGE in loss. So \sigma should be
             # the variance in the new induced loss, NOT the variance in the CHANGE
             # This shouldn't affect \sigma because the change = old - new and old is fixed
-            sigmas[s_idx] = np.std(np.hstack((case1_losses, case2_losses)))
+            sigmas[s_idx] = np.std(np.hstack((case1_losses, case2_losses))) / 5
 
     new_losses /= len(tmp_refs)
 
