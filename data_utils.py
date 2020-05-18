@@ -215,7 +215,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
 
     return new_losses
 
-def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False):
+def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False, use_diff = True):
     '''
     Returns the new losses if we were to perform the swaps in swaps
 
@@ -273,6 +273,11 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
         case1_losses = np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] )
         case2_losses = np.minimum( new_medoid_distances[case2], reference_best_distances[case2] )
+
+        if use_diff:
+            case1_losses -= reference_best_distances[case1]
+            case2_losses -= reference_best_distances[case2]
+
         new_losses[s_idx] = np.sum(case1_losses) + np.sum(case2_losses)
 
         if return_sigma:
@@ -288,7 +293,6 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         return new_losses, sigmas
 
     return new_losses
-
 
 def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None):
     '''
