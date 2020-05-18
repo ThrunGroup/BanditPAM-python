@@ -10,7 +10,12 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
     # NOTE: Also, should the point be able to sample itself?
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype = 'int')
     for tar_idx, target in enumerate(targets):
-        costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric)
+        if best_distances[0] == np.inf:
+            # No medoids have been assigned, can't use the difference in loss
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = False)
+        else:
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = True)
+
         estimates[tar_idx] = np.mean(costs)
         if return_sigma:
             sigmas[tar_idx] = np.std(costs) / SIGMA_DIVISOR
@@ -25,7 +30,7 @@ def UCB_build(args, imgs, sigma):
     ### Parameters
     metric = args.metric
     N = len(imgs)
-    p = 1. / (N * 10)
+    p = 1. / (N * 1000)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
 

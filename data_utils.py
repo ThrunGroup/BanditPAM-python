@@ -130,7 +130,7 @@ def d(x1, x2, metric = None):
         else:
             raise Exception("Bad metric specified")
 
-def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None):
+def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True):
     '''
     Returns the "cost" of point tar as a medoid:
     Distances from tar to ref if it's less than the existing best distance,
@@ -138,6 +138,8 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None):
 
     Use this only in the BUILD step
     '''
+    if use_diff:
+        return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
     return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx])
 
 # def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
