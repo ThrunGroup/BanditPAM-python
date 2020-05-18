@@ -21,7 +21,7 @@ def CSH_build(args, imgs, sigma):
     N = len(imgs)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    T = N * 300
+    T = N * 1000
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
@@ -132,7 +132,7 @@ def CSH_swap(args, imgs, sigma, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e1
-    T = N * k * 300
+    T = N * k * 1000
 
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
@@ -241,8 +241,6 @@ def CSH_build_and_swap(args):
         swapped_medoids, S_logstring = CSH_swap(args, imgs, sigma, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    print(B_logstring['loss'])
-    print(S_logstring['loss'])
     return built_medoids, swapped_medoids, B_logstring, S_logstring
 
 if __name__ == "__main__":

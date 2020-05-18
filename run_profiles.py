@@ -5,6 +5,7 @@ import importlib
 import naive_pam_v0
 import naive_pam_v1
 import ucb_pam
+import csh_pam
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace

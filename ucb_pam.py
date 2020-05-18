@@ -291,8 +291,6 @@ def UCB_build_and_swap(args):
         swapped_medoids, S_logstring = UCB_swap(args, imgs, sigma, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    print(B_logstring['loss'])
-    print(S_logstring['loss'])
     return built_medoids, swapped_medoids, B_logstring, S_logstring
 
 if __name__ == "__main__":
