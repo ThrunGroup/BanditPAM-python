@@ -214,7 +214,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
 
     return new_losses
 
-def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None):
+def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False):
     '''
     Returns the new losses if we were to perform the swaps in swaps
 
@@ -241,6 +241,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
     reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric)
 
     new_losses = np.zeros(num_targets)
+    sigmas = np.zeros(num_targets)
 
     # for each swap
     #   for each ref point -- cases are on REF points
@@ -269,10 +270,21 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
         # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
         new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
-        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
-        new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
+        case1_losses = np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] )
+        case2_losses = np.minimum( new_medoid_distances[case2], reference_best_distances[case2] )
+        new_losses[s_idx] = np.sum(case1_losses) + np.sum(case2_losses)
+
+        if return_sigma:
+            # NOTE: Be careful here. We're defining the arm parameter as
+            # the new loss, not the CHANGE in loss. So \sigma should be
+            # the variance in the new induced loss, NOT the variance in the CHANGE
+            # This shouldn't affect \sigma because the change = old - new and old is fixed
+            sigmas[s_idx] = np.std(np.hstack((case1_losses, case2_losses)))
 
     new_losses /= len(tmp_refs)
+
+    if return_sigma:
+        return new_losses, sigmas
 
     return new_losses
 

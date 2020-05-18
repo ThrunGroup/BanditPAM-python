@@ -1,15 +1,23 @@
 from data_utils import *
 import itertools
 
-def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None):
+def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None, return_sigma = False):
     # NOTE: Fix this with array broadcasting
     N = len(imgs)
     estimates = np.zeros(len(targets))
+    sigmas = np.zeros(len(targets))
     # NOTE: Should this sampling be done with replacement? And do I need shuffling?
     # NOTE: Also, should the point be able to sample itself?
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype = 'int')
     for tar_idx, target in enumerate(targets):
-        estimates[tar_idx] = np.mean(cost_fn(imgs, target, tmp_refs, best_distances, metric = metric))
+        costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric)
+        estimates[tar_idx] = np.mean(costs)
+        if return_sigma:
+            sigmas[tar_idx] = np.std(costs)
+
+    if return_sigma:
+        return estimates.round(DECIMAL_DIGITS), sigmas
+
     return estimates.round(DECIMAL_DIGITS)
 
 def UCB_build(args, imgs, sigma):
@@ -41,6 +49,8 @@ def UCB_build(args, imgs, sigma):
         # Two points very close together require shittons of samples to distinguish their mean distance
 
     for k in range(num_medoids_found, args.num_medoids):
+        compute_sigma = True
+
         if args.verbose >= 1:
             print("Finding medoid", k)
 
@@ -53,11 +63,10 @@ def UCB_build(args, imgs, sigma):
         exact_mask = np.zeros(N)
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 20
-        base = 1.3 # Right now, use constant batch size
+        original_batch_size = 100
+        base = 1 # Right now, use constant batch size
 
         while(len(candidates) > 0):
-
             if args.verbose >= 1:
                 print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
 
@@ -69,7 +78,7 @@ def UCB_build(args, imgs, sigma):
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
-                estimates[compute_exactly] = build_sample_for_targets(imgs, compute_exactly, N, best_distances, metric = metric)
+                estimates[compute_exactly] = build_sample_for_targets(imgs, compute_exactly, N, best_distances, metric = metric, return_sigma = False)
                 lcbs[compute_exactly] = estimates[compute_exactly]
                 ucbs[compute_exactly] = estimates[compute_exactly]
                 exact_mask[compute_exactly] = 1
@@ -79,11 +88,17 @@ def UCB_build(args, imgs, sigma):
             if len(candidates) == 0: break # The last candidates were computed exactly
 
             # Don't update all estimates, just pulled arms
-            estimates[candidates] = \
-                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric))) / (this_batch_size + T_samples[candidates])
-            T_samples[candidates] += this_batch_size
+            if compute_sigma:
+                sample_costs, sigmas = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = True)
+                compute_sigma = False
+            else:
+                sample_costs = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = False)
 
-            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[candidates])
+            estimates[candidates] = \
+                ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_costs)) / (this_batch_size + T_samples[candidates])
+
+            T_samples[candidates] += this_batch_size
+            cb_delta = sigmas[candidates] * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
 
@@ -110,7 +125,7 @@ def UCB_build(args, imgs, sigma):
 
 
 
-def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False, metric = None):
+def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False, metric = None, return_sigma = False):
     '''
     Note that targets is a TUPLE ( [o_1, o_2, o_3, ... o_m], [n_1, n_2, ... n_m] )
     The corresponding target swaps are [o_1, n_1], [o_2, n_2], .... [o_m, n_m]
@@ -135,8 +150,13 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1
 
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
     if FastPAM1:
-        estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric) # NOTE: depends on other medoids too!
+        if return_sigma:
+            estimates, sigmas = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = True) # NOTE: depends on other medoids too!
+            return estimates.round(DECIMAL_DIGITS), sigmas
+        else:
+            estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = False) # NOTE: depends on other medoids too!
     else:
+        # NOTE: Return_sigma currently only supported with FP1 trick; need to add it to cost_fn_difference too
         estimates = cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = metric)
 
     return estimates.round(DECIMAL_DIGITS)
@@ -148,9 +168,9 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
     p = 1. / (N * k * 1000)
-    max_iter = 1e4
+    max_iter = 1e1
     # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
-    
+
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
     best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
@@ -158,6 +178,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
     iter = 0
     swap_performed = True
     while swap_performed and iter < max_iter: # not converged
+        compute_sigma = True
         iter += 1
 
         # NOTE: Performing a lot of redundant computation in this loop.
@@ -177,8 +198,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         exact_mask = np.zeros((k, N))
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
-        original_batch_size = 20
-        base = 1.3 # Right now, use constant batch size
+        original_batch_size = 100
+        base = 1 # Right now, use constant batch size
 
         step_count = 0
         while(len(candidates) > 0):
@@ -194,9 +215,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
-                # import ipdb; ipdb.set_trace()
                 exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N, args.fast_pam1, metric = metric)
+                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N, args.fast_pam1, metric = metric, return_sigma = False)
                 lcbs[exact_accesses] = estimates[exact_accesses]
                 ucbs[exact_accesses] = estimates[exact_accesses]
                 exact_mask[exact_accesses] = 1
@@ -209,11 +229,18 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
             # Don't update all estimates, just pulled arms
             accesses = (candidates[:, 0], candidates[:, 1])
-            new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric)
+            if compute_sigma:
+                new_samples, sigmas = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = True)
+                sigmas = sigmas.reshape(k, N) # So that can access it with sigmas[accesses] below
+                compute_sigma = False
+            else:
+                new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = False)
+
             estimates[accesses] = \
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
             T_samples[accesses] += this_batch_size
-            cb_delta = sigma * np.sqrt(np.log(1 / p) / T_samples[accesses])
+            # NOTE: Sigmas is contains a value for EVERY arm, even not the candidates, so need [accesses]
+            cb_delta = sigmas[accesses] * np.sqrt(np.log(1 / p) / T_samples[accesses])
             lcbs[accesses] = estimates[accesses] - cb_delta
             ucbs[accesses] = estimates[accesses] + cb_delta
 
