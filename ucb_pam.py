@@ -13,7 +13,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
         costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric)
         estimates[tar_idx] = np.mean(costs)
         if return_sigma:
-            sigmas[tar_idx] = np.std(costs) / 5
+            sigmas[tar_idx] = np.std(costs) / SIGMA_DIVISOR
 
     if return_sigma:
         return estimates.round(DECIMAL_DIGITS), sigmas
@@ -98,6 +98,7 @@ def UCB_build(args, imgs, sigma):
                 ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_costs)) / (this_batch_size + T_samples[candidates])
 
             T_samples[candidates] += this_batch_size
+            #cb_delta = (sigma / SIGMA_DIVISOR) * np.sqrt(np.log(1 / p) / T_samples[candidates])
             cb_delta = sigmas[candidates] * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
@@ -240,6 +241,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
             T_samples[accesses] += this_batch_size
             # NOTE: Sigmas is contains a value for EVERY arm, even not the candidates, so need [accesses]
+            # cb_delta = (sigma / 5) * np.sqrt(np.log(1 / p) / T_samples[accesses])
             cb_delta = sigmas[accesses] * np.sqrt(np.log(1 / p) / T_samples[accesses])
             lcbs[accesses] = estimates[accesses] - cb_delta
             ucbs[accesses] = estimates[accesses] + cb_delta
@@ -289,6 +291,8 @@ def UCB_build_and_swap(args):
         swapped_medoids, S_logstring = UCB_swap(args, imgs, sigma, init_medoids)
         print("Final medoids", swapped_medoids)
 
+    print(B_logstring['loss'])
+    print(S_logstring['loss'])
     return built_medoids, swapped_medoids, B_logstring, S_logstring
 
 if __name__ == "__main__":
