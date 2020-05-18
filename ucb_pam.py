@@ -205,7 +205,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         step_count = 0
         while(len(candidates) > 0):
             if args.verbose >= 1:
-                print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
+                print("SWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
 
             # NOTE: tricky computations below
             this_batch_size = int(original_batch_size * (base**step_count))

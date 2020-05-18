@@ -45,7 +45,7 @@ def CSH_build(args, imgs, sigma):
 
         while(len(candidates) > 0):
             if args.verbose >= 1:
-                print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
+                print("Step count:", step_count, ", Candidates:", len(candidates))#, candidates)
 
             # NOTE: Potential issues of surpassing sampling budget T if there are ties around the median
             T_r = T / (len(candidates) * math.ceil(np.log2(N)))
@@ -72,8 +72,10 @@ def CSH_build(args, imgs, sigma):
             # In other words, only estimates[candidates] are the active arms. But what about those computed exactly and removed?
             # Actually... computing should only ever happen for all arms together at the last step
             # NOTE: Potential issue where old arms that were discarded get picked up again if the median goes *UP*
+            # Resolved by taking intersection with current candidates
             median_return = np.median(estimates[candidates])
-            candidates = np.where( (estimates <= median_return) & (exact_mask == 0) )[0]
+            # NOTE: It is possible that median == max! For example, with sparse data, or even on MNIST with N = 10000. Then this may cause a problem of resampling a lot
+            candidates = np.intersect1d(candidates, np.where(estimates <= median_return)[0])
             step_count += 1
 
         new_medoid = np.arange(N)[ np.where( estimates == estimates.min() ) ]
@@ -160,10 +162,10 @@ def CSH_swap(args, imgs, sigma, init_medoids):
         step_count = 0
         while(len(candidates) > 0):
             if args.verbose >= 1:
-                print("\nSWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
+                print("SWAP Step count:", step_count, ", Candidates:", len(candidates))#, candidates)
 
             # NOTE: Potential issues of surpassing sampling budget T if there are ties around the median
-            T_r = T / (len(candidates) * math.ceil(np.log2(N)))
+            T_r = T / (candidates.size * math.ceil(np.log2(N)))
             this_batch_size = int(min(max(1, T_r), N))
 
             comp_exactly_condition = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))
@@ -178,8 +180,11 @@ def CSH_swap(args, imgs, sigma, init_medoids):
                 T_samples[exact_accesses] += N
 
                 median_return = np.median(estimates[exact_accesses])
-                cand_condition = np.where( (estimates <= median_return) & (exact_mask == 0) )
-                candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+                cand_condition = np.where(estimates <= median_return)
+                new_candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+                #candidates = np.array([elem for elem in set(tuple(elem) for elem in new_candidates) & set(tuple(elem) for elem in candidates)])
+                #NOTE: Is this safe?
+                candidates = np.array([])
 
             if len(candidates) == 0: break
 
@@ -191,8 +196,10 @@ def CSH_swap(args, imgs, sigma, init_medoids):
             T_samples[accesses] += this_batch_size
 
             median_return = np.median(estimates[accesses])
-            cand_condition = np.where( (estimates <= median_return) & (exact_mask == 0) )
-            candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+            cand_condition = np.where(estimates <= median_return)
+            new_candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
+            # NOTE: Please make this more elegant
+            candidates = np.array([elem for elem in set(tuple(elem) for elem in new_candidates) & set(tuple(elem) for elem in candidates)])
             step_count += 1
 
         # Choose the minimum amongst all losses and perform the swap
