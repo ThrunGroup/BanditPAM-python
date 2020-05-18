@@ -19,10 +19,9 @@ def CSH_build(args, imgs, sigma):
     B_logstring = init_logstring()
     metric = args.metric
     N = len(imgs)
-    p = 1. / (N * 10)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    T = N * 100
+    T = N * 300
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
@@ -87,7 +86,7 @@ def CSH_build(args, imgs, sigma):
         medoids.append(new_medoid)
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
         print("Computed exactly for:", exact_mask.sum())
-        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma)
+        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), 0.0, T)
 
     return medoids, B_logstring
 
@@ -132,9 +131,8 @@ def CSH_swap(args, imgs, sigma, init_medoids):
     metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
-    p = 1. / (N * k * 1000)
     max_iter = 1e1
-    T = N*k*100
+    T = N * k * 300
 
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
@@ -211,7 +209,7 @@ def CSH_swap(args, imgs, sigma, init_medoids):
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
 
-        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma)
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), 0.0, T)
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
