@@ -10,7 +10,12 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
     # NOTE: Also, should the point be able to sample itself?
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype = 'int')
     for tar_idx, target in enumerate(targets):
-        costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric)
+        if best_distances[0] == np.inf:
+            # No medoids have been assigned, can't use the difference in loss
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = False)
+        else:
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = True)
+
         estimates[tar_idx] = np.mean(costs)
 
     return estimates.round(DECIMAL_DIGITS)
@@ -21,7 +26,7 @@ def CSH_build(args, imgs, sigma):
     N = len(imgs)
     num_samples = np.zeros(N)
     estimates = np.zeros(N)
-    T = N * 1000
+    T = 16 * N * np.log(N)
 
     if len(args.warm_start_medoids) > 0:
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
@@ -47,7 +52,7 @@ def CSH_build(args, imgs, sigma):
                 print("Step count:", step_count, ", Candidates:", len(candidates))#, candidates)
 
             # NOTE: Potential issues of surpassing sampling budget T if there are ties around the median
-            T_r = T / (len(candidates) * math.ceil(np.log2(N)))
+            T_r = 10 * T / (len(candidates) * math.ceil(np.log2(N)))
             this_batch_size = int(min(max(1, T_r), N))
 
             compute_exactly = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))[0]
@@ -74,12 +79,15 @@ def CSH_build(args, imgs, sigma):
             # Resolved by taking intersection with current candidates
             median_return = np.median(estimates[candidates])
             # NOTE: It is possible that median == max! For example, with sparse data, or even on MNIST with N = 10000. Then this may cause a problem of resampling a lot
-            candidates = np.intersect1d(candidates, np.where(estimates <= median_return)[0])
+            if median_return == np.max(estimates[candidates]):
+                    candidates = np.intersect1d(candidates, np.where(estimates <= median_return)[0]) # Strictly less to chop off heavy ail
+            else:
+                candidates = np.intersect1d(candidates, np.where(estimates <= median_return)[0])
+
             step_count += 1
 
         new_medoid = np.arange(N)[ np.where( estimates == estimates.min() ) ]
         new_medoid = new_medoid[0] # Breaks exact ties with first. Also converts array to int.
-
         if args.verbose >= 1:
             print("New Medoid:", new_medoid)
 
@@ -132,7 +140,7 @@ def CSH_swap(args, imgs, sigma, init_medoids):
     k = len(init_medoids)
     N = len(imgs)
     max_iter = 1e1
-    T = N * k * 1000
+    T = 16 * k * N * np.log(N)
 
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
@@ -194,9 +202,13 @@ def CSH_swap(args, imgs, sigma, init_medoids):
             T_samples[accesses] += this_batch_size
 
             median_return = np.median(estimates[accesses])
-            cand_condition = np.where(estimates <= median_return)
+            if median_return == np.max(estimates[accesses]):
+                    cand_condition = np.where(estimates <= median_return) # Strictly less to chop off heavy ail
+            else:
+                cand_condition = np.where(estimates <= median_return)
+
             new_candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
-            # NOTE: Please make this more elegant
+            # NOTE: Make this more elegant
             candidates = np.array([elem for elem in set(tuple(elem) for elem in new_candidates) & set(tuple(elem) for elem in candidates)])
             step_count += 1
 
