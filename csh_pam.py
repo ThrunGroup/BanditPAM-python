@@ -2,6 +2,15 @@ from data_utils import *
 import itertools
 import math
 
+
+'''
+NOTE:
+- Need to make sigma adaptive as in UCB
+- Need to tune T and initial batch size
+'''
+
+
+
 def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None):
     # NOTE: Fix this with array broadcasting
     N = len(imgs)
