@@ -7,7 +7,7 @@ import argparse
 import pandas as pd
 
 DECIMAL_DIGITS = 5
-SIGMA_DIVISOR = 5
+SIGMA_DIVISOR = 1
 
 
 '''
