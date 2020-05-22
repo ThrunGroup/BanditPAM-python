@@ -1,8 +1,30 @@
 import itertools
 
-ns = [100, 500, 2000, 5000, 10000, 30000, 70000]
-ks = [1, 3, 10, 50]
+def write_exp(algo, k, N, seed, dataset, metric):
+    if algo == 'naive_v1' and (N > 10000 or k > 5):
+        return None
+    return "\t['" + algo + "', 'BS', 0, " + str(k) + ", " + str(N) + \
+        ", " + str(seed) + ", '" + dataset + "', '" + metric + "', ''],\n"
 
-for idx,elem in enumerate(itertools.product(ns, ks)):
-    print(str(2*idx) + " : ['naive', 0, " + str(elem[1]) + ", " + str(elem[0]) + ", 42, 'MNIST', []],")
-    print(str(2*idx + 1) + " : ['ucb', 0, " + str(elem[1]) + ", " + str(elem[0]) + ", 42, 'MNIST', []],")
+def main():
+    algos = ['ucb', 'naive_v1']
+    dataset = 'MNIST'
+    metric = 'L2'
+
+    Ns = [1000, 3000, 10000, 30000, 70000]
+    ks = [2, 3, 4, 5, 10, 20, 30]
+    seeds = range(10)
+
+    with open('auto_exp_config.py', 'w+') as fout:
+        fout.write("experiments = [\n")
+        for algo in algos:
+            for seed in seeds:
+                for N in Ns:
+                    for k in ks:
+                        exp = write_exp(algo, k, N, seed, dataset, metric)
+                        if exp is not None:
+                            fout.write(exp)
+        fout.write("]")
+
+if __name__ == "__main__":
+    main()
