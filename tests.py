@@ -1,4 +1,4 @@
-import exp_config_tests
+import tests_exp_config
 import run_profiles
 import data_utils
 import naive_pam_v1
@@ -11,7 +11,7 @@ class Namespace:
         self.__dict__.update(kwargs)
 
 def test_exps():
-    for exp in exp_config_tests.experiments:
+    for exp in tests_exp_config.experiments:
         print(exp)
         args = Namespace()
         args = run_profiles.remap_args(args, exp)
