@@ -79,7 +79,8 @@ def main(sys_args):
         S_prof_fname = os.path.join('profiles', 'p-S-' + get_filename(exp, args))
         medoids_fname = os.path.join('profiles', 'L-' + get_filename(exp, args))
 
-        if (os.path.exists(B_prof_fname) or os.path.exists(S_prof_fname)) and not args.force:
+        # The logfiles get written AFTER the profiles (they get `touch`ed pretty early, so check for logfile)
+        if os.path.exists(medoids_fname) and not args.force:
             print("Warning: already have data for experiment", B_prof_fname)
             print("Warning: already have data for experiment", S_prof_fname)
             continue
