@@ -31,7 +31,7 @@ def verify_logfiles():
                             print("ERROR: Results for", u_lfile, "disagree!!")
                     print("OK: Results for", u_lfile, "agree")
 
-def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds):
+def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds, build_or_swap):
     assert vs_k_or_N == 'N' or vs_k_or_N == 'k', "Bad slice param"
 
     if vs_k_or_N == 'k':
@@ -41,11 +41,12 @@ def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds):
         kNs = Ns
         Nks = ks
 
+
     for kN_idx, kN in enumerate(kNs):
         if vs_k_or_N == 'k':
-            plt.title(algo + " scaling with N for k = " + str(kN))
+            plt.title(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN))
         elif vs_k_or_N == 'N':
-            plt.title(algo + " scaling with k for N = " + str(kN))
+            plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
         plt.xlabel("N")
         for seed_idx, seed in enumerate(seeds):
             if vs_k_or_N == 'k':
@@ -57,6 +58,25 @@ def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds):
         elif vs_k_or_N == 'N':
             plt.plot(Nks, np.mean(dcalls_array[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
         showx()
+
+def get_swap_T(logfile):
+    '''
+    Hacky
+    '''
+    with open(logfile, 'r') as fin:
+        line = fin.readline()
+        while line != 'Swap Logstring:\n':
+            line = fin.readline()
+
+        line = fin.readline()
+        assert line == "\tcompute_exactly:\n"
+
+        T = 0
+        line = fin.readline()
+        while line != "\tsigma:\n":
+            T += 1
+            line = fin.readline()
+    return T
 
 def show_plots(vs_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
     dcalls_array = np.zeros((len(ks), len(Ns), len(seeds)))
@@ -83,14 +103,20 @@ def show_plots(vs_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
                         for row in snakevizcode.table_rows(p):
                             if FN_NAME in row:
                                 dcalls = row[0][1]
-                                dcalls_array[k_idx][N_idx][seed_idx] = dcalls
+                                if build_or_swap == 'build':
+                                    dcalls_array[k_idx][N_idx][seed_idx] = dcalls
+                                elif build_or_swap == 'swap':
+                                    logfile = 'profiles/L-' + algo + '-True-BS-v-0-k-' + str(k) + \
+                                        '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+                                    T = get_swap_T(logfile)
+                                    dcalls_array[k_idx][N_idx][seed_idx] = dcalls / T
                     else:
                         print("Warning: profile not found for ", profile_fname)
 
     # Show data
     for algo in algos:
-        plot_slice(dcalls_array, 'k', Ns, ks, algo, seeds)
-        plot_slice(dcalls_array, 'N', Ns, ks, algo, seeds)
+        plot_slice(dcalls_array, 'k', Ns, ks, algo, seeds, build_or_swap)
+        plot_slice(dcalls_array, 'N', Ns, ks, algo, seeds, build_or_swap)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
@@ -101,10 +127,10 @@ def main():
     ks = [2, 3, 4]#, 5, 10, 20, 30]
     seeds = range(4)
 
-    build_profiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:2] == 'p-B']
-    swap_profiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:2] == 'p-S']
-
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 
 
 
