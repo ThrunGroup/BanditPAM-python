@@ -1,6 +1,7 @@
 from data_utils import *
 import cProfile
 import importlib
+import multiprocessing as mp
 
 import naive_pam_v0
 import naive_pam_v1
@@ -71,6 +72,7 @@ def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
 
     imported_config = importlib.import_module(args.exp_config.strip('.py'))
+    pool = mp.Pool() #use all available cores, otherwise specify the number you want as an argument? double check this
     for exp in imported_config.experiments:
         args = remap_args(args, exp)
         B_prof_fname = os.path.join('profiles', 'p-B-' + get_filename(exp, args))
@@ -84,15 +86,21 @@ def main(sys_args):
         else:
             print("Running exp:", B_prof_fname, S_prof_fname)
 
+
         if exp[0] == 'naive_v1':
-            run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            pool.apply_async(run_exp, args=(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            #run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         elif exp[0] == 'ucb':
-            run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            pool.apply_async(run_exp, args=(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            #run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         elif exp[0] == 'csh':
-            run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            pool.apply_async(run_exp, args=(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            #run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         else:
             raise Exception('Invalid algorithm specified')
 
+    pool.close()
+    pool.join()
 
 if __name__ == "__main__":
     main(sys.argv)

@@ -7,3 +7,5 @@ martin/10x_pbmc_68k.tar.gz
 martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/*
 martin/Curate_10x_PBMC68k.ipynb
 martin/.ipynb_checkpoints/
+hoc_data/
+
