@@ -53,9 +53,9 @@ def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds):
             elif vs_k_or_N == 'N':
                 plt.plot(Nks, dcalls_array[:, kN_idx, seed_idx], 'o')
         if vs_k_or_N == 'k':
-            plt.plot(Nks, np.mean(dcalls_array[kN_idx], axis = 1), 'b-')
+            plt.plot(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), 'b-') # Slice a specific k, get a 2D array
         elif vs_k_or_N == 'N':
-            plt.plot(Nks, np.mean(dcalls_array[:, kN_idx], axis = 1), 'b-')
+            plt.plot(Nks, np.mean(dcalls_array[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
         showx()
 
 def show_plots(vs_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
