@@ -5,6 +5,9 @@ import mnist
 import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
+import json
+
+from zss import simple_distance, Node
 
 DECIMAL_DIGITS = 5
 SIGMA_DIVISOR = 1
@@ -100,6 +103,42 @@ def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
     logstring['p'][k] = p
     logstring['sigma'][k] = sigma
     return logstring
+
+
+
+def convert_to_tree(source):
+    node = Node(source['type'])
+    if 'children' in source:
+        for child in source['children']:
+            child_node = convert_to_tree(child)
+            node.addkid(child_node)
+    return node
+
+def print_tree(node, tab_level = 0):
+    print("  " * tab_level, node.label)
+    children = Node.get_children(node)
+    for child in children:
+        print_tree(child, tab_level + 1)
+
+# if __name__ == "__main__":
+#     ast0 = "hoc_data/hoc4/asts/0.json"
+#     ast1 = "hoc_data/hoc4/asts/6.json"
+#     with open(ast0, 'r') as fin1:
+#         with open(ast1, 'r') as fin2:
+#             js = json.load(fin1)
+#             tree0 = convert_to_tree(js)
+#             print_tree(tree0)
+#             print("\n")
+#
+#             js = json.load(fin2)
+#             tree1 = convert_to_tree(js)
+#             print_tree(tree1)
+#             print("\n")
+#
+#             # Simple distance counts non-equal labels as 1, as desired. I verified this.
+#             # Strangely, the editdist pkg that zss suggests installing doesn't seem to exist?
+#             print(simple_distance(tree0, tree1))
+
 
 def empty_counter():
     pass
