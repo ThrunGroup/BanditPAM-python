@@ -109,8 +109,14 @@ def convert_to_tree(source):
     node = Node(source['type'])
     if 'children' in source:
         for child in source['children']:
-            child_node = convert_to_tree(child)
-            node.addkid(child_node)
+            if child['type'] == 'statementList':
+                # Skip the statementlist nodes, they add extra distance
+                for c_child in child['children']:
+                    c_child_node = convert_to_tree(c_child)
+                    node.addkid(c_child_node)
+            else:
+                child_node = convert_to_tree(child)
+                node.addkid(child_node)
     return node
 
 def print_tree(node, tab_level = 0):
@@ -119,7 +125,7 @@ def print_tree(node, tab_level = 0):
     for child in children:
         print_tree(child, tab_level + 1)
 
-if __name__ == "__main__":
+def write_trees():
     in_dir = 'hoc_data/hoc18/asts/'
     out_dir = 'hoc_data/hoc18/trees/'
     asts = [x.strip('.json') for x in os.listdir(in_dir) if x != ".DS_Store"]
@@ -132,25 +138,28 @@ if __name__ == "__main__":
                 tree = convert_to_tree(js)
                 pickle.dump(tree, fout)
 
+if __name__ == "__main__":
+    write_trees()
 
-# if __name__ == "__main__":
-#     ast0 = "hoc_data/hoc4/asts/0.json"
-#     ast1 = "hoc_data/hoc4/asts/6.json"
-#     with open(ast0, 'r') as fin1:
-#         with open(ast1, 'r') as fin2:
-#             js = json.load(fin1)
-#             tree0 = convert_to_tree(js)
-#             print_tree(tree0)
-#             print("\n")
-#
-#             js = json.load(fin2)
-#             tree1 = convert_to_tree(js)
-#             print_tree(tree1)
-#             print("\n")
-#
-#             # Simple distance counts non-equal labels as 1, as desired. I verified this.
-#             # Strangely, the editdist pkg that zss suggests installing doesn't seem to exist?
-#             print(simple_distance(tree0, tree1))
+
+if __name__ == "__main__":
+    ast0 = "hoc_data/hoc4/asts/0.json"
+    ast1 = "hoc_data/hoc4/asts/10.json"
+    with open(ast0, 'r') as fin1:
+        with open(ast1, 'r') as fin2:
+            js = json.load(fin1)
+            tree0 = convert_to_tree(js)
+            print_tree(tree0)
+            print("\n")
+
+            js = json.load(fin2)
+            tree1 = convert_to_tree(js)
+            print_tree(tree1)
+            print("\n")
+
+            # Simple distance counts non-equal labels as 1, as desired. I verified this.
+            # Strangely, the editdist pkg that zss suggests installing doesn't seem to exist?
+            print(simple_distance(tree0, tree1))
 
 
 def empty_counter():
