@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
 import json
+import pickle
 
 from zss import simple_distance, Node
 
@@ -104,8 +105,6 @@ def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
     logstring['sigma'][k] = sigma
     return logstring
 
-
-
 def convert_to_tree(source):
     node = Node(source['type'])
     if 'children' in source:
@@ -119,6 +118,20 @@ def print_tree(node, tab_level = 0):
     children = Node.get_children(node)
     for child in children:
         print_tree(child, tab_level + 1)
+
+if __name__ == "__main__":
+    in_dir = 'hoc_data/hoc18/asts/'
+    out_dir = 'hoc_data/hoc18/trees/'
+    asts = [x.strip('.json') for x in os.listdir(in_dir) if x != ".DS_Store"]
+    asts.remove('counts.txt')
+    asts.remove('unitTestResults.txt')
+    for ast in asts:
+        with open(in_dir + ast + '.json', 'r') as fin:
+            with open(out_dir + ast + '.tree', 'wb') as fout:
+                js = json.load(fin)
+                tree = convert_to_tree(js)
+                pickle.dump(tree, fout)
+
 
 # if __name__ == "__main__":
 #     ast0 = "hoc_data/hoc4/asts/0.json"
