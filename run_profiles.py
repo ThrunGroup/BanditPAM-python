@@ -7,6 +7,7 @@ import naive_pam_v0
 import naive_pam_v1
 import ucb_pam
 import csh_pam
+import copy
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
@@ -87,15 +88,24 @@ def main(sys_args):
         else:
             print("Running exp:", B_prof_fname, S_prof_fname)
 
+        '''
+        EXTREME WARNING:
+        The functions below are NOT threadsafe.
+        In particular, strings in python are lists, which means they are passed by reference.
+        This means that if a NEW thread gets the SAME reference as the other threads, and updates the object,
+        the OLD thread will write to the wrong file. This was causing a major bug.
+        Therefore, whenever using multiprocessing, need to copy.deepcopy() all the arguments.
+        Don't appear to need to do this for the function calls though since those references stay constant.
 
+        '''
         if exp[0] == 'naive_v1':
-            pool.apply_async(run_exp, args=(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
             #run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         elif exp[0] == 'ucb':
-            pool.apply_async(run_exp, args=(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
             #run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         elif exp[0] == 'csh':
-            pool.apply_async(run_exp, args=(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname))
+            pool.apply_async(run_exp, args=(copy.deepcopy(args), csh_pam.CSH_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
             #run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
         else:
             raise Exception('Invalid algorithm specified')

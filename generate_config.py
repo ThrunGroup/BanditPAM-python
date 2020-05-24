@@ -11,8 +11,8 @@ def main():
     dataset = 'MNIST'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [2, 3, 4, 5, 10, 20, 30]
+    Ns = [1000, 3000, 10000]#, 30000, 70000]
+    ks = [2, 3, 4, 5]#, 10, 20, 30]
     seeds = range(10)
 
     with open('auto_exp_config.py', 'w+') as fout:

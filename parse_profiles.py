@@ -23,19 +23,37 @@ def showx():
 
 def verify_logfiles():
     ucb_logfiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:5] == 'L-ucb']
-    for u_lfile in ucb_logfiles:
+    for u_lfile in sorted(ucb_logfiles):
         n_lfile = u_lfile.replace('ucb', 'naive_v1')
         if not os.path.exists(n_lfile):
             print("Warning: no naive experiment", n_lfile)
         else:
+            disagreement = False
             with open(u_lfile, 'r') as fin1:
                 with open(n_lfile, 'r') as fin2:
-                    for i in range(2): # Verify that the top two lines, built medoids and swap medoids, are equal
-                        if fin1.readline() != fin2.readline():
-                            print("ERROR: Results for", u_lfile, "disagree!!")
-                    print("OK: Results for", u_lfile, "agree")
+                    l1_1 = fin1.readline()
+                    l1_2 = fin1.readline()
+
+                    l2_1 = fin2.readline()
+                    l2_2 = fin2.readline()
+
+                    # NOTE: This is a stricter condition than necessary, enforcing both build and swap agreement instead of just swap
+                    if l1_1 != l2_1 or l1_2 != l2_2:
+                        disagreement = True
+
+            if disagreement:
+                print(l1_2.strip())
+                print(l2_2.strip())
+                print("ERROR: Results for", u_lfile, n_lfile, "disagree!!\n")
+            else:
+                print("OK: Results for", u_lfile, n_lfile, "agree\n")
+
 
 def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds, build_or_swap):
+    '''
+    ERROR: vs_k_or_N should be renamed -- the one in the variable is being treated as fixed
+
+    '''
     assert vs_k_or_N == 'N' or vs_k_or_N == 'k', "Bad slice param"
 
     if vs_k_or_N == 'k':
@@ -128,8 +146,8 @@ def main():
     metric = 'L2'
 
     Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [2, 3, 4]#, 5, 10, 20, 30]
-    seeds = range(4)
+    ks = [2, 3, 4, 5, 10, 20, 30]
+    seeds = range(10)
 
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
     show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
@@ -139,5 +157,5 @@ def main():
 
 
 if __name__ == '__main__':
-    verify_logfiles()
+    # verify_logfiles()
     main()
