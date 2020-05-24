@@ -12,7 +12,7 @@ import snakevizcode
 
 from generate_config import write_exp
 
-FN_NAME = 'data_utils.py:104(empty_counter)'
+FN_NAME = 'data_utils.py:165(empty_counter)'
 
 def showx():
     plt.draw()
@@ -42,43 +42,41 @@ def verify_logfiles():
                         disagreement = True
 
             if disagreement:
+                print("\n")
                 print(l1_2.strip())
                 print(l2_2.strip())
-                print("ERROR: Results for", u_lfile, n_lfile, "disagree!!\n")
+                print("ERROR: Results for", u_lfile, n_lfile, "disagree!!")
             else:
-                print("OK: Results for", u_lfile, n_lfile, "agree\n")
+                print("OK: Results for", u_lfile, n_lfile, "agree")
 
 
-def plot_slice(dcalls_array, vs_k_or_N, Ns, ks, algo, seeds, build_or_swap):
-    '''
-    ERROR: vs_k_or_N should be renamed -- the one in the variable is being treated as fixed
+def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
+    assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
 
-    '''
-    assert vs_k_or_N == 'N' or vs_k_or_N == 'k', "Bad slice param"
-
-    if vs_k_or_N == 'k':
+    if fix_k_or_N == 'k':
         kNs = ks
         Nks = Ns
-    elif vs_k_or_N == 'N':
+    elif fix_k_or_N == 'N':
         kNs = Ns
         Nks = ks
 
-
     for kN_idx, kN in enumerate(kNs):
-        if vs_k_or_N == 'k':
+        if fix_k_or_N == 'k':
             plt.title(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN))
-        elif vs_k_or_N == 'N':
-            plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
-        plt.xlabel("N")
-        for seed_idx, seed in enumerate(seeds):
-            if vs_k_or_N == 'k':
-                plt.plot(Nks, dcalls_array[kN_idx, :, seed_idx], 'o')
-            elif vs_k_or_N == 'N':
-                plt.plot(Nks, dcalls_array[:, kN_idx, seed_idx], 'o')
-        if vs_k_or_N == 'k':
+            plt.xlabel("N")
             plt.plot(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), 'b-') # Slice a specific k, get a 2D array
-        elif vs_k_or_N == 'N':
+            for seed_idx, seed in enumerate(seeds):
+                plt.plot(Nks, dcalls_array[kN_idx, :, seed_idx], 'o')
+                print(dcalls_array[kN_idx, :, seed_idx])
+
+        elif fix_k_or_N == 'N':
+            plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
+            plt.xlabel("k")
             plt.plot(Nks, np.mean(dcalls_array[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
+            for seed_idx, seed in enumerate(seeds):
+                plt.plot(Nks, dcalls_array[:, kN_idx, seed_idx], 'o')
+                print(dcalls_array[:, kN_idx, seed_idx])
+
         showx()
 
 def get_swap_T(logfile):
@@ -91,7 +89,7 @@ def get_swap_T(logfile):
             line = fin.readline()
 
         line = fin.readline()
-        assert line == "\tcompute_exactly:\n"
+        assert line == "\tp:\n", "Line is actually:" + line
 
         T = 0
         line = fin.readline()
@@ -100,7 +98,7 @@ def get_swap_T(logfile):
             line = fin.readline()
     return T
 
-def show_plots(vs_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
+def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
     dcalls_array = np.zeros((len(ks), len(Ns), len(seeds)))
 
     if build_or_swap == 'build':
@@ -137,18 +135,19 @@ def show_plots(vs_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
 
     # Show data
     for algo in algos:
-        plot_slice(dcalls_array, 'k', Ns, ks, algo, seeds, build_or_swap)
-        plot_slice(dcalls_array, 'N', Ns, ks, algo, seeds, build_or_swap)
+        plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
     dataset = 'MNIST'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [2, 3, 4, 5, 10, 20, 30]
-    seeds = range(10)
+    Ns = [1000, 3000, 10000]#, 30000, 70000]
+    ks = [2, 3, 4, 5]#, 10, 20, 30]
+    seeds = range(1)
 
+    # By calling these functions twice, we're actually mining the data from the profiles twice.
+    # Not a big deal but should fix
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
     show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
     show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
@@ -157,5 +156,6 @@ def main():
 
 
 if __name__ == '__main__':
-    # verify_logfiles()
+    verify_logfiles()
+    print("FILES VERIFIED\n\n")
     main()

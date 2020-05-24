@@ -11,17 +11,17 @@ def main():
     dataset = 'MNIST'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000]#, 30000, 70000]
-    ks = [2, 3, 4, 5]#, 10, 20, 30]
+    Ns = [1000, 3000, 10000, 30000, 70000]
+    ks = [2, 3, 4, 5, 10, 20, 30]
     seeds = range(10)
 
     with open('auto_exp_config.py', 'w+') as fout:
         fout.write("experiments = [\n")
-        for algo in algos:
-            for seed in seeds:
+        for seed in seeds:
+            for algo in algos:
                 for N in Ns:
                     for k in ks:
-                        exp = write_exp(algo, k, N, seed, dataset, metric)
+                        exp = write_exp(algo, k, N, 42 + seed, dataset, metric) #NOTE: Adding 42 for comparisons with earlier implementations
                         if exp is not None:
                             fout.write(exp)
         fout.write("]")
