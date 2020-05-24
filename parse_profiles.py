@@ -146,9 +146,9 @@ def main():
     dataset = 'MNIST'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000]#, 30000, 70000]
-    ks = [2, 3, 4, 5]#, 10, 20, 30]
-    seeds = range(42, 43)
+    Ns = [1000, 3000, 10000, 30000, 70000]
+    ks = [2, 3, 4, 5, 10, 20, 30]
+    seeds = range(42, 44)
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix

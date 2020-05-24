@@ -46,7 +46,10 @@ def naive_build(args, imgs):
         for t_reidx, t in enumerate(target_idcs):
             refs = np.arange(N)
             ref_imgs = imgs[refs] # should be == imgs, since sampling all reference points #NOTE: what if we randomly choose subsample? Impt baseline
-            losses[t_reidx] = np.mean( np.minimum(d(imgs[t].reshape(1, -1), ref_imgs, metric = metric), best_distances)).round(DECIMAL_DIGITS)
+            if metric == 'TREE':
+                losses[t_reidx] = np.mean( np.minimum(d_tree(imgs[t], ref_imgs, metric = metric), best_distances)).round(DECIMAL_DIGITS)
+            else:
+                losses[t_reidx] = np.mean( np.minimum(d(imgs[t].reshape(1, -1), ref_imgs, metric = metric), best_distances)).round(DECIMAL_DIGITS)
 
         best_loss_reidx = np.where(losses == losses.min())[0][0] # NOTE: what about duplicates? Chooses first I believe
         best_medoid = target_idcs[best_loss_reidx]
@@ -104,7 +107,10 @@ def naive_swap(args, imgs, init_medoids):
 def naive_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
-    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+    if args.metric == 'TREE':
+        imgs = np.random.choice(total_images, size = args.sample_size, replace = False)
+    else:
+        imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
 
     built_medoids = []
     B_logstring = {}

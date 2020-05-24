@@ -1,9 +1,13 @@
+import os
 import sys
 import numpy as np
 import mnist
 import matplotlib.pyplot as plt
 import argparse
 import pandas as pd
+import pickle
+
+from zss import simple_distance, Node
 
 DECIMAL_DIGITS = 5
 SIGMA_DIVISOR = 1
@@ -81,6 +85,15 @@ def load_data(args):
         # sigma = estimate_sigma(np_arr, 300, metric = "L2")
         sigma = 0.01
         return np_arr, None, sigma
+    elif args.dataset == 'HOC4':
+        dir_ = 'hoc_data/hoc4/trees/'
+        tree_files = [dir_ + tree for tree in os.listdir(dir_) if tree != ".DS_Store"]
+        trees = []
+        for tree_f in tree_files:
+            with open(tree_f, 'rb') as fin:
+                tree = pickle.load(fin)
+                trees.append(tree)
+        return trees, None, 0.0
     else:
         raise Exception("Didn't specify a valid dataset")
 
@@ -108,8 +121,20 @@ def d(x1, x2, metric = None):
     if len(x1.shape) > 1:
         # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
         # NOTE: SO MAKE SURE YOU KNOW WHAT YOU'RE DOING -- X1 AND X2 ARE NOT SYMMETRIC
-        for _unused in range(x2.shape[0]):
-            empty_counter()
+
+        # WARNING:
+        # Currently, the code is structured in cost_fn and cost_fn_difference_FP1 such that
+        # we're only doing 1 arm at a time -- so x1.shape should be 1.
+        # If x1.shape > 1, we were mis-calculating the number of distance computations (yikes!!)
+        # This is ameliorated by having the double loop over x1.shape[0] and x2.shape[0]
+        # Having the assertion is redundant but good defense programming for now
+        # Existing experiments should be ok since x1.shape[0] was always 1
+        # but should rerun all experiments just in case. Timestamp: Sunday, 5/24/2020 2:28PM
+
+        assert x1.shape[0] == 1, "X1 is misshapen!"
+        for _unused1 in range(x1.shape[0]):
+            for _unused2 in range(x2.shape[0]):
+                empty_counter()
 
         # NOTE: Assume first coordinate indexes tuples
         if metric == "L2":
@@ -120,6 +145,9 @@ def d(x1, x2, metric = None):
             raise Exception("Bad metric specified")
 
     else:
+        # WARNING: See warning above. Extra-defensive here.
+        assert x1.shape == x2.shape # 1 datapoint each, of dimension d
+        assert len(x1.shape) == 1
         empty_counter()
 
         if metric == "L2":
@@ -129,6 +157,20 @@ def d(x1, x2, metric = None):
         else:
             raise Exception("Bad metric specified")
 
+def d_tree(x1, x2, metric = None):
+    assert metric == 'TREE', "Bad args to d_tree"
+    assert type(x1) == Node, "First arg must always be a single node" # Code is currently structured to loop over arms
+    if type(x2) == Node:
+        # 1-on-1 comparison
+        empty_counter()
+        return simple_distance(x1, x2)
+    elif type(x2) == np.ndarray:
+        for _unused in x2:
+            empty_counter()
+        return np.array([simple_distance(x1, x2_elem) for x2_elem in x2])
+    else:
+        raise Exception("Bad x2 type d_tree")
+
 def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True):
     '''
     Returns the "cost" of point tar as a medoid:
@@ -137,9 +179,15 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff =
 
     Use this only in the BUILD step
     '''
-    if use_diff:
-        return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
-    return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx])
+    if metric == 'TREE':
+        assert type(dataset[tar_idx]) == Node, "Misshapen!"
+        if use_diff:
+            return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
+        return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx])
+    else:
+        if use_diff:
+            return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
+        return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx])
 
 # def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
 def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
@@ -259,7 +307,11 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
     reidx_lookup = {}
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
-        ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
+        if metric == 'TREE':
+            assert type(imgs[d_n]) == Node, "Bad arg!"
+            ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric)
+        else:
+            ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
 
 
     for s_idx, s in enumerate(swaps):
@@ -306,6 +358,11 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     assert len(medoids) >= 1, "Need to pass at least one medoid"
     assert not (return_second_best and len(medoids) < 2), "Need at least 2 medoids to avoid infs when asking for return_second_best"
 
+    if metric == 'TREE':
+        inner_d_fn = d_tree
+    else:
+        inner_d_fn = d
+
     if subset is None:
         N = len(dataset)
         refs = range(N)
@@ -319,16 +376,17 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     closest_medoids = np.array([-1 for _ in refs])
 
     # Example: subset = [15, 32, 57] then loop is (p_idx, point) = (1, 15), (2, 32), (3, 57)
+    # NOTE: Could speed this up with array broadcasting and taking min across medoid axis
     for p_idx, point in enumerate(refs):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
-            if d(dataset[m], dataset[point], metric) < best_distances[p_idx]:
+            if inner_d_fn(dataset[m], dataset[point], metric) < best_distances[p_idx]:
                 second_best_distances[p_idx] = best_distances[p_idx]
-                best_distances[p_idx] = d(dataset[m], dataset[point], metric)
+                best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
                 closest_medoids[p_idx] = m
-            elif d(dataset[m], dataset[point], metric) < second_best_distances[p_idx]:
+            elif inner_d_fn(dataset[m], dataset[point], metric) < second_best_distances[p_idx]:
                 # Reach this case if the new medoid is between current 2nd and first, but not better than first
-                second_best_distances[p_idx] = d(dataset[m], dataset[point], metric)
+                second_best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
 
     if return_second_best:
         return best_distances, closest_medoids, second_best_distances
