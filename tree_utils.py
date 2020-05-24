@@ -8,6 +8,8 @@ def convert_to_tree(source):
     '''
     Small issue with if statements: if someone is missing an IF altogether, then
     their distance will be 3 from something with the if. Maybe that's what we want anyways.
+
+    Also note that the zss.simple_distance metric, "swapping" two lines is TWO operations: 2 relabels
     '''
 
     node_type = source['type']
@@ -88,12 +90,12 @@ def write_trees():
                 tree = convert_to_tree(js)
                 pickle.dump(tree, fout)
 
-if __name__ == "__main__":
-    write_trees()
+# if __name__ == "__main__":
+#     write_trees()
 
 
 # if __name__ == "__main__":
-# # use this to spot-check edit distances
+# use this to spot-check edit distances
 #     ast0 = "hoc_data/hoc4/asts/0.json"
 #     ast1 = "hoc_data/hoc4/asts/1.json"
 #     with open(ast0, 'r') as fin1:
@@ -114,8 +116,8 @@ if __name__ == "__main__":
 
     # # Use this to check that you can load pickle files
     # print("----------\n\n\n")
-    # pik0_f = "hoc_data/hoc4/trees/0.tree"
-    # pik1_f = "hoc_data/hoc4/trees/1.tree"
+    # pik0_f = "hoc_data/hoc18/trees/4.tree"
+    # pik1_f = "hoc_data/hoc18/trees/5.tree"
     #
     # with open(pik0_f, 'rb') as fin1:
     #     with open(pik1_f, 'rb') as fin2:
