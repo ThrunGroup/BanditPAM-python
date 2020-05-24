@@ -12,7 +12,7 @@ import snakevizcode
 
 from generate_config import write_exp
 
-FN_NAME = 'data_utils.py:165(empty_counter)'
+FN_NAME = 'data_utils.py:108(empty_counter)'
 
 def showx():
     plt.draw()
@@ -89,11 +89,15 @@ def get_swap_T(logfile):
             line = fin.readline()
 
         line = fin.readline()
-        assert line == "\tp:\n", "Line is actually:" + line
+        # WARNING: CONDITION IS BROKEN -- need to update!
+        # Hacky patch to make sure it has letters
+        assert line.strip(':').lower().islower(), "Line is actually:" + line
 
         T = 0
         line = fin.readline()
-        while line != "\tsigma:\n":
+        # WARNING: CONDITION IS BROKEN -- need to update
+        # Hacky patch to make sure it has letters
+        while not line.strip(':').lower().islower():
             T += 1
             line = fin.readline()
     return T
@@ -144,7 +148,7 @@ def main():
 
     Ns = [1000, 3000, 10000]#, 30000, 70000]
     ks = [2, 3, 4, 5]#, 10, 20, 30]
-    seeds = range(1)
+    seeds = range(42, 43)
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix

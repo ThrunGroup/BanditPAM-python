@@ -36,7 +36,7 @@ def get_filename(exp, args):
 
 def parse_logstring(logstring):
     output = "\n"
-    for k in logstring:
+    for k in sorted(logstring): # Sort keys so they're consistently ordered
         output += "\t" + str(k) + ":\n"
         for round in logstring[k]:
             output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
