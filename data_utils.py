@@ -308,7 +308,6 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
         if metric == 'TREE':
-            assert type(imgs[d_n]) == Node, "Bad arg!"
             ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric)
         else:
             ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
