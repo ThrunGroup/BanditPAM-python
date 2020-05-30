@@ -125,8 +125,8 @@ def UCB_build(args, imgs, sigma):
         print("Computed exactly for:", exact_mask.sum())
 
         # min, 25, median, 75, max, mean
-        sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
-        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma_arr)
+        # sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
+        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma)
 
     return medoids, B_logstring
 
@@ -267,8 +267,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
 
-        sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
-        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr)
+        # sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma)
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
