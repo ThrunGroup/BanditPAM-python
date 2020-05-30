@@ -95,6 +95,9 @@ def load_data(args):
                 tree = pickle.load(fin)
                 trees.append(tree)
         return trees, None, 0.0
+    elif args.dataset == 'GAUSSIAN':
+        dataset = create_gaussians(args.sample_size, ratio = 0.6, seed = args.seed, visualize = False)
+        return dataset
     else:
         raise Exception("Didn't specify a valid dataset")
 
@@ -476,11 +479,34 @@ def visualize_medoids(dataset, medoids, visualization = 'tsne'):
         plt.show()
     else:
         raise Exception('Bad Visualization Arg')
-    
+
+def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
+    np.random.seed(seed)
+    cluster1_size = int(N * ratio)
+    cluster2_size = N - cluster1_size
+
+    cov1 = np.array([[1, 0], [0, 1]])
+    cov2 = np.array([[1, 0], [0, 1]])
+
+    mu1 = np.array([-10, -10])
+    mu2 = np.array([10, 10])
+
+    cluster1 = np.random.multivariate_normal(mu1, cov1, cluster1_size)
+    cluster2 = np.random.multivariate_normal(mu2, cov2, cluster2_size)
+
+    if visualize:
+        plt.scatter(cluster1[:, 0], cluster1[:, 1], c='r')
+        plt.scatter(cluster2[:, 0], cluster2[:, 1], c='b')
+        plt.show()
+
+    return np.vstack((cluster1, cluster2))
+
 
 if __name__ == "__main__":
-    args = get_args(sys.argv[1:])
-    total_images, total_labels, sigma = load_data(args)
-    np.random.seed(args.seed)
-    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-    visualize_medoids(imgs, [891, 392])
+    create_gaussians(1000, 0.5, 42)
+
+    # args = get_args(sys.argv[1:])
+    # total_images, total_labels, sigma = load_data(args)
+    # np.random.seed(args.seed)
+    # imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+    # visualize_medoids(imgs, [891, 392])
