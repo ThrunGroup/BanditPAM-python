@@ -66,6 +66,7 @@ def UCB_build(args, imgs, sigma):
         ucbs = 1000 * np.ones(N)
         T_samples = np.zeros(N)
         exact_mask = np.zeros(N)
+        sigmas = np.zeros(N)
 
         # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
         original_batch_size = 100
@@ -123,7 +124,9 @@ def UCB_build(args, imgs, sigma):
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
         print("Computed exactly for:", exact_mask.sum())
 
-        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma)
+        # min, 25, median, 75, max, mean
+        sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
+        B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma_arr)
 
     return medoids, B_logstring
 
@@ -264,7 +267,8 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
 
-        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma)
+        sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr)
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
