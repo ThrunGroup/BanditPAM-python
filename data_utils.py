@@ -8,6 +8,7 @@ import pandas as pd
 import pickle
 
 from zss import simple_distance, Node
+from sklearn.manifold import TSNE
 
 DECIMAL_DIGITS = 5
 SIGMA_DIVISOR = 1
@@ -466,3 +467,20 @@ def medoid_swap(medoids, best_swap, imgs, loss, args):
         print("New loss:", new_loss)
 
     return performed_or_not, new_medoids, min(new_loss, loss)
+
+def visualize_medoids(dataset, medoids, visualization = 'tsne'):
+    if visualization == 'tsne':
+        X_embedded = TSNE(n_components=2).fit_transform(dataset)
+        plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c='b')
+        plt.scatter(X_embedded[medoids, 0], X_embedded[medoids, 1], c='r')
+        plt.show()
+    else:
+        raise Exception('Bad Visualization Arg')
+    
+
+if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    total_images, total_labels, sigma = load_data(args)
+    np.random.seed(args.seed)
+    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
+    visualize_medoids(imgs, [891, 392])
