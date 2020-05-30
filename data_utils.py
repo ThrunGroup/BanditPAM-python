@@ -117,6 +117,12 @@ def empty_counter():
     pass
 
 def d(x1, x2, metric = None):
+    '''
+    Note: If you really want to memoize these computations, you should probably
+    make the empty_counter calls happen first (they won't happen otherwise), and
+    break the actual distance computation into a sub-function with memoization.
+    Do this carefully -- it might be a problem with multithreading.
+    '''
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
         # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
