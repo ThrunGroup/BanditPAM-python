@@ -42,10 +42,12 @@ def parse_logstring(logstring):
             output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
     return output
 
-def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring):
+def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss):
     with open(medoids_fname, 'w+') as fout:
         fout.write("Built:" + ','.join(map(str, built_medoids)))
         fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
+        fout.write("\nNum Swaps: " + str(num_swaps))
+        fout.write("\nFinal Loss: " + str(final_loss))
         fout.write("\nBuild Logstring:" + parse_logstring(B_logstring))
         fout.write("\nSwap Logstring:" + parse_logstring(S_logstring))
 
@@ -57,7 +59,7 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
     if 'B' in tmp:
         args.build_ao_swap = 'B'
         prof = cProfile.Profile()
-        built_medoids, _1, B_logstring, _2 = prof.runcall(method_name, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+        built_medoids, _1, B_logstring, _2, _3, _4 = prof.runcall(method_name, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
         prof.dump_stats(B_prof_fname)
         computed_B = True
     if 'S' in tmp:
@@ -65,9 +67,9 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
         assert computed_B, "ERROR: Using warm start medoids from a previous experiment"
         args.warm_start_medoids = ','.join(map(str, list(built_medoids)))
         prof = cProfile.Profile()
-        _1, swapped_medoids, _2, S_logstring = prof.runcall(method_name, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
+        _1, swapped_medoids, _2, S_logstring, num_swaps, final_loss = prof.runcall(method_name, args) # Need *[args, imgs] so [args, imgs] is not interpreted as args, imgs = [args, imgs], None and instead as args, imgs = args, imgs
         prof.dump_stats(S_prof_fname)
-    write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring)
+    write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss)
 
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
