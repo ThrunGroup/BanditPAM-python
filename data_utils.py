@@ -94,6 +94,17 @@ def load_data(args):
             with open(tree_f, 'rb') as fin:
                 tree = pickle.load(fin)
                 trees.append(tree)
+        print("NUM TREES:", len(trees))
+        return trees, None, 0.0
+    elif args.dataset == 'HOC18':
+        dir_ = 'hoc_data/hoc18/trees/'
+        tree_files = [dir_ + tree for tree in os.listdir(dir_) if tree != ".DS_Store"]
+        trees = []
+        for tree_f in tree_files:
+            with open(tree_f, 'rb') as fin:
+                tree = pickle.load(fin)
+                trees.append(tree)
+        print("NUM TREES:", len(trees))
         return trees, None, 0.0
     elif args.dataset == 'GAUSSIAN':
         dataset = create_gaussians(args.sample_size, ratio = 0.6, seed = args.seed, visualize = False)
