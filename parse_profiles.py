@@ -7,6 +7,9 @@ import os
 import pstats
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
+import seaborn as sns
 
 import snakevizcode
 
@@ -62,12 +65,36 @@ def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
 
     for kN_idx, kN in enumerate(kNs):
         if fix_k_or_N == 'k':
+
+            # sns.set()
+            # d = {'N': Nks}#, 'avg_d_calls': np.mean(dcalls_array[kN_idx, :, :], axis = 1)}
+            # for seed_idx, seed in enumerate(seeds):
+            #     d["seed_" + str(seed)] = dcalls_array[kN_idx, :, seed_idx]
+            # df = pd.DataFrame(data = d)
+            # # import ipdb; ipdb.set_trace()
+            # # df = df.melt('N', var_name='cols', value_name='vals')
+            # # g = sns.factorplot(x="N", y="vals", hue='cols', data=df)
+            # print(df)
+            #
+            # melt_df = df.melt('N', var_name='cols', value_name='vals')
+            # sns.pointplot(x="N", y="vals", hue="cols", style="cols", data=melt_df)
+            # # sns.relplot(x="N", y=["d_calls", "42", "43"], kind="line", data=df)
+            # # for seed_idx, seed in enumerate(seeds):
+            # #     sns.relplot(x="N", y=seed, data=df)
+
+
             plt.title(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN))
             plt.xlabel("N")
-            plt.plot(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), 'b-') # Slice a specific k, get a 2D array
+            means = np.mean(dcalls_array[kN_idx, :, :], axis = 1)
+            plt.plot(np.log(Nks), np.log(means), 'b-') # Slice a specific k, get a 2D array
             for seed_idx, seed in enumerate(seeds):
-                plt.plot(Nks, dcalls_array[kN_idx, :, seed_idx], 'o')
+                plt.plot(np.log(Nks), np.log(dcalls_array[kN_idx, :, seed_idx]), 'o')
                 print(dcalls_array[kN_idx, :, seed_idx])
+
+
+            # bars = np.std(dcalls_array[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            # plt.errorbar(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
+
 
         elif fix_k_or_N == 'N':
             plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
@@ -86,21 +113,11 @@ def get_swap_T(logfile):
     '''
     with open(logfile, 'r') as fin:
         line = fin.readline()
-        while line != 'Swap Logstring:\n':
+        while line[:10] != 'Num Swaps:':
+            print(line)
             line = fin.readline()
 
-        line = fin.readline()
-        # WARNING: CONDITION IS BROKEN -- need to update!
-        # Hacky patch to make sure it has letters
-        assert line.strip(':').lower().islower(), "Line is actually:" + line
-
-        T = 0
-        line = fin.readline()
-        # WARNING: CONDITION IS BROKEN -- need to update
-        # Hacky patch to make sure it has letters
-        while not line.strip(':').lower().islower():
-            T += 1
-            line = fin.readline()
+        T = int(line.split(' ')[-1])
     return T
 
 def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
@@ -144,16 +161,16 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'MNIST'
+    dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 70000]
+    Ns = [1000, 3000, 10000, 30000, 40000]
     # ks = [2, 3, 4, 5, 10, 20, 30]
 
     # Ns = [1000]
     # ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
     ks = [10]
-    seeds = range(42, 52)
+    seeds = range(42, 49)
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix

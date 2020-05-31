@@ -11,7 +11,7 @@ def main():
     dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 40000]
+    Ns = [1000, 3000, 10000, 20000, 30000, 40000]
     ks = [10]
     seeds = range(10)
 
