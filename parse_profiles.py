@@ -8,9 +8,7 @@ import pstats
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
 import seaborn as sns
-
 import snakevizcode
 
 from generate_config import write_exp
@@ -53,7 +51,7 @@ def verify_logfiles():
                 print("OK: Results for", u_lfile, n_lfile, "agree")
 
 
-def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
+def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
     assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
 
     if fix_k_or_N == 'k':
@@ -65,56 +63,81 @@ def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
 
     for kN_idx, kN in enumerate(kNs):
         if fix_k_or_N == 'k':
-
-            # sns.set()
-            # d = {'N': Nks}#, 'avg_d_calls': np.mean(dcalls_array[kN_idx, :, :], axis = 1)}
-            # for seed_idx, seed in enumerate(seeds):
-            #     d["seed_" + str(seed)] = dcalls_array[kN_idx, :, seed_idx]
-            # df = pd.DataFrame(data = d)
-            # # import ipdb; ipdb.set_trace()
-            # # df = df.melt('N', var_name='cols', value_name='vals')
-            # # g = sns.factorplot(x="N", y="vals", hue='cols', data=df)
-            # print(df)
-            #
-            # melt_df = df.melt('N', var_name='cols', value_name='vals')
-            # sns.pointplot(x="N", y="vals", hue="cols", style="cols", data=melt_df)
-            # # sns.relplot(x="N", y=["d_calls", "42", "43"], kind="line", data=df)
-            # # for seed_idx, seed in enumerate(seeds):
-            # #     sns.relplot(x="N", y=seed, data=df)
-
+            if take_log:
+                np_data = np.log(dcalls_array)
+                Nks_plot = np.log(Nks)
+            else:
+                np_data = dcalls_array
+                Nks_plot = Nks
 
             plt.title(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN))
             plt.xlabel("N")
-            means = np.mean(dcalls_array[kN_idx, :, :], axis = 1)
-            plt.plot(np.log(Nks), np.log(means), 'b-') # Slice a specific k, get a 2D array
+            means = np.mean(np_data[kN_idx, :, :], axis = 1)
+            plt.plot(Nks_plot, means, 'b-') # Slice a specific k, get a 2D array
             for seed_idx, seed in enumerate(seeds):
-                plt.plot(np.log(Nks), np.log(dcalls_array[kN_idx, :, seed_idx]), 'o')
-                print(dcalls_array[kN_idx, :, seed_idx])
+                plt.plot(Nks_plot, np_data[kN_idx, :, seed_idx], 'o')
+                print(np_data[kN_idx, :, seed_idx])
 
-
-            # bars = np.std(dcalls_array[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
-            # plt.errorbar(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
-
+            bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            # plt.errorbar(Nks, np.mean(np_data[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
+            plt.errorbar(Nks_plot, means, yerr = bars,  fmt='+', capsize=3, elinewidth=2, markeredgewidth=2, color='black', label='Nominal 95% CI', zorder=100)
+            print("Summary:")
+            print(Nks_plot, means)
 
         elif fix_k_or_N == 'N':
+            raise Exception("Need to update with above")
             plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
             plt.xlabel("k")
             plt.xticks(np.arange(0, 110, 10))
-            plt.plot(Nks, np.mean(dcalls_array[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
+            plt.plot(Nks, np.mean(np_data[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
             for seed_idx, seed in enumerate(seeds):
-                plt.plot(Nks, dcalls_array[:, kN_idx, seed_idx], 'o')
-                print(dcalls_array[:, kN_idx, seed_idx])
+                plt.plot(Nks, np_data[:, kN_idx, seed_idx], 'o')
+                print(np_data[:, kN_idx, seed_idx])
+
+        showx()
+
+def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
+    assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
+
+    if fix_k_or_N == 'k':
+        kNs = ks
+        Nks = Ns
+    elif fix_k_or_N == 'N':
+        kNs = Ns
+        Nks = ks
+
+    for kN_idx, kN in enumerate(kNs):
+        if fix_k_or_N == 'k':
+            sns.set()
+            d = {'N': Nks}#, 'avg_d_calls': np.mean(dcalls_array[kN_idx, :, :], axis = 1)}
+            for seed_idx, seed in enumerate(seeds):
+                d["seed_" + str(seed)] = dcalls_array[kN_idx, :, seed_idx]
+            df = pd.DataFrame(data = d)
+            # import ipdb; ipdb.set_trace()
+            # df = df.melt('N', var_name='cols', value_name='vals')
+            # g = sns.factorplot(x="N", y="vals", hue='cols', data=df)
+            print(df)
+
+            melt_df = df.melt('N', var_name='cols', value_name='vals')
+            sns.pointplot(x="N", y="vals", hue="cols", style="cols", data=melt_df)
+            # sns.relplot(x="N", y=["d_calls", "42", "43"], kind="line", data=df)
+            # for seed_idx, seed in enumerate(seeds):
+            #     sns.relplot(x="N", y=seed, data=df)
+
+
+            bars = np.std(dcalls_array[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            plt.errorbar(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
+
+
+        elif fix_k_or_N == 'N':
+            raise Exception("Fill this in")
 
         showx()
 
 def get_swap_T(logfile):
-    '''
-    Hacky
-    '''
     with open(logfile, 'r') as fin:
         line = fin.readline()
         while line[:10] != 'Num Swaps:':
-            print(line)
             line = fin.readline()
 
         T = int(line.split(' ')[-1])
@@ -164,13 +187,13 @@ def main():
     dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 40000]
+    Ns = [1000, 3000, 10000, 20000, 30000, 40000]
     # ks = [2, 3, 4, 5, 10, 20, 30]
 
     # Ns = [1000]
     # ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
     ks = [10]
-    seeds = range(42, 49)
+    seeds = range(42, 52)
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
