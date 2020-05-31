@@ -12,8 +12,7 @@ import snakevizcode
 
 from generate_config import write_exp
 
-FN_NAME = 'data_utils.py:116(empty_counter)'
-FN_NAME2 = 'data_utils.py:108(empty_counter)'
+FN_NAME = 'data_utils.py:129(empty_counter)'
 
 def showx():
     plt.draw()
@@ -127,7 +126,7 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
                     if os.path.exists(profile_fname):
                         p = pstats.Stats(profile_fname)
                         for row in snakevizcode.table_rows(p):
-                            if FN_NAME in row or FN_NAME2 in row:
+                            if FN_NAME in row:
                                 dcalls = row[0][1]
                                 if build_or_swap == 'build':
                                     dcalls_array[k_idx][N_idx][seed_idx] = dcalls
@@ -148,19 +147,20 @@ def main():
     dataset = 'MNIST'
     metric = 'L2'
 
-    # Ns = [1000, 3000, 10000, 30000, 70000]
+    Ns = [1000, 3000, 10000, 30000, 70000]
     # ks = [2, 3, 4, 5, 10, 20, 30]
 
-    Ns = [1000]
-    ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
-    seeds = range(42, 45)
+    # Ns = [1000]
+    # ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
+    ks = [10]
+    seeds = range(42, 52)
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
-    # show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
-    # show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
-    show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 
 
 

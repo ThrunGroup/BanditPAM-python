@@ -7,12 +7,12 @@ def write_exp(algo, k, N, seed, dataset, metric):
         ", " + str(seed) + ", '" + dataset + "', '" + metric + "', ''],\n"
 
 def main():
-    algos = ['ucb', 'naive_v1']
-    dataset = 'MNIST'
+    algos = ['ucb']#, 'naive_v1']
+    dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [2, 3, 4, 5, 10, 20, 30]
+    Ns = [1000, 3000, 10000, 30000, 40000]
+    ks = [10]
     seeds = range(10)
 
     with open('auto_exp_config.py', 'w+') as fout:

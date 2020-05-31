@@ -20,7 +20,7 @@ echo "SLURMTMPDIR="$SLURMTMPDIR
 echo "working directory = "$SLURM_SUBMIT_DIR
 
 # sample process (list hostnames of the nodes you've requested)
-python -u run_profiles.py -e k2_exp_config.py -p
+python -u run_profiles.py -e auto_exp_config.py -p
 
 # can try the following to list out which GPU you have access to
 #srun /usr/local/cuda/samples/1_Utilities/deviceQuery/deviceQuery
