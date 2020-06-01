@@ -269,6 +269,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
         sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
         S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr)
+        # TODO: Need to update swap_performed variable above, right now only breaking
         if performed_or_not == "NO SWAP PERFORMED":
             break
 

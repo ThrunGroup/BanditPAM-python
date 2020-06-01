@@ -121,25 +121,25 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
 
             fig, ax = plt.subplots(figsize = (7,7))
 
-            d = {'N': Nks_plot, 'avg_d_calls': np.mean(np_data[kN_idx, :, :], axis = 1)}
+            d = {'N': Nks_plot}#, 'avg_d_calls': np.mean(np_data[kN_idx, :, :], axis = 1)}
             for seed_idx, seed in enumerate(seeds):
                 d["seed_" + str(seed)] = np_data[kN_idx, :, seed_idx]
             df = pd.DataFrame(data = d)
 
             melt_df = df.melt('N', var_name='cols', value_name='vals')
             melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.04 # Add jitter
-            sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.5)
-            sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
+            sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
+            # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
             bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             means = np.mean(np_data[kN_idx, :, :], axis = 1)
-            plt.errorbar(Nks_plot, means, yerr = bars, fmt = 'none', ecolor='blue', elinewidth = 2, zorder = 100)
+            plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5)
 
 
             sl, icpt, r_val, p_val, _ = sp.stats.linregress(Nks_plot, means)
             x_min, x_max = plt.xlim()
             y_min, y_max = plt.ylim()
-            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='r', label='Linear fit\n$R^2$=%0.2f\np=%0.1e\nslope=%0.3f'%(r_val**2, p_val, sl))
+            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit with\n95%% confidence intervals\nslope=%0.3f'%(sl))
             print("Slope is:", sl)
             plt.legend(loc="upper left")
             # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
@@ -149,8 +149,10 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         elif fix_k_or_N == 'N':
             raise Exception("Fill this in")
 
-        # showx()
-        plt.savefig(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN) + '.pdf')
+        plt.xlabel("logN (base 10)")
+        plt.ylabel("log(# distance computations) (base 10)")
+        showx()
+        # plt.savefig(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN) + '.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -216,7 +218,7 @@ def main():
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
-    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    # show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 

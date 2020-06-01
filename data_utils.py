@@ -465,6 +465,7 @@ def estimate_sigma(dataset, N = None, metric = None):
     else:
         raise Exception("bad metric in estimate_sigma")
 
+# TODO: Explicitly pass metric instead of args.metric here
 def medoid_swap(medoids, best_swap, imgs, loss, args):
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
     orig_medoid = medoids[best_swap[0]]
