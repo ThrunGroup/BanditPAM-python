@@ -6,6 +6,7 @@ import sys
 import os
 import pstats
 import numpy as np
+import scipy as sp
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -64,8 +65,8 @@ def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, tak
     for kN_idx, kN in enumerate(kNs):
         if fix_k_or_N == 'k':
             if take_log:
-                np_data = np.log(dcalls_array)
-                Nks_plot = np.log(Nks)
+                np_data = np.log10(dcalls_array)
+                Nks_plot = np.log10(Nks)
             else:
                 np_data = dcalls_array
                 Nks_plot = Nks
@@ -96,7 +97,7 @@ def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, tak
 
         showx()
 
-def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap):
+def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
     assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
 
     if fix_k_or_N == 'k':
@@ -108,31 +109,48 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap)
 
     for kN_idx, kN in enumerate(kNs):
         if fix_k_or_N == 'k':
+            if take_log:
+                np_data = np.log10(dcalls_array)
+                Nks_plot = np.log10(Nks)
+            else:
+                np_data = dcalls_array
+                Nks_plot = Nks
+
             sns.set()
-            d = {'N': Nks}#, 'avg_d_calls': np.mean(dcalls_array[kN_idx, :, :], axis = 1)}
+            sns.set_style('white')
+
+            fig, ax = plt.subplots(figsize = (7,7))
+
+            d = {'N': Nks_plot, 'avg_d_calls': np.mean(np_data[kN_idx, :, :], axis = 1)}
             for seed_idx, seed in enumerate(seeds):
-                d["seed_" + str(seed)] = dcalls_array[kN_idx, :, seed_idx]
+                d["seed_" + str(seed)] = np_data[kN_idx, :, seed_idx]
             df = pd.DataFrame(data = d)
-            # import ipdb; ipdb.set_trace()
-            # df = df.melt('N', var_name='cols', value_name='vals')
-            # g = sns.factorplot(x="N", y="vals", hue='cols', data=df)
-            print(df)
 
             melt_df = df.melt('N', var_name='cols', value_name='vals')
-            sns.pointplot(x="N", y="vals", hue="cols", style="cols", data=melt_df)
-            # sns.relplot(x="N", y=["d_calls", "42", "43"], kind="line", data=df)
-            # for seed_idx, seed in enumerate(seeds):
-            #     sns.relplot(x="N", y=seed, data=df)
+            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.04 # Add jitter
+            sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.5)
+            sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
+
+            bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            means = np.mean(np_data[kN_idx, :, :], axis = 1)
+            plt.errorbar(Nks_plot, means, yerr = bars, fmt = 'none', ecolor='blue', elinewidth = 2, zorder = 100)
 
 
-            bars = np.std(dcalls_array[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
-            plt.errorbar(Nks, np.mean(dcalls_array[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
-
+            sl, icpt, r_val, p_val, _ = sp.stats.linregress(Nks_plot, means)
+            x_min, x_max = plt.xlim()
+            y_min, y_max = plt.ylim()
+            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='r', label='Linear fit\n$R^2$=%0.2f\np=%0.1e\nslope=%0.3f'%(r_val**2, p_val, sl))
+            print("Slope is:", sl)
+            plt.legend(loc="upper left")
+            # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
+            # locs, labels = plt.xticks()
+            # plt.grid()
 
         elif fix_k_or_N == 'N':
             raise Exception("Fill this in")
 
-        showx()
+        # showx()
+        plt.savefig(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN) + '.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -180,14 +198,14 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
 
     # Show data
     for algo in algos:
-        plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap)
+        plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'SCRNAPCA'
+    dataset = 'MNIST'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 20000, 30000, 40000]
+    Ns = [1000, 3000, 10000, 30000, 70000]
     # ks = [2, 3, 4, 5, 10, 20, 30]
 
     # Ns = [1000]
