@@ -50,7 +50,7 @@ We implement our own below.
 #      return loss
 
 def CLARANS_build_and_swap(args):
-    NUMLOCAL = 10
+    NUMLOCAL = 20
     MAXNEIGHBOR = args.num_medoids
 
     total_images, total_labels, sigma = load_data(args)
