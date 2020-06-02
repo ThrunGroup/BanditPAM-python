@@ -9,6 +9,8 @@ import pickle
 
 from zss import simple_distance, Node
 from sklearn.manifold import TSNE
+from scipy.spatial.distance import cosine
+from sklearn.metrics import pairwise_distances
 
 DECIMAL_DIGITS = 5
 SIGMA_DIVISOR = 1
@@ -161,6 +163,9 @@ def d(x1, x2, metric = None):
         # Existing experiments should be ok since x1.shape[0] was always 1
         # but should rerun all experiments just in case. Timestamp: Sunday, 5/24/2020 2:28PM
 
+        # x1 is (1, d)
+        # x2 is (n, d)
+        # return should be (n)
         assert x1.shape[0] == 1, "X1 is misshapen!"
         for _unused1 in range(x1.shape[0]):
             for _unused2 in range(x2.shape[0]):
@@ -171,6 +176,8 @@ def d(x1, x2, metric = None):
             return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
         elif metric == "L1":
             return np.linalg.norm(x1 - x2, ord = 1, axis = 1)
+        elif metric == "COSINE":
+            return pairwise_distances(x1, x2, metric = 'cosine').reshape(-1)
         else:
             raise Exception("Bad metric specified")
 
@@ -184,6 +191,8 @@ def d(x1, x2, metric = None):
             return np.linalg.norm(x1 - x2, ord = 2)
         elif metric == "L1":
             return np.linalg.norm(x1 - x2, ord = 1)
+        elif metric == "COSINE":
+            return cosine(x1, x2)
         else:
             raise Exception("Bad metric specified")
 
