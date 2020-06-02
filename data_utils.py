@@ -68,7 +68,6 @@ def load_data(args):
         # if args.verbose >= 2:
         #     plt.imshow(train_images[0], cmap = 'gray')
         #     plt.show()
-
         # NOTE: Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
     elif args.dataset == "SCRNA":
