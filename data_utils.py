@@ -23,6 +23,7 @@ There are 5 functions that call d and therefore require the metric specification
 - cost_fn_difference_FP1
 - get_best_distances
 - estimate_sigma
+- medoid_swap
 '''
 
 def get_args(arguments):
@@ -208,9 +209,9 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
             return np.array([simple_distance(x1, x2_elem) for x2_elem in x2])
         else:
             raise Exception("Bad x2 type tree distance fn")
-    else:
-        assert metric == 'PRECOMP', "Bad args to tree distance fn"
+    elif metric == 'PRECOMP':
         assert dist_mat is not None, "Must pass distance matrix!"
+        assert type(x1) == int or type(x1) == np.int64, "Must pass x1 as an int"
         if type(x2) == int or type(x2) == np.int64:
             # 1-on-1 comparison
             empty_counter()
@@ -222,6 +223,8 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
             return np.array([dist_mat[x1, x2_elem] for x2_elem in x2])
         else:
             raise Exception("Bad x2 type tree distance fn", type(x2))
+    else:
+        raise Exception('bad METRIC argument to tree distance function')
 
 def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True, dist_mat = None):
     '''
@@ -238,6 +241,7 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff =
         return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx])
     elif metric == 'PRECOMP':
         assert type(dataset[tar_idx]) == Node, "Misshapen!"
+        # Need to pass INDICES of nodes instead of nodes themselves
         if use_diff:
             return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx]) - best_distances[ref_idx]
         return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx])
@@ -301,6 +305,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
     #######################
     # Approach 2:
     for s_idx, s in enumerate(swaps):
+        raise Exception("This fn does not support tree edit distance / precomp yet. May not be an issue;comment this line out if you're OK with that.")
         # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]
@@ -442,6 +447,7 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
             if metric == 'PRECOMP':
+                # NOTE: Can probably consolidate this with case below by just saying dist_mat = None if not precomp
                 if inner_d_fn(m, point, metric, dist_mat) < best_distances[p_idx]:
                     second_best_distances[p_idx] = best_distances[p_idx]
                     best_distances[p_idx] = inner_d_fn(m, point, metric, dist_mat)
