@@ -16,6 +16,7 @@ from generate_config import write_exp
 
 FN_NAME_1 = 'data_utils.py:129(empty_counter)'
 FN_NAME_2 = 'data_utils.py:141(empty_counter)'
+FN_NAME_3 = 'data_utils.py:142(empty_counter)'
 
 def showx():
     plt.draw()
@@ -125,9 +126,6 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             d = {'N': Nks_plot}#, 'avg_d_calls': np.mean(np_data[kN_idx, :, :], axis = 1)}
             for seed_idx, seed in enumerate(seeds):
                 d["seed_" + str(seed)] = np_data[kN_idx, :, seed_idx]
-                # if build_or_swap == 'swap' and seed == 44: d['seed_44'][3] = np.mean([7.472175, 7.460308, 7.382200, 7.453079])
-                # if build_or_swap == 'swap' and seed == 46: d['seed_46'][3] = np.mean([7.444299, 7.473549, 7.373168, 7.455095]) # For scRNAPCA + L2 + K=4
-                # if build_or_swap == 'swap' and (seed == 44 or seed == 45 or seed == 46): d["seed_" + str(seed)][4] = 7.6 # For scRNAPCA + L2 + K=4
             df = pd.DataFrame(data = d)
             print(df)
 
@@ -188,6 +186,8 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric,
         prefix = 'profiles/' + dir_ + '/p-B-'
     elif build_or_swap == 'swap':
         prefix = 'profiles/' + dir_ + '/p-S-'
+    elif build_or_swap == 'weighted' or build_or_swap == 'weighted_T':
+        pass
     else:
         raise Exception("Error pi")
 
@@ -199,22 +199,69 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric,
         for N_idx, N in enumerate(Ns):
             for k_idx, k in enumerate(ks):
                 for seed_idx, seed in enumerate(seeds):
-                    profile_fname = prefix + algo + '-True-BS-v-0-k-' + str(k) + \
-                        '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
-                    if os.path.exists(profile_fname):
-                        p = pstats.Stats(profile_fname)
-                        for row in snakevizcode.table_rows(p):
-                            if FN_NAME_1 in row or FN_NAME_2 in row:
-                                dcalls = row[0][1]
-                                if build_or_swap == 'build':
-                                    dcalls_array[k_idx][N_idx][seed_idx] = dcalls
-                                elif build_or_swap == 'swap':
-                                    logfile = log_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
-                                        '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
-                                    T = get_swap_T(logfile)
-                                    dcalls_array[k_idx][N_idx][seed_idx] = dcalls / T
+                    if build_or_swap == 'weighted' or build_or_swap == 'weighted_T':
+                        prefix = 'profiles/' + dir_ + '/p-'
+
+                        build_prefix = prefix + 'B-'
+                        build_profile_name = build_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
+                            '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+
+                        swap_prefix = prefix + 'S-'
+                        swap_profile_name = swap_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
+                            '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+
+                        logfile = log_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
+                            '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+
+                        if not os.path.exists(build_profile_name):
+                            raise Exception("Warning: profile not found for ", build_profile_name)
+                        if not os.path.exists(build_profile_name):
+                            raise Exception("Warning: profile not found for ", build_profile_name)
+                        if not os.path.exists(logfile):
+                            raise Exception("Warning: Log file not found for ", logfile)
+
+                        T = get_swap_T(logfile)
+
+                        b_p = pstats.Stats(build_profile_name)
+                        for row in snakevizcode.table_rows(b_p):
+                            if FN_NAME_1 in row or FN_NAME_2 in row or FN_NAME_3 in row:
+                                if build_or_swap == 'weighted':
+                                    dcalls_array[k_idx][N_idx][seed_idx] += row[0][1] # build + avg(swap)
+                                elif build_or_swap == 'weighted_T':
+                                    dcalls_array[k_idx][N_idx][seed_idx] += row[0][1] / (T + 1) # (build + swap) / (T + 1)
+                                else:
+                                    raise Exception("blank")
+
+                        s_p = pstats.Stats(swap_profile_name)
+                        for row in snakevizcode.table_rows(s_p):
+                            if FN_NAME_1 in row or FN_NAME_2 in row or FN_NAME_3 in row:
+                                if build_or_swap == 'weighted':
+                                    dcalls_array[k_idx][N_idx][seed_idx] += row[0][1] / T # build + avg(swap)
+                                elif build_or_swap == 'weighted_T':
+                                    dcalls_array[k_idx][N_idx][seed_idx] += row[0][1] / (T + 1) # (build + swap) / (T + 1)
+                                else:
+                                    raise Exception("blank 2")
+
                     else:
-                        print("Warning: profile not found for ", profile_fname)
+                        assert build_or_swap == 'build' or build_or_swap == 'swap', "Error with build_or_swap"
+                        profile_fname = prefix + algo + '-True-BS-v-0-k-' + str(k) + \
+                            '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+                        if os.path.exists(profile_fname):
+                            p = pstats.Stats(profile_fname)
+                            for row in snakevizcode.table_rows(p):
+                                if FN_NAME_1 in row or FN_NAME_2 in row or FN_NAME_3 in row:
+                                    dcalls = row[0][1]
+                                    if build_or_swap == 'build':
+                                        dcalls_array[k_idx][N_idx][seed_idx] = dcalls
+                                    elif build_or_swap == 'swap':
+                                        logfile = log_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
+                                            '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
+                                        T = get_swap_T(logfile)
+                                        dcalls_array[k_idx][N_idx][seed_idx] = dcalls / T
+                                    else:
+                                        raise Exception("Averaging method not supported")
+                        else:
+                            print("Warning: profile not found for ", profile_fname)
 
     # Show data
     for algo in algos:
@@ -242,20 +289,20 @@ def main():
 
     #for MNIST L2
     # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
-    dataset = 'MNIST'
-    metric = 'L2'
-    Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [10]
-    seeds = range(42, 52)
-    dir_ = 'MNIST_paper'
-
-    # #for scRNAPCA, L2, K = 10
-    # dataset = 'SCRNAPCA'
+    # dataset = 'MNIST'
     # metric = 'L2'
-    # Ns = [10000, 20000, 30000, 40000]
+    # Ns = [1000, 3000, 10000, 30000, 70000]
     # ks = [10]
     # seeds = range(42, 52)
-    # dir_ = 'SCRNAPCA_L2_k-5_paper'
+    # dir_ = 'MNIST_paper'
+
+    # #for scRNAPCA, L2, K = 10
+    dataset = 'SCRNAPCA'
+    metric = 'L2'
+    Ns = [10000, 20000, 30000, 40000]
+    ks = [10]
+    seeds = range(42, 52)
+    dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
 
     # #for scRNAPCA, L2, K = 5
     # #NOTE: Not all experiments are done
@@ -264,13 +311,15 @@ def main():
     # Ns = [3000, 10000, 20000, 30000, 40000]
     # ks = [5]
     # seeds = range(42, 45)
-    # dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
+    # dir_ = 'SCRNAPCA_L2_k-5_paper'
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric, dir_)
     show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric, dir_)
+    show_plots('k', 'weighted', Ns, ks, seeds, algos, dataset, metric, dir_)
+    show_plots('k', 'weighted_T', Ns, ks, seeds, algos, dataset, metric, dir_)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 
