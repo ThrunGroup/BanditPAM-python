@@ -107,11 +107,11 @@ def compute_pairwise_distances(trees):
                 dist_mat[j, i] = i_j_dist # symmetric
     np.savetxt('tree-' + str(N) + '.dist', dist_mat)
 
-if __name__ == "__main__":
-    args = get_args(sys.argv[1:])
-    assert args.dataset == "HOC4", "Can only do this for trees"
-    trees, _1, _2 = load_data(args)
-    compute_pairwise_distances(trees)
+# if __name__ == "__main__":
+#     args = get_args(sys.argv[1:])
+#     assert args.dataset == "HOC4", "Can only do this for trees"
+#     trees, _1, _2 = load_data(args)
+#     # compute_pairwise_distances(trees)
 
 
 
@@ -120,9 +120,9 @@ if __name__ == "__main__":
 
 
 # if __name__ == "__main__":
-# use this to spot-check edit distances
-#     ast0 = "hoc_data/hoc4/asts/0.json"
-#     ast1 = "hoc_data/hoc4/asts/1.json"
+# # use this to spot-check edit distances
+#     ast0 = "hoc_data/hoc4/asts/10069.json"
+#     ast1 = "hoc_data/hoc4/asts/9933.json"
 #     with open(ast0, 'r') as fin1:
 #         with open(ast1, 'r') as fin2:
 #             js = json.load(fin1)
