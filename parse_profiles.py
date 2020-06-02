@@ -14,7 +14,8 @@ import snakevizcode
 
 from generate_config import write_exp
 
-FN_NAME = 'data_utils.py:141(empty_counter)'
+FN_NAME_1 = 'data_utils.py:129(empty_counter)'
+FN_NAME_2 = 'data_utils.py:141(empty_counter)'
 
 def showx():
     plt.draw()
@@ -137,14 +138,19 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
 
             bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             means = np.mean(np_data[kN_idx, :, :], axis = 1)
-            plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5)
+            plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5, label="95%% confidence interval")
 
 
             sl, icpt, r_val, p_val, _ = sp.stats.linregress(Nks_plot, means)
             x_min, x_max = plt.xlim()
             y_min, y_max = plt.ylim()
-            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit with\n95%% confidence intervals\nslope=%0.3f'%(sl))
-            plt.plot([x_min, x_max], [x_min * 2 + icpt, x_max * 2 + icpt], color='red', label='$N^2$ algorithm (est)'%(sl))
+            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit \nslope=%0.3f'%(sl))
+
+            if build_or_swap == 'build':
+                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+            elif build_or_swap == 'swap':
+                plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+
             print("Slope is:", sl)
             plt.legend(loc="upper left")
             # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
@@ -168,17 +174,17 @@ def get_swap_T(logfile):
         T = int(line.split(' ')[-1])
     return T
 
-def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric):
+def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric, dir_):
     dcalls_array = np.zeros((len(ks), len(Ns), len(seeds)))
 
     if build_or_swap == 'build':
-        prefix = 'profiles/p-B-'
+        prefix = 'profiles/' + dir_ + '/p-B-'
     elif build_or_swap == 'swap':
-        prefix = 'profiles/p-S-'
+        prefix = 'profiles/' + dir_ + '/p-S-'
     else:
         raise Exception("Error pi")
 
-    log_prefix = 'L-'
+    log_prefix = 'profiles/' + dir_ + '/L-'
 
     # Gather data
     for algo in algos:
@@ -191,13 +197,12 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
                     if os.path.exists(profile_fname):
                         p = pstats.Stats(profile_fname)
                         for row in snakevizcode.table_rows(p):
-                            # print(row)
-                            if FN_NAME in row:
+                            if FN_NAME_1 in row or FN_NAME_2 in row:
                                 dcalls = row[0][1]
                                 if build_or_swap == 'build':
                                     dcalls_array[k_idx][N_idx][seed_idx] = dcalls
                                 elif build_or_swap == 'swap':
-                                    logfile = 'profiles/L-' + algo + '-True-BS-v-0-k-' + str(k) + \
+                                    logfile = log_prefix + algo + '-True-BS-v-0-k-' + str(k) + \
                                         '-N-' + str(N) + '-s-' + str(seed) + '-d-' + dataset + '-m-' + metric + '-w-'
                                     T = get_swap_T(logfile)
                                     dcalls_array[k_idx][N_idx][seed_idx] = dcalls / T
@@ -217,43 +222,48 @@ def main():
     Ns = [1000, 2000, 3000, 3360]
     ks = [3]
     seeds = range(42, 52)
+    dir_ = 'HOC4_paper'
 
-    #for MNIST COSINE
-    # NOTE: not all exps complete
-    dataset = 'MNIST'
-    metric = 'COSINE'
-    Ns = [3000, 10000, 20000, 40000]
-    ks = [5]
-    seeds = range(42, 47)
+    # #for MNIST COSINE
+    # # NOTE: not all exps complete
+    # dataset = 'MNIST'
+    # metric = 'COSINE'
+    # Ns = [3000, 10000, 20000, 40000]
+    # ks = [5]
+    # seeds = range(42, 47)
+    # dir_ = 'MNIST_COSINE_paper'
 
-    #for MNIST L2
-    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
-    dataset = 'MNIST'
-    metric = 'L2'
-    Ns = [1000, 3000, 10000, 30000, 70000]
-    ks = [10]
-    seeds = range(42, 52)
+    # #for MNIST L2
+    # # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
+    # dataset = 'MNIST'
+    # metric = 'L2'
+    # Ns = [1000, 3000, 10000, 30000, 70000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_paper'
 
-    #for scRNAPCA, L2, K = 10
-    dataset = 'SCRNAPCA'
-    metric = 'L2'
-    Ns = [10000, 20000, 30000, 40000]
-    ks = [10]
-    seeds = range(42, 52)
+    # #for scRNAPCA, L2, K = 10
+    # dataset = 'SCRNAPCA'
+    # metric = 'L2'
+    # Ns = [10000, 20000, 30000, 40000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'SCRNAPCA_L2_k-5_paper'
 
-    #for scRNAPCA, L2, K = 5
-    #NOTE: Not all experiments are done
-    dataset = 'SCRNAPCA'
-    metric = 'L2'
-    Ns = [3000, 10000, 20000, 30000, 40000]
-    ks = [5]
-    seeds = range(42, 45)
+    # #for scRNAPCA, L2, K = 5
+    # #NOTE: Not all experiments are done
+    # dataset = 'SCRNAPCA'
+    # metric = 'L2'
+    # Ns = [3000, 10000, 20000, 30000, 40000]
+    # ks = [5]
+    # seeds = range(42, 45)
+    # dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
-    show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
-    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric, dir_)
+    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric, dir_)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 
