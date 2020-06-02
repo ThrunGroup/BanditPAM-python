@@ -8,11 +8,11 @@ def write_exp(algo, k, N, seed, dataset, metric):
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'HOC4'
-    metric = 'TREE'
+    dataset = 'SCRNAPCA'
+    metric = 'L2'
 
-    Ns = [1000, 2000, 3000, 3630]
-    ks = [3]
+    Ns = [10000, 15000, 20000, 25000, 30000, 35000, 40000]
+    ks = [10]
     seeds = range(10)
 
     with open('auto_exp_config.py', 'w+') as fout:

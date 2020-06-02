@@ -90,7 +90,7 @@ def load_data(args):
         dir_ = 'hoc_data/hoc4/trees/'
         tree_files = [dir_ + tree for tree in os.listdir(dir_) if tree != ".DS_Store"]
         trees = []
-        for tree_f in tree_files:
+        for tree_f in sorted(tree_files):
             with open(tree_f, 'rb') as fin:
                 tree = pickle.load(fin)
                 trees.append(tree)

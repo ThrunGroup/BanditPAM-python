@@ -4,6 +4,8 @@ import pickle
 
 from zss import simple_distance, Node
 
+from data_utils import *
+
 def convert_to_tree(source):
     '''
     Small issue with if statements: if someone is missing an IF altogether, then
@@ -89,6 +91,29 @@ def write_trees():
                 js = json.load(fin)
                 tree = convert_to_tree(js)
                 pickle.dump(tree, fout)
+
+def compute_pairwise_distances(trees):
+    N = len(trees)
+    print("Number of trees:", N)
+    dist_mat = -np.ones((N, N))
+    for i in range(N):
+        if i % 10 == 0: print(i)
+        for j in range(i, N):
+            if i == j:
+                dist_mat[i, j] = 0
+            else:
+                i_j_dist = d_tree(trees[i], trees[j], metric = "TREE")
+                dist_mat[i, j] = i_j_dist
+                dist_mat[j, i] = i_j_dist # symmetric
+    np.savetxt('tree-' + str(N) + '.dist', dist_mat)
+
+if __name__ == "__main__":
+    args = get_args(sys.argv[1:])
+    assert args.dataset == "HOC4", "Can only do this for trees"
+    trees, _1, _2 = load_data(args)
+    compute_pairwise_distances(trees)
+
+
 
 # if __name__ == "__main__":
 #     write_trees()

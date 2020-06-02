@@ -204,10 +204,10 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'MNIST'
+    dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [1000, 3000, 10000, 30000, 70000]
+    Ns = [1000, 3000, 10000, 20000, 30000, 40000]
     # ks = [2, 3, 4, 5, 10, 20, 30]
 
     # Ns = [1000]
@@ -218,7 +218,7 @@ def main():
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
     show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric)
-    # show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
+    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 
