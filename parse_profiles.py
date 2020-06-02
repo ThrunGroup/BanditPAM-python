@@ -131,7 +131,7 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             print(df)
 
             melt_df = df.melt('N', var_name='cols', value_name='vals')
-            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.04 # Add jitter
+            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.02 # Add jitter
             sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
             # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
@@ -144,6 +144,7 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             x_min, x_max = plt.xlim()
             y_min, y_max = plt.ylim()
             plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit with\n95%% confidence intervals\nslope=%0.3f'%(sl))
+            plt.plot([x_min, x_max], [x_min * 2 + icpt, x_max * 2 + icpt], color='red', label='$N^2$ algorithm (est)'%(sl))
             print("Slope is:", sl)
             plt.legend(loc="upper left")
             # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
@@ -153,8 +154,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         elif fix_k_or_N == 'N':
             raise Exception("Fill this in")
 
-        plt.xlabel("logN (base 10)")
-        plt.ylabel("log(# distance computations) (base 10)")
+        plt.xlabel("log10(N)")
+        plt.ylabel("log10(# of distance computations)")
         showx()
         # plt.savefig(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN) + '.pdf')
 
@@ -217,10 +218,36 @@ def main():
     ks = [3]
     seeds = range(42, 52)
 
-    # ks = [2, 3, 4, 5, 10, 20, 30]
-    # Ns = [1000]
-    # ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
+    #for MNIST COSINE
+    # NOTE: not all exps complete
+    dataset = 'MNIST'
+    metric = 'COSINE'
+    Ns = [3000, 10000, 20000, 40000]
+    ks = [5]
+    seeds = range(42, 47)
 
+    #for MNIST L2
+    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
+    dataset = 'MNIST'
+    metric = 'L2'
+    Ns = [1000, 3000, 10000, 30000, 70000]
+    ks = [10]
+    seeds = range(42, 52)
+
+    #for scRNAPCA, L2, K = 10
+    dataset = 'SCRNAPCA'
+    metric = 'L2'
+    Ns = [10000, 20000, 30000, 40000]
+    ks = [10]
+    seeds = range(42, 52)
+
+    #for scRNAPCA, L2, K = 5
+    #NOTE: Not all experiments are done
+    dataset = 'SCRNAPCA'
+    metric = 'L2'
+    Ns = [3000, 10000, 20000, 30000, 40000]
+    ks = [5]
+    seeds = range(42, 45)
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
@@ -229,7 +256,6 @@ def main():
     show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
-
 
 
 if __name__ == '__main__':
