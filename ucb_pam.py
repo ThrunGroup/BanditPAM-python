@@ -1,7 +1,7 @@
 from data_utils import *
 import itertools
 
-def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None, return_sigma = False):
+def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None, return_sigma = False, dist_mat = None):
     # NOTE: Fix this with array broadcasting
     N = len(imgs)
     estimates = np.zeros(len(targets))
@@ -12,9 +12,9 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
     for tar_idx, target in enumerate(targets):
         if best_distances[0] == np.inf:
             # No medoids have been assigned, can't use the difference in loss
-            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = False)
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = False, dist_mat = dist_mat)
         else:
-            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = True)
+            costs = cost_fn(imgs, target, tmp_refs, best_distances, metric = metric, use_diff = True, dist_mat = dist_mat)
 
         estimates[tar_idx] = np.mean(costs)
         if return_sigma:
@@ -25,7 +25,7 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
 
     return estimates.round(DECIMAL_DIGITS)
 
-def UCB_build(args, imgs, sigma):
+def UCB_build(args, imgs, sigma, dist_mat = None):
     B_logstring = init_logstring()
     ### Parameters
     metric = args.metric
@@ -38,7 +38,7 @@ def UCB_build(args, imgs, sigma):
         warm_start_medoids = list(map(int, args.warm_start_medoids.split(',')))
         medoids = warm_start_medoids.copy()
         num_medoids_found = len(medoids)
-        best_distances, closest_medoids = np.array(get_best_distances(medoids, imgs, metric = metric))
+        best_distances, closest_medoids = np.array(get_best_distances(medoids, imgs, metric = metric, dist_mat = dist_mat))
     else:
         medoids = []
         num_medoids_found = 0
@@ -84,7 +84,7 @@ def UCB_build(args, imgs, sigma):
                 if args.verbose >= 1:
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
-                estimates[compute_exactly] = build_sample_for_targets(imgs, compute_exactly, N, best_distances, metric = metric, return_sigma = False)
+                estimates[compute_exactly] = build_sample_for_targets(imgs, compute_exactly, N, best_distances, metric = metric, return_sigma = False, dist_mat = dist_mat)
                 lcbs[compute_exactly] = estimates[compute_exactly]
                 ucbs[compute_exactly] = estimates[compute_exactly]
                 exact_mask[compute_exactly] = 1
@@ -95,10 +95,10 @@ def UCB_build(args, imgs, sigma):
 
             # Don't update all estimates, just pulled arms
             if compute_sigma:
-                sample_costs, sigmas = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = True)
+                sample_costs, sigmas = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = True, dist_mat = dist_mat)
                 compute_sigma = False
             else:
-                sample_costs = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = False)
+                sample_costs = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = False, dist_mat = dist_mat)
 
             estimates[candidates] = \
                 ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_costs)) / (this_batch_size + T_samples[candidates])
@@ -121,7 +121,7 @@ def UCB_build(args, imgs, sigma):
             print("New Medoid:", new_medoid)
 
         medoids.append(new_medoid)
-        best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
+        best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric, dist_mat = dist_mat)
         print("Computed exactly for:", exact_mask.sum())
 
         # min, 25, median, 75, max, mean
@@ -134,7 +134,7 @@ def UCB_build(args, imgs, sigma):
 
 
 
-def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False, metric = None, return_sigma = False):
+def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False, metric = None, return_sigma = False, dist_mat = None):
     '''
     Note that targets is a TUPLE ( [o_1, o_2, o_3, ... o_m], [n_1, n_2, ... n_m] )
     The corresponding target swaps are [o_1, n_1], [o_2, n_2], .... [o_m, n_m]
@@ -160,18 +160,19 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
     if FastPAM1:
         if return_sigma:
-            estimates, sigmas = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = True) # NOTE: depends on other medoids too!
+            estimates, sigmas = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = True, dist_mat = dist_mat) # NOTE: depends on other medoids too!
             return estimates.round(DECIMAL_DIGITS), sigmas
         else:
-            estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = False) # NOTE: depends on other medoids too!
+            estimates = cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = metric, return_sigma = False, dist_mat = dist_mat) # NOTE: depends on other medoids too!
     else:
         # NOTE: Return_sigma currently only supported with FP1 trick; need to add it to cost_fn_difference too
+        raise Exception("Do not use this! Doesn't support dist_mat")
         estimates = cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = metric)
 
     return estimates.round(DECIMAL_DIGITS)
 
 
-def UCB_swap(args, imgs, sigma, init_medoids):
+def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
     S_logstring = init_logstring()
     metric = args.metric
     k = len(init_medoids)
@@ -182,7 +183,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
-    best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
+    best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric, dist_mat = dist_mat)
     loss = np.mean(best_distances)
     iter = 0
     swap_performed = True
@@ -225,7 +226,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
                     print("COMPUTING EXACTLY ON STEP COUNT", step_count)
 
                 exact_accesses = (compute_exactly[:, 0], compute_exactly[:, 1])
-                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N, args.fast_pam1, metric = metric, return_sigma = False)
+                estimates[exact_accesses] = swap_sample_for_targets(imgs, exact_accesses, medoids, N, args.fast_pam1, metric = metric, return_sigma = False, dist_mat = dist_mat)
                 lcbs[exact_accesses] = estimates[exact_accesses]
                 ucbs[exact_accesses] = estimates[exact_accesses]
                 exact_mask[exact_accesses] = 1
@@ -239,11 +240,11 @@ def UCB_swap(args, imgs, sigma, init_medoids):
             # Don't update all estimates, just pulled arms
             accesses = (candidates[:, 0], candidates[:, 1])
             if compute_sigma:
-                new_samples, sigmas = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = True)
+                new_samples, sigmas = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = True, dist_mat = dist_mat)
                 sigmas = sigmas.reshape(k, N) # So that can access it with sigmas[accesses] below
                 compute_sigma = False
             else:
-                new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = False)
+                new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = False, dist_mat = dist_mat)
 
             estimates[accesses] = \
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
@@ -265,7 +266,7 @@ def UCB_swap(args, imgs, sigma, init_medoids):
         best_swap = best_swaps[0]
 
         print("Computed exactly for:", exact_mask.sum())
-        performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
+        performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = dist_mat)
 
         sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
         S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr)
@@ -278,18 +279,25 @@ def UCB_swap(args, imgs, sigma, init_medoids):
 def UCB_build_and_swap(args):
     num_swaps = -1
     final_loss = -1
+    dist_mat = None
 
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
-    if args.metric == 'TREE':
+    if args.metric == 'PRECOMP':
+        dist_mat = np.loadtxt('tree-3630.dist')
+        random_indices = np.random.choice(len(total_images), size = args.sample_size, replace = False)
+        imgs = np.array([total_images[x] for x in random_indices])
+        dist_mat = dist_mat[random_indices][:, random_indices]
+    elif args.metric == 'TREE':
         imgs = np.random.choice(total_images, size = args.sample_size, replace = False)
     else:
+        # Can remove range() here?
         imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
 
     built_medoids = []
     B_logstring = {}
     if 'B' in args.build_ao_swap:
-        built_medoids, B_logstring = UCB_build(args, imgs, sigma)
+        built_medoids, B_logstring = UCB_build(args, imgs, sigma, dist_mat = dist_mat)
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
@@ -304,7 +312,7 @@ def UCB_build_and_swap(args):
         else:
             init_medoids = built_medoids.copy()
 
-        swapped_medoids, S_logstring, num_swaps, final_loss = UCB_swap(args, imgs, sigma, init_medoids)
+        swapped_medoids, S_logstring, num_swaps, final_loss = UCB_swap(args, imgs, sigma, init_medoids, dist_mat = dist_mat)
         print("Final medoids", swapped_medoids)
 
     return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss

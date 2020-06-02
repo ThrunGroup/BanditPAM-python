@@ -194,21 +194,36 @@ def d(x1, x2, metric = None):
         else:
             raise Exception("Bad metric specified")
 
-def d_tree(x1, x2, metric = None):
-    assert metric == 'TREE', "Bad args to d_tree"
-    assert type(x1) == Node, "First arg must always be a single node" # Code is currently structured to loop over arms
-    if type(x2) == Node:
-        # 1-on-1 comparison
-        empty_counter()
-        return simple_distance(x1, x2)
-    elif type(x2) == np.ndarray:
-        for _unused in x2:
+def d_tree(x1, x2, metric = None, dist_mat = None):
+    if metric == 'TREE':
+        assert metric == 'TREE', "Bad args to tree distance fn"
+        assert type(x1) == Node, "First arg must always be a single node" # Code is currently structured to loop over arms
+        if type(x2) == Node:
+            # 1-on-1 comparison
             empty_counter()
-        return np.array([simple_distance(x1, x2_elem) for x2_elem in x2])
+            return simple_distance(x1, x2)
+        elif type(x2) == np.ndarray:
+            for _unused in x2:
+                empty_counter()
+            return np.array([simple_distance(x1, x2_elem) for x2_elem in x2])
+        else:
+            raise Exception("Bad x2 type tree distance fn")
     else:
-        raise Exception("Bad x2 type d_tree")
+        assert metric == 'PRECOMP', "Bad args to tree distance fn"
+        assert dist_mat is not None, "Must pass distance matrix!"
+        if type(x2) == int or type(x2) == np.int64:
+            # 1-on-1 comparison
+            empty_counter()
+            return dist_mat[x1, x2]
+        elif type(x2) == np.ndarray:
+            for _unused in x2:
+                empty_counter()
+            print(x2)
+            return np.array([dist_mat[x1, x2_elem] for x2_elem in x2])
+        else:
+            raise Exception("Bad x2 type tree distance fn", type(x2))
 
-def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True):
+def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True, dist_mat = None):
     '''
     Returns the "cost" of point tar as a medoid:
     Distances from tar to ref if it's less than the existing best distance,
@@ -221,6 +236,11 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff =
         if use_diff:
             return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
         return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx])
+    elif metric == 'PRECOMP':
+        assert type(dataset[tar_idx]) == Node, "Misshapen!"
+        if use_diff:
+            return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx]) - best_distances[ref_idx]
+        return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx])
     else:
         if use_diff:
             return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
@@ -252,7 +272,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
     # NOTE: Very expensive for distance calls!
     # NOTE: How about using the "gain" in the loss instead?
     num_targets = len(swaps)
-    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric)
+    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric, dist_mat = dist_mat)
 
     # gains = new - old .... should negative
     new_losses = np.zeros(num_targets)
@@ -300,7 +320,7 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
 
     return new_losses
 
-def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False, use_diff = True):
+def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False, use_diff = True, dist_mat = None):
     '''
     Returns the new losses if we were to perform the swaps in swaps
 
@@ -324,7 +344,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
     #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
 
     num_targets = len(swaps)
-    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric)
+    reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric, dist_mat = dist_mat)
 
     new_losses = np.zeros(num_targets)
     sigmas = np.zeros(num_targets)
@@ -346,6 +366,8 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
         if metric == 'TREE':
             ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric)
+        elif metric == 'PRECOMP':
+            ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric, dist_mat)
         else:
             ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
 
@@ -382,7 +404,7 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
 
     return new_losses
 
-def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None):
+def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None, dist_mat = None):
     '''
     For each point, calculate the minimum distance to any medoid
 
@@ -396,6 +418,9 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
 
     if metric == 'TREE':
         inner_d_fn = d_tree
+    elif metric == 'PRECOMP':
+        inner_d_fn = d_tree
+        assert dist_mat is not None, "Need to pass dist_mat to get_best_distances"
     else:
         inner_d_fn = d
 
@@ -416,13 +441,22 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     for p_idx, point in enumerate(refs):
         for m in medoids:
             # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
-            if inner_d_fn(dataset[m], dataset[point], metric) < best_distances[p_idx]:
-                second_best_distances[p_idx] = best_distances[p_idx]
-                best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
-                closest_medoids[p_idx] = m
-            elif inner_d_fn(dataset[m], dataset[point], metric) < second_best_distances[p_idx]:
-                # Reach this case if the new medoid is between current 2nd and first, but not better than first
-                second_best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
+            if metric == 'PRECOMP':
+                if inner_d_fn(m, point, metric, dist_mat) < best_distances[p_idx]:
+                    second_best_distances[p_idx] = best_distances[p_idx]
+                    best_distances[p_idx] = inner_d_fn(m, point, metric, dist_mat)
+                    closest_medoids[p_idx] = m
+                elif inner_d_fn(m, point, metric, dist_mat) < second_best_distances[p_idx]:
+                    # Reach this case if the new medoid is between current 2nd and first, but not better than first
+                    second_best_distances[p_idx] = inner_d_fn(m, point, metric, dist_mat)
+            else:
+                if inner_d_fn(dataset[m], dataset[point], metric) < best_distances[p_idx]:
+                    second_best_distances[p_idx] = best_distances[p_idx]
+                    best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
+                    closest_medoids[p_idx] = m
+                elif inner_d_fn(dataset[m], dataset[point], metric) < second_best_distances[p_idx]:
+                    # Reach this case if the new medoid is between current 2nd and first, but not better than first
+                    second_best_distances[p_idx] = inner_d_fn(dataset[m], dataset[point], metric)
 
     if return_second_best:
         return best_distances, closest_medoids, second_best_distances
@@ -473,7 +507,7 @@ def estimate_sigma(dataset, N = None, metric = None):
         raise Exception("bad metric in estimate_sigma")
 
 # TODO: Explicitly pass metric instead of args.metric here
-def medoid_swap(medoids, best_swap, imgs, loss, args):
+def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
     orig_medoid = medoids[best_swap[0]]
     new_medoid = best_swap[1]
@@ -481,7 +515,7 @@ def medoid_swap(medoids, best_swap, imgs, loss, args):
     new_medoids = medoids.copy()
     new_medoids.remove(orig_medoid)
     new_medoids.append(new_medoid)
-    new_best_distances, new_closest_medoids = get_best_distances(new_medoids, imgs, metric = args.metric)
+    new_best_distances, new_closest_medoids = get_best_distances(new_medoids, imgs, metric = args.metric, dist_mat = dist_mat)
     new_loss = np.mean(new_best_distances)
     performed_or_not = ''
     if new_loss < loss:
