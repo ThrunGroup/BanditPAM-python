@@ -76,7 +76,6 @@ def load_data(args):
         #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv', sep=',', index_col=0)
         file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
         data_ = np.load(file)
-
         # sigma = estimate_sigma(data_, 300, metric="L2")
         sigma = 25 # NOTE: Really need to optimize this...
         return data_, None, sigma

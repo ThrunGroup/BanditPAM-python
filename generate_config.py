@@ -11,8 +11,9 @@ def main():
     dataset = 'SCRNAPCA'
     metric = 'L2'
 
-    Ns = [10000, 15000, 20000, 25000, 30000, 35000, 40000]
-    ks = [10]
+    # Ns = [3000, 10000, 20000, 40000, 70000] # For MNIST
+    Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNAPCA
+    ks = [5]
     seeds = range(10)
 
     with open('auto_exp_config.py', 'w+') as fout:
