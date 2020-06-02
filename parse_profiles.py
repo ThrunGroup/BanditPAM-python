@@ -147,12 +147,19 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit \nslope=%0.3f'%(sl))
 
             if build_or_swap == 'build':
-                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+                # NOTE: kN^2 here in build step
+                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)')
             elif build_or_swap == 'swap':
+                # NOTE: N^2 if using FP1 trick and clusters are balanced
+                # NOTE: Could also plot kN^2 for when clusters are not balanced
                 plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
 
             print("Slope is:", sl)
-            plt.legend(loc="upper left")
+
+            handles, labels = ax.get_legend_handles_labels()
+            labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
+            ax.legend(handles[::-1], labels[::-1], loc="upper left")
+
             # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
             # locs, labels = plt.xticks()
             # plt.grid()
@@ -217,12 +224,12 @@ def main():
     algos = ['ucb']#, 'naive_v1']
 
     # for HOC4
-    dataset = 'HOC4'
-    metric = 'PRECOMP'
-    Ns = [1000, 2000, 3000, 3360]
-    ks = [3]
-    seeds = range(42, 52)
-    dir_ = 'HOC4_paper'
+    # dataset = 'HOC4'
+    # metric = 'PRECOMP'
+    # Ns = [1000, 2000, 3000, 3360]
+    # ks = [3]
+    # seeds = range(42, 52)
+    # dir_ = 'HOC4_paper'
 
     # #for MNIST COSINE
     # # NOTE: not all exps complete
@@ -233,14 +240,14 @@ def main():
     # seeds = range(42, 47)
     # dir_ = 'MNIST_COSINE_paper'
 
-    # #for MNIST L2
-    # # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
-    # dataset = 'MNIST'
-    # metric = 'L2'
-    # Ns = [1000, 3000, 10000, 30000, 70000]
-    # ks = [10]
-    # seeds = range(42, 52)
-    # dir_ = 'MNIST_paper'
+    #for MNIST L2
+    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
+    dataset = 'MNIST'
+    metric = 'L2'
+    Ns = [1000, 3000, 10000, 30000, 70000]
+    ks = [10]
+    seeds = range(42, 52)
+    dir_ = 'MNIST_paper'
 
     # #for scRNAPCA, L2, K = 10
     # dataset = 'SCRNAPCA'
