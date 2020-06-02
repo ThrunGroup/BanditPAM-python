@@ -219,7 +219,6 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
         elif type(x2) == np.ndarray:
             for _unused in x2:
                 empty_counter()
-            print(x2)
             return np.array([dist_mat[x1, x2_elem] for x2_elem in x2])
         else:
             raise Exception("Bad x2 type tree distance fn", type(x2))
@@ -372,7 +371,8 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         if metric == 'TREE':
             ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric)
         elif metric == 'PRECOMP':
-            ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric, dist_mat)
+            # Must pass indices to precomp instead of nodes
+            ALL_new_med_distances[d_n_idx] = d_tree(d_n, tmp_refs, metric, dist_mat)
         else:
             ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
 

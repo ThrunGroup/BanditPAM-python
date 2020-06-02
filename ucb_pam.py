@@ -268,7 +268,7 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = dist_mat)
 
-        if original_batch_size == len(imgs):
+        if original_batch_size >= len(imgs):
             # Corner case where sigmas aren't computed for too-small datasets
             # NOTE: This is different from the build step because in the build step, the sigmas are all initialized to 0's. Should be consistent between the two.
             sigma_arr = [0, 0, 0, 0, 0, 0]
