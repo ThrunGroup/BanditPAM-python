@@ -1,0 +1,31 @@
+Built:57,694
+Swapped:694,427
+Num Swaps: 2
+Final Loss: 4.503
+Build Logstring:
+	compute_exactly:
+		0: 677.0
+		1: 807.0
+	loss:
+		0: 4.851
+		1: 4.504
+	p:
+		0: 1e-06
+		1: 1e-06
+	sigma:
+		0:  min: 1.93866 25th: 4.10192 median: 4.44283 75th: 4.6641 max: 5.05763 mean: 4.29454
+		1:  min: 0.0 25th: 0.47021 median: 0.55308 75th: 0.65786 max: 1.6962 mean: 0.58746
+
+Swap Logstring:
+	compute_exactly:
+		0: 496.0
+		1: 270.0
+	loss:
+		0: 4.503
+		1: 4.503
+	p:
+		0: 5e-07
+		1: 5e-07
+	sigma:
+		0:  min: 0.0 25th: 0.93483 median: 1.052 75th: 1.20461 max: 4.00843 mean: 1.10876
+		1:  min: 0.0 25th: 0.85664 median: 0.98489 75th: 1.12654 max: 2.09902 mean: 1.03261

@@ -14,7 +14,7 @@ import snakevizcode
 
 from generate_config import write_exp
 
-FN_NAME = 'data_utils.py:142(empty_counter)'
+FN_NAME = 'data_utils.py:141(empty_counter)'
 
 def showx():
     plt.draw()
@@ -125,8 +125,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             for seed_idx, seed in enumerate(seeds):
                 d["seed_" + str(seed)] = np_data[kN_idx, :, seed_idx]
                 # if build_or_swap == 'swap' and seed == 44: d['seed_44'][3] = np.mean([7.472175, 7.460308, 7.382200, 7.453079])
-                if build_or_swap == 'swap' and seed == 46: d['seed_46'][3] = np.mean([7.444299, 7.473549, 7.373168, 7.455095]) # For scRNAPCA + L2 + K=4
-                if build_or_swap == 'swap' and (seed == 44 or seed == 45 or seed == 46): d["seed_" + str(seed)][4] = 7.6 # For scRNAPCA + L2 + K=4
+                # if build_or_swap == 'swap' and seed == 46: d['seed_46'][3] = np.mean([7.444299, 7.473549, 7.373168, 7.455095]) # For scRNAPCA + L2 + K=4
+                # if build_or_swap == 'swap' and (seed == 44 or seed == 45 or seed == 46): d["seed_" + str(seed)][4] = 7.6 # For scRNAPCA + L2 + K=4
             df = pd.DataFrame(data = d)
             print(df)
 
@@ -190,7 +190,7 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
                     if os.path.exists(profile_fname):
                         p = pstats.Stats(profile_fname)
                         for row in snakevizcode.table_rows(p):
-                            #print(row)
+                            # print(row)
                             if FN_NAME in row:
                                 dcalls = row[0][1]
                                 if build_or_swap == 'build':
@@ -209,17 +209,19 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric)
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'SCRNAPCA'
-    metric = 'L2'
 
-    Ns = [3000, 10000, 20000, 30000, 40000]
+    # for HOC4
+    dataset = 'HOC4'
+    metric = 'PRECOMP'
+    Ns = [1000, 2000, 3000, 3360]
+    ks = [3]
+    seeds = range(42, 52)
+
     # ks = [2, 3, 4, 5, 10, 20, 30]
-
     # Ns = [1000]
     # ks = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]#, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100]
 
-    ks = [5]
-    seeds = range(42, 47)
+
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
