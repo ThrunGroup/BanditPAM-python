@@ -1,4 +1,3 @@
-from pyclustering.cluster.clarans import clarans
 import numpy as np
 import copy
 

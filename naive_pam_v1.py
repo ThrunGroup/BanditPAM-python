@@ -102,9 +102,12 @@ def naive_swap(args, imgs, init_medoids):
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
-    return medoids, S_logstring
+    return medoids, S_logstring, iter, loss
 
 def naive_build_and_swap(args):
+    num_swaps = -1
+    final_loss = -1
+    
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     if args.metric == 'TREE':
@@ -130,10 +133,10 @@ def naive_build_and_swap(args):
         else:
             init_medoids = built_medoids.copy()
 
-        swapped_medoids, S_logstring = naive_swap(args, imgs, init_medoids)
+        swapped_medoids, S_logstring, num_swaps, final_loss = naive_swap(args, imgs, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids, B_logstring, S_logstring
+    return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
