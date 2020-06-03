@@ -2,12 +2,14 @@ from data_utils import *
 import cProfile
 import importlib
 import multiprocessing as mp
+import copy
 
 import naive_pam_v0
 import naive_pam_v1
 import ucb_pam
 import csh_pam
-import copy
+import clarans
+import em_style
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
@@ -71,6 +73,26 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
         prof.dump_stats(S_prof_fname)
     write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss)
 
+def write_loss(medoids_fname, final_medoids, final_loss):
+    '''
+    For some very strange reason, this needs to be broken into a separate function or it sometimes
+    doesn't write to the logfile correctly
+    '''
+    try:
+        with open(medoids_fname, 'w+') as fout:
+            print(final_medoids)
+            fout.write("Swapped:" + ','.join(map(str, final_medoids)))
+            fout.write("\nFinal Loss: " + str(final_loss))
+    except:
+        print("An exception occurred!")
+
+def run_loss_exp(args, method_name, medoids_fname):
+    '''
+    This is the same function as run_exp, but only writes the loss and medoids instead of the profiles, full logstrings, etc.
+    '''
+    final_medoids, final_loss = method_name(args)
+    write_loss(medoids_fname, final_medoids, final_loss)
+
 def main(sys_args):
     args = get_args(sys.argv[1:]) # Uses default values for now as placeholder to instantiate args
 
@@ -100,20 +122,30 @@ def main(sys_args):
         Don't appear to need to do this for the function calls though since those references stay constant.
 
         '''
-        if exp[0] == 'naive_v1':
-            pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
-            #run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
-        elif exp[0] == 'ucb':
-            pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
-            #run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
-        elif exp[0] == 'csh':
-            pool.apply_async(run_exp, args=(copy.deepcopy(args), csh_pam.CSH_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
-            #run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
-        else:
-            raise Exception('Invalid algorithm specified')
+        try:
+            if exp[0] == 'naive_v1':
+                pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
+                #run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            elif exp[0] == 'ucb':
+                pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
+                #run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            elif exp[0] == 'csh':
+                pool.apply_async(run_exp, args=(copy.deepcopy(args), csh_pam.CSH_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
+                #run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+            elif exp[0] == 'clarans':
+                pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname)))
+                # run_loss_exp(args, clarans.CLARANS_build_and_swap, medoids_fname)
+            elif exp[0] == 'em':
+                pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), em_style.EM_build_and_swap, copy.deepcopy(medoids_fname)))
+                # run_loss_exp(args, em_style.EM_build_and_swap, medoids_fname)
+            else:
+                raise Exception('Invalid algorithm specified')
+        except:
+            print("An exception occurred in the pool!")
 
     pool.close()
     pool.join()
+    print("Finished")
 
 if __name__ == "__main__":
     main(sys.argv)

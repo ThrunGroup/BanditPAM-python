@@ -31,7 +31,7 @@ def EM_build_and_swap(args):
     # print(np.mean(reference_best_distances))
     loss = np.mean(best_distances)
     print(loss)
-    return loss
+    return medoids, loss
 
 
 if __name__ == "__main__":

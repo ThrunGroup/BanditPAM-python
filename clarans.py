@@ -68,7 +68,6 @@ def CLARANS_build_and_swap(args):
     best_medoids = []
 
     for i in range(NUMLOCAL):
-        print("\n\n")
         medoids = np.random.choice(len(imgs), args.num_medoids, replace = False).tolist()
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = args.metric)
         loss = np.mean(best_distances)
