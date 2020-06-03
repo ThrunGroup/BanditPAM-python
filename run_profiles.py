@@ -10,7 +10,7 @@ import naive_pam_v1
 import ucb_pam
 import csh_pam
 import clarans
-# import em_style # NOTE: WARNING: Only uncomment this if you're running locally! Otherwise batch jobs will fail because sklearn_extra is not installed on cluster!
+import em_style # NOTE: WARNING: Only uncomment this if you're running locally! Otherwise batch jobs will fail because sklearn_extra is not installed on cluster!
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
@@ -135,11 +135,13 @@ def main(sys_args):
                 pool.apply_async(run_exp, args=(copy.deepcopy(args), csh_pam.CSH_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
                 #run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
             elif exp[0] == 'clarans':
-                pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname)))
-                # run_loss_exp(args, clarans.CLARANS_build_and_swap, medoids_fname)
+                # NOTE: Running this serially bc otherwise memory crashes laptop
+                # pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname)))
+                run_loss_exp(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname))
             elif exp[0] == 'em_style':
-                pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), em_style.EM_build_and_swap, copy.deepcopy(medoids_fname)))
-                # run_loss_exp(args, em_style.EM_build_and_swap, medoids_fname)
+                # NOTE: Running this serially bc otherwise memory crashes laptop
+                # pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), em_style.EM_build_and_swap, copy.deepcopy(medoids_fname)))
+                run_loss_exp(copy.deepcopy(args), em_style.EM_build_and_swap, copy.deepcopy(medoids_fname))
             else:
                 raise Exception('Invalid algorithm specified')
         except Exception as e:

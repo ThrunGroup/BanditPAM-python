@@ -333,5 +333,6 @@ def main():
 
 if __name__ == '__main__':
     # verify_logfiles()
-    print("FILES VERIFIED\n\n")
+    # print("FILES VERIFIED\n\n")
+
     main()
