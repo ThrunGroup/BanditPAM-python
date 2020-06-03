@@ -8,19 +8,23 @@ def write_exp(algo, k, N, seed, dataset, metric):
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'MNIST'
-    metric = 'L2'
+    dataset = 'SCRNA'
+    metric = 'L1'
 
     # Ns = [3000, 10000, 20000, 40000, 70000] # For MNIST
-    # Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNAPCA
+    Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNA and SCRNA-PCA and
+    ks = [5]
+    seeds = range(10)
+
+
     # Ns = [1000, 2000, 3000, 3360] # for HOC4
-    # ks = [2]
+    # ks = [2] $ for HOC4
 
     ##### For loss plots
-    algos = ['clarans', 'em_style', 'ucb', 'naive_v1']
-    seeds = range(10)
-    Ns = [500, 1000, 1500, 2000, 2500, 3000]
-    ks = [5]
+    # algos = ['clarans', 'em_style', 'ucb', 'naive_v1']
+    # seeds = range(10)
+    # Ns = [500, 1000, 1500, 2000, 2500, 3000]
+    # ks = [5]
 
     with open('auto_exp_config.py', 'w+') as fout:
         fout.write("experiments = [\n")

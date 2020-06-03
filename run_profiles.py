@@ -10,7 +10,7 @@ import naive_pam_v1
 import ucb_pam
 import csh_pam
 import clarans
-import em_style
+# import em_style # NOTE: WARNING: Only uncomment this if you're running locally! Otherwise batch jobs will fail because sklearn_extra is not installed on cluster!
 
 def remap_args(args, exp):
     # NOTE: FP1 arg is passed inconsistently to the experiment, as part of args Namespace
@@ -125,8 +125,9 @@ def main(sys_args):
         '''
         try:
             if exp[0] == 'naive_v1':
-                # pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
-                run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+                # NOTE: This works as run_exp, not sure if I tried as async yet
+                pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
+                # run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
             elif exp[0] == 'ucb':
                 pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
                 #run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
