@@ -1,0 +1,47 @@
+Built:123,188,161,495,233
+Swapped:188,161,495,233,192
+Num Swaps: 2
+Final Loss: 7.934604587455499
+Build Logstring:
+	compute_exactly:
+		0: 500
+		1: 500
+		2: 500
+		3: 500
+		4: 500
+	loss:
+		0: 9.11492503722784
+		1: 8.66276212011948
+		2: 8.351295999907594
+		3: 8.130002664254244
+		4: 7.954389821471285
+	p:
+		0: None
+		1: None
+		2: None
+		3: None
+		4: None
+	sigma:
+		0: None
+		1: None
+		2: None
+		3: None
+		4: None
+	swap:
+
+Swap Logstring:
+	compute_exactly:
+		0: 2500
+		1: 2500
+	loss:
+		0: 7.934604587455499
+		1: 7.934604587455499
+	p:
+		0: None
+		1: None
+	sigma:
+		0: None
+		1: None
+	swap:
+		0: 123,192
+		1: 188,188
