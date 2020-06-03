@@ -119,13 +119,15 @@ def init_logstring():
         'compute_exactly' : {},
         'p' : {},
         'sigma' : {},
+        'swap' : {},
     }
     return logstring
 
-def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
+def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma, swap = None):
     logstring['loss'][k] = np.mean(best_distances)
     logstring['compute_exactly'][k] = compute_exactly
     logstring['p'][k] = p
+
     if type(sigma) == list:
         logstring['sigma'][k] = ""
         logstring['sigma'][k] += " min: " + str(round(sigma[0], DECIMAL_DIGITS))
@@ -136,6 +138,10 @@ def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
         logstring['sigma'][k] += " mean: " + str(round(sigma[5], DECIMAL_DIGITS))
     else:
         logstring['sigma'][k] = sigma
+
+    if swap is not None:
+        logstring['swap'][k] = str(swap[0]) + ',' + str(swap[1])
+
     return logstring
 
 def empty_counter():

@@ -265,6 +265,9 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
         best_swaps = list(best_swaps)
         best_swap = best_swaps[0]
 
+        old_medoid_x = medoids[best_swap[0]]
+        new_medoid_x = best_swap[1]
+
         print("Computed exactly for:", exact_mask.sum())
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = dist_mat)
 
@@ -274,7 +277,7 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
             sigma_arr = [0, 0, 0, 0, 0, 0]
         else:
             sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
-        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr)
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, exact_mask.sum(), p, sigma_arr, swap = (old_medoid_x, new_medoid_x))
         # TODO: Need to update swap_performed variable above, right now only breaking
         if performed_or_not == "NO SWAP PERFORMED":
             break

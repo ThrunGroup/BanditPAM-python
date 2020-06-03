@@ -97,8 +97,11 @@ def naive_swap(args, imgs, init_medoids):
         best_swaps = list(best_swaps) # NOTE: possible to get first elem of zip object without converting to list?
         best_swap = best_swaps[0]
 
+        old_medoid_x = medoids[best_swap[0]]
+        new_medoid_x = best_swap[1]
+
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
-        S_logstring = update_logstring(S_logstring, iter - 1, loss, N * k, None, None)
+        S_logstring = update_logstring(S_logstring, iter - 1, loss, N * k, None, None, swap = (old_medoid_x, new_medoid_x))
         if performed_or_not == "NO SWAP PERFORMED":
             break
 
@@ -107,7 +110,7 @@ def naive_swap(args, imgs, init_medoids):
 def naive_build_and_swap(args):
     num_swaps = -1
     final_loss = -1
-    
+
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
     if args.metric == 'TREE':
