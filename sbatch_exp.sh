@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --partition=sc-quick --qos=normal
-#SBATCH --time=48:00:00
+#SBATCH --time=72:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=60G
+#SBATCH --mem=100G
 
 #SBATCH --job-name="sample"
 #SBATCH --output=sample-%j.out
