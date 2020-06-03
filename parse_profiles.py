@@ -55,6 +55,7 @@ def verify_logfiles():
 
 
 def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
+    raise Exception("This needs to be updated")
     assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
 
     if fix_k_or_N == 'k':
@@ -151,6 +152,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
                 # NOTE: N^2 if using FP1 trick and clusters are balanced
                 # NOTE: Could also plot kN^2 for when clusters are not balanced
                 plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+            else: # weighted
+                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
 
             print("Slope is:", sl)
 
@@ -167,8 +170,9 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
 
         plt.xlabel("log10(N)")
         plt.ylabel("log10(# of distance computations)")
-        showx()
-        # plt.savefig(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN) + '.pdf')
+        plt.title("scRNA-PCA, $d = L2, k = 5$")
+        # showx()
+        plt.savefig('figures/scRNA-PCA-L2-k-5.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -278,48 +282,51 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'HOC4_paper'
 
-    # #for MNIST COSINE
-    # # NOTE: not all exps complete
+    #for MNIST L2
+    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
+    # dataset = 'MNIST'
+    # metric = 'L2'
+    # Ns = [3000, 10000, 30000, 70000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_paper'
+
+    #for MNIST COSINE
+    # NOTE: not all exps complete
     # dataset = 'MNIST'
     # metric = 'COSINE'
     # Ns = [3000, 10000, 20000, 40000]
     # ks = [5]
     # seeds = range(42, 47)
-    # dir_ = 'MNIST_COSINE_paper'
-
-    #for MNIST L2
-    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
-    # dataset = 'MNIST'
-    # metric = 'L2'
-    # Ns = [1000, 3000, 10000, 30000, 70000]
-    # ks = [10]
-    # seeds = range(42, 52)
-    # dir_ = 'MNIST_paper'
+    # # dir_ = 'MNIST_COSINE_paper'
+    # dir_ = 'del_profiles'
 
     # #for scRNAPCA, L2, K = 10
-    dataset = 'SCRNAPCA'
-    metric = 'L2'
-    Ns = [10000, 20000, 30000, 40000]
-    ks = [10]
-    seeds = range(42, 52)
-    dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
+    # dataset = 'SCRNAPCA'
+    # metric = 'L2'
+    # Ns = [10000, 20000, 30000, 40000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
 
     # #for scRNAPCA, L2, K = 5
     # #NOTE: Not all experiments are done
     # dataset = 'SCRNAPCA'
     # metric = 'L2'
-    # Ns = [3000, 10000, 20000, 30000, 40000]
+    # Ns = [10000, 20000, 30000, 40000]
     # ks = [5]
     # seeds = range(42, 45)
-    # dir_ = 'SCRNAPCA_L2_k-5_paper'
+    # # dir_ = 'SCRNAPCA_L2_k-5_paper'
+    # dir_ = 'del_profiles'
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
     # Not a big deal but should fix
-    show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric, dir_)
-    show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric, dir_)
-    show_plots('k', 'weighted', Ns, ks, seeds, algos, dataset, metric, dir_)
+    # show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric, dir_)
+    # show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric, dir_)
+    # show_plots('k', 'weighted', Ns, ks, seeds, algos, dataset, metric, dir_)
     show_plots('k', 'weighted_T', Ns, ks, seeds, algos, dataset, metric, dir_)
+
     # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
     # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
 

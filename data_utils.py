@@ -570,6 +570,11 @@ def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
     return np.vstack((cluster1, cluster2))
 
 
+def extract_values(str_):
+    float_arr = str_.split(' ')
+    float_arr = [float(float_arr[idx]) for idx in range(1, 11, 2)]
+    return float_arr
+
 if __name__ == "__main__":
     create_gaussians(1000, 0.5, 42)
 
