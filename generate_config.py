@@ -8,11 +8,11 @@ def write_exp(algo, k, N, seed, dataset, metric):
 
 def main():
     algos = ['ucb']#, 'naive_v1']
-    dataset = 'SCRNA'
-    metric = 'L1'
+    dataset = 'MNIST'
+    metric = 'L2'
 
-    # Ns = [3000, 10000, 20000, 40000, 70000] # For MNIST
-    Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNA and SCRNA-PCA and
+    Ns = [3000, 10000, 20000, 40000, 70000] # For MNIST
+    # Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNA and SCRNA-PCA and
     ks = [5]
     seeds = range(10)
 
