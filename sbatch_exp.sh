@@ -3,7 +3,7 @@
 #SBATCH --time=72:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=107G
 
 #SBATCH --job-name="sample"
 #SBATCH --output=sample-%j.out
