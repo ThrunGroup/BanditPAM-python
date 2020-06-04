@@ -15,7 +15,7 @@ def main():
     Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNA and SCRNA-PCA and
 
     ks = [5]
-    seeds = range(10)
+    seeds = range(6, 8)
 
 
     # Ns = [1000, 2000, 3000, 3360] # for HOC4

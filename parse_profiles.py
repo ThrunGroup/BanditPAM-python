@@ -171,8 +171,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         plt.xlabel("log10(N)")
         plt.ylabel("log10(# of distance computations)")
         plt.title("scRNA-PCA, $d = L2, k = 5$")
-        # showx()
-        plt.savefig('figures/scRNA-PCA-L2-k-5.pdf')
+        showx()
+        # plt.savefig('figures/scRNA-PCA-L2-k-5.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -318,6 +318,15 @@ def main():
     # seeds = range(42, 45)
     # # dir_ = 'SCRNAPCA_L2_k-5_paper'
     # dir_ = 'del_profiles'
+
+    # #for scRNA, L1, K = 5
+    # #NOTE: Not all experiments are done
+    dataset = 'SCRNA'
+    metric = 'L1'
+    Ns = [10000, 20000, 30000, 40000]
+    ks = [5]
+    seeds = range(42, 45)
+    dir_ = 'SCRNA_L1_paper'
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
