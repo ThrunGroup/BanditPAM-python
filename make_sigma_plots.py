@@ -28,28 +28,33 @@ def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
         costs = cost_fn(dataset, [a], ref_idcs, best_distances, metric = metric, use_diff = False, dist_mat = None)
         print(min(costs), np.mean(costs), max(costs))
         # WARNING: unsafe global references
-        # if dataset_name == 'MNIST' and metric == 'L2':
-        #     binsize = 0.125*2
-        # elif dataset_name == 'SCRNAPCA' and metric == 'L2':
-        #     binsize = 0.0125/4
-        # elif dataset_name == 'SCRNA' and metric == 'L1':
-        #     binsize = 5
+        if dataset_name == 'MNIST' and metric == 'L2':
+            binsize = 0.125
+        elif dataset_name == 'MNIST' and metric == 'COSINE':
+            binsize = 0.0125
+        elif dataset_name == 'SCRNAPCA' and metric == 'L2':
+            binsize = .1/5
+        elif dataset_name == 'SCRNA' and metric == 'L1':
+            binsize = 5
 
-        # bins = np.arange(min(means) - binsize, max(means) + binsize, binsize)
+        bins = np.arange(min(costs) - binsize, max(costs) + binsize, binsize)
 
         metric_title = '$l_2$' if metric == 'L2' else ('$L_1$' if metric == 'L1' else 'cosine')
         sns.distplot(costs,
-            #bins = bins,
+            bins = bins,
             norm_hist = True,
-            hist = True,
+            # hist = True,
+            kde=True,
             # kde_kws = {'label' : "Gaussian KDE"},
             )
-        plt.title("Histogram of arm returns for 4 points (" + dataset_name + ", $d = $" + metric_title + ")")
+        plt.title("Histogram of arm returns for point " + str(a) + " (" + dataset_name + ", $d = $" + metric_title + ")")
         plt.ylabel('Frequency')
         plt.xlabel('Reward')
         # plt.legend(loc="upper right")
-    plt.savefig('figures/sigma-'+dataset_name+'-'+metric+'.pdf')
-        # plt.clf()
+        plt.plot(max(costs),[0], 'rx', markersize=12)
+        plt.plot(min(costs),[0], 'rx', markersize=12)
+        plt.savefig('figures/sigma-'+dataset_name+'-' + str(a_idx) + '-'+metric+'.pdf')
+        plt.clf()
 
 
 
