@@ -131,7 +131,7 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             print(df)
 
             melt_df = df.melt('N', var_name='cols', value_name='vals')
-            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.005 # Add jitter
+            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.01 # Add jitter
             sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
             # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
@@ -171,8 +171,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         plt.xlabel("$\log 10(n)$")
         plt.ylabel("$\log 10$(average # of distance computations per step)")
         # showx()
-        plt.title("MNIST, $d = l_2, $k = 3$")
-        plt.savefig('figures/MNIST-L2-k5.pdf')
+        plt.title("scRNA-PCA, $d = l_2, k = 10$")
+        plt.savefig('figures/SCRNAPCA-L2-k10.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -283,50 +283,44 @@ def main():
     # dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
     #for MNIST L2, k = 5
-    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
-    dataset = 'MNIST'
-    metric = 'L2'
-    Ns = [10000, 20000, 40000, 70000]
-    ks = [5]
-    seeds = range(42, 52)
-    dir_ = 'MNIST_L2_k5_paper'
+    # dataset = 'MNIST'
+    # metric = 'L2'
+    # Ns = [10000, 20000, 40000, 70000]
+    # ks = [5]
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_L2_k5_paper'
 
     #for MNIST L2, k = 10
-    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
     # dataset = 'MNIST'
     # metric = 'L2'
     # Ns = [3000, 10000, 30000, 70000]
     # ks = [10]
     # seeds = range(42, 52)
-    # dir_ = 'MNIST_L2_k5_paper'
+    # dir_ = 'MNIST_L2_k10_paper'
 
     #for MNIST COSINE
-    # NOTE: not all exps complete
     # dataset = 'MNIST'
     # metric = 'COSINE'
     # Ns = [3000, 10000, 20000, 40000]
     # ks = [5]
-    # seeds = range(42, 47)
-    # # dir_ = 'MNIST_COSINE_paper'
-    # dir_ = 'del_profiles'
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_COSINE_k5_paper'
 
     # #for scRNAPCA, L2, K = 10
-    # dataset = 'SCRNAPCA'
-    # metric = 'L2'
-    # Ns = [10000, 20000, 30000, 40000]
-    # ks = [10]
-    # seeds = range(42, 52)
-    # dir_ = 'SCRNAPCA_L2_k-10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
+    dataset = 'SCRNAPCA'
+    metric = 'L2'
+    Ns = [10000, 20000, 30000, 40000]
+    ks = [10]
+    seeds = range(42, 52)
+    dir_ = 'SCRNAPCA_L2_k10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
 
     # #for scRNAPCA, L2, K = 5
-    # #NOTE: Not all experiments are done
     # dataset = 'SCRNAPCA'
     # metric = 'L2'
     # Ns = [10000, 20000, 30000, 40000]
     # ks = [5]
-    # seeds = range(42, 45)
-    # # dir_ = 'SCRNAPCA_L2_k-5_paper'
-    # dir_ = 'del_profiles'
+    # seeds = range(42, 52)
+    # dir_ = 'SCRNAPCA_L2_k5_paper'
 
     # #for scRNA, L1, K = 5
     # #NOTE: Not all experiments are done
