@@ -132,10 +132,10 @@ def make_plots():
     ADD_JITTER = 75
     alg_to_add_jitter = {
         'naive_v1' : 0,
-        'ucb' : 25,
-        'fp' : -75,
-        'clarans' : -25,
-        'em_style' : 75,
+        'ucb' : 0,
+        'fp' : 0,
+        'clarans' : 0,
+        'em_style' : 0,
     }
 
     alg_color = {
@@ -144,6 +144,14 @@ def make_plots():
         'clarans' : 'r',
         'em_style' : 'g',
         'fp' : 'y',
+    }
+
+    alg_zorder = {
+        'naive_v1' : 0,
+        'ucb' : 4,
+        'clarans' : 3,
+        'em_style' : 2,
+        'fp' : 1,
     }
     losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))
 
@@ -172,6 +180,7 @@ def make_plots():
     fig, ax = plt.subplots(figsize = (6, 5))
     # bottom, top = plt.ylim()
     plt.ylim(0.995, 1.07)
+    plt.xlim(250, 3250)
     ax.axhline(1, ls='-.', color = 'black', zorder = -100, linewidth = 0.4)
     # x_min,x_max = plt.xlim()
     # plt.plot([0, 3000], [1, 1.1], color='k', alpha=0.4, zorder=0, linestyle='--')
@@ -181,6 +190,7 @@ def make_plots():
         this_color = alg_color[algorithm]
         this_label = alg_to_legend[algorithm]
         this_jitter = alg_to_add_jitter[algorithm]
+        this_zorder = alg_zorder[algorithm]
 
         d = {'N': Ns}
         for seed_idx, seed in enumerate(seeds):
@@ -197,12 +207,12 @@ def make_plots():
         bars = (1.96/(10**0.5)) * np.std(losses[:, algo_idx, :], axis = 1) # Slice a specific algo, get a 2D array
         means = np.mean(losses[:, algo_idx, :], axis = 1)
         print(algorithm, this_color, this_label, this_jitter)
-        plt.plot(np.array(Ns) + this_jitter, means, color=this_color)
-        plt.errorbar(np.array(Ns) + this_jitter, means, yerr = bars, fmt = '+', capsize = 5, ecolor = this_color, elinewidth = 1.5, zorder = 100, mec=this_color, mew = 1.5, label = this_label)
+        plt.plot(np.array(Ns) + this_jitter, means, color=this_color, zorder=this_zorder, linewidth = 2)
+        plt.errorbar(np.array(Ns) + this_jitter, means, yerr = bars, fmt = '+', capsize = 5, ecolor = this_color, elinewidth = 1.5, zorder = this_zorder, mec=this_color, mew = 1.5, label = this_label)
 
     plt.xlabel("$n$")
     plt.ylabel(r'Final Loss Normalized to PAM ($L/L_{PAM}$)')
-    plt.title("$L/L_{PAM}$ vs. $n$")
+    plt.title("$L/L_{PAM}$ vs. $n$ (MNIST, $d = l_2, k = 5$)")
     plt.legend()
     # showx()
     plt.savefig('figures/loss_plot.pdf')
