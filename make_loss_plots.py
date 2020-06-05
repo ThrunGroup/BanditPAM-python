@@ -96,6 +96,19 @@ def verify_optimization_paths():
                 print(naive_swaps)
                 print(ucb_swaps)
 
+def get_FP_loss(N, seed):
+    with open('manual_fastpam_losses.txt', 'r') as fin:
+        prefix = "N=" + str(N) + ",seed=" + str(seed + 42)+":"
+
+        line = fin.readline()
+        while line[:len(prefix)] != prefix:
+            # import ipdb; ipdb.set_trace()
+            line = fin.readline()
+
+        fp_loss = float(line.split(':')[-1])/N
+        print(N, seed + 42, fp_loss)
+        return fp_loss
+
 def make_plots():
     loss_dir = 'profiles/Loss_plots_paper/'
 
@@ -104,13 +117,18 @@ def make_plots():
     Ns = [500, 1000, 1500, 2000, 2500, 3000]
     k = 5
 
-    losses = np.zeros((len(Ns), len(algos), len(seeds)))
+    losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))
 
     for N_idx, N in enumerate(Ns):
         for algo_idx, algo in enumerate(algos):
             for seed_idx, seed in enumerate(seeds):
                 filename = loss_dir + 'L-' + algo + '-True-BS-v-0-k-' + str(k) + '-N-' + str(N) + '-s-' + str(seed + 42) + '-d-MNIST-m-L2-w-'
                 losses[N_idx, algo_idx, seed_idx] = get_file_loss(filename)
+
+    # FastPAM special case
+    for N_idx, N in enumerate(Ns):
+        for seed_idx, seed in enumerate(seeds):
+            losses[N_idx, 4, seed_idx] = get_FP_loss(N, seed)
 
     # Normalize losses
     for N_idx, N in enumerate(Ns):
@@ -120,6 +138,7 @@ def make_plots():
 
     for algo_idx, algo in enumerate(algos):
         plt.plot(Ns, np.mean(losses[:, algo_idx, :], axis = 1), label=algo)
+    plt.plot(Ns, np.mean(losses[:, 4, :], axis = 1), label='FastPAM') # Treat FastPAM as a special case
 
     plt.legend()
     showx()
@@ -128,7 +147,7 @@ def make_plots():
 if __name__ == "__main__":
     loss_dir = 'profiles/Loss_plots_paper/'
     verify_optimization_paths()
-    # make_plots()
+    make_plots()
 
 # print(get_file_loss(loss_dir + 'L-clarans-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 2))
 # print(get_file_loss(loss_dir + 'L-em_style-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 2))

@@ -325,7 +325,7 @@ def main():
     metric = 'L1'
     Ns = [10000, 20000, 30000, 40000]
     ks = [5]
-    seeds = range(42, 45)
+    seeds = range(42, 46)
     dir_ = 'SCRNA_L1_paper'
 
 
