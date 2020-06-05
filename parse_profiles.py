@@ -131,7 +131,7 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             print(df)
 
             melt_df = df.melt('N', var_name='cols', value_name='vals')
-            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.02 # Add jitter
+            melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.005 # Add jitter
             sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
             # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
@@ -168,11 +168,11 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         elif fix_k_or_N == 'N':
             raise Exception("Fill this in")
 
-        plt.xlabel("log10($n$)")
-        plt.ylabel("log10($d_{avg}$)")
-        plt.title("MNIST, $d = L_2, k = 5$")
-        showx()
-        # plt.savefig('figures/scRNA-PCA-L2-k-5.pdf')
+        plt.xlabel("$\log 10(n)$")
+        plt.ylabel("$\log 10$(average # of distance computations per step)")
+        # showx()
+        plt.title("MNIST, $d = l_2, $k = 3$")
+        plt.savefig('figures/MNIST-L2-k5.pdf')
 
 def get_swap_T(logfile):
     with open(logfile, 'r') as fin:
@@ -280,7 +280,7 @@ def main():
     # Ns = [1000, 2000, 3000, 3360]
     # ks = [3]
     # seeds = range(42, 52)
-    # dir_ = 'HOC4_paper'
+    # dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
     #for MNIST L2, k = 5
     # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
