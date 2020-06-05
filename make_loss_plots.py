@@ -122,11 +122,11 @@ def make_plots():
     mult_jitter = 20
 
     alg_to_legend = {
-        'naive_v1' : 'PAM CI',
-        'ucb' : 'Bandit-PAM CI',
-        'clarans' : 'CLARANS CI',
-        'em_style' : 'Voronoi Iteration CI',
-        'fp' : 'FastPAM CI',
+        'naive_v1' : 'PAM',
+        'ucb' : 'Bandit-PAM',
+        'clarans' : 'CLARANS',
+        'em_style' : 'Voronoi Iteration',
+        'fp' : 'FastPAM',
     }
 
     ADD_JITTER = 75
@@ -169,7 +169,9 @@ def make_plots():
 
     sns.set()
     sns.set_style('white')
-    fig, ax = plt.subplots(figsize = (6, 4))
+    fig, ax = plt.subplots(figsize = (6, 5))
+    # bottom, top = plt.ylim()
+    plt.ylim(0.995, 1.07)
     ax.axhline(1, ls='-.', color = 'black', zorder = -100, linewidth = 0.4)
     # x_min,x_max = plt.xlim()
     # plt.plot([0, 3000], [1, 1.1], color='k', alpha=0.4, zorder=0, linestyle='--')
@@ -200,8 +202,10 @@ def make_plots():
 
     plt.xlabel("$n$")
     plt.ylabel(r'Final Loss Normalized to PAM ($L/L_{PAM}$)')
+    plt.title("$L/L_{PAM}$ vs. $n$")
     plt.legend()
-    showx()
+    # showx()
+    plt.savefig('figures/loss_plot.pdf')
 
 
 if __name__ == "__main__":
