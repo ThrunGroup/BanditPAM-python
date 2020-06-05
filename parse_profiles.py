@@ -82,7 +82,7 @@ def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, tak
                 plt.plot(Nks_plot, np_data[kN_idx, :, seed_idx], 'o')
                 print(np_data[kN_idx, :, seed_idx])
 
-            bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            bars = (1.96/(10**0.5)) * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             # plt.errorbar(Nks, np.mean(np_data[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
             plt.errorbar(Nks_plot, means, yerr = bars,  fmt='+', capsize=3, elinewidth=2, markeredgewidth=2, color='black', label='Nominal 95% CI', zorder=100)
             print("Summary:")
@@ -135,7 +135,7 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
             sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
             # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
-            bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
+            bars = (1.96/(10**0.5)) * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             means = np.mean(np_data[kN_idx, :, :], axis = 1)
             plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5, label="95% confidence interval")
 

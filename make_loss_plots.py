@@ -114,7 +114,7 @@ def get_FP_loss(N, seed):
 def make_plots():
     loss_dir = 'profiles/Loss_plots_paper/'
 
-    algos = ['naive_v1', 'ucb', 'clarans', 'em_style']
+    algos = ['naive_v1', 'ucb', 'clarans', 'em_style', 'fp']
     seeds = range(10)
     Ns = [500, 1000, 1500, 2000, 2500, 3000]
     k = 5
@@ -122,22 +122,24 @@ def make_plots():
     mult_jitter = 20
 
     alg_to_legend = {
-        'naive_v1' : 'PAM',
-        'ucb' : 'Bandit-PAM',
-        'clarans' : 'CLARANS',
-        'em_style' : 'Voronoi Iteration',
-        'fp' : 'FastPAM',
+        'naive_v1' : 'PAM CI',
+        'ucb' : 'Bandit-PAM CI',
+        'clarans' : 'CLARANS CI',
+        'em_style' : 'Voronoi Iteration CI',
+        'fp' : 'FastPAM CI',
     }
 
-    ADD_JITTER = 35
+    ADD_JITTER = 75
     alg_to_add_jitter = {
-        'ucb' : ADD_JITTER,
-        'clarans' : -ADD_JITTER,
-        'em_style' : ADD_JITTER,
-        'fp' : -ADD_JITTER,
+        'naive_v1' : 0,
+        'ucb' : 25,
+        'fp' : -75,
+        'clarans' : -25,
+        'em_style' : 75,
     }
 
     alg_color = {
+        'naive_v1' : 'orange',
         'ucb' : 'b',
         'clarans' : 'r',
         'em_style' : 'g',
@@ -149,12 +151,15 @@ def make_plots():
         for algo_idx, algo in enumerate(algos):
             for seed_idx, seed in enumerate(seeds):
                 filename = loss_dir + 'L-' + algo + '-True-BS-v-0-k-' + str(k) + '-N-' + str(N) + '-s-' + str(seed + 42) + '-d-MNIST-m-L2-w-'
-                losses[N_idx, algo_idx, seed_idx] = get_file_loss(filename)
+                if algo == 'fp':
+                    losses[N_idx, 4, seed_idx] = get_FP_loss(N, seed)
+                else:
+                    losses[N_idx, algo_idx, seed_idx] = get_file_loss(filename)
 
     # FastPAM special case
-    for N_idx, N in enumerate(Ns):
-        for seed_idx, seed in enumerate(seeds):
-            losses[N_idx, 4, seed_idx] = get_FP_loss(N, seed)
+    # for N_idx, N in enumerate(Ns):
+    #     for seed_idx, seed in enumerate(seeds):
+    #         losses[N_idx, 4, seed_idx] = get_FP_loss(N, seed)
 
     # Normalize losses
     for N_idx, N in enumerate(Ns):
@@ -164,10 +169,16 @@ def make_plots():
 
     sns.set()
     sns.set_style('white')
-    fig, ax = plt.subplots(figsize = (6, 6))
-    algos.append('fp') # NOTE
-    for algo_idx, algo in enumerate(algos):
-        if algo == 'naive_v1': continue
+    fig, ax = plt.subplots(figsize = (6, 4))
+    ax.axhline(1, ls='-.', color = 'black', zorder = -100, linewidth = 0.4)
+    # x_min,x_max = plt.xlim()
+    # plt.plot([0, 3000], [1, 1.1], color='k', alpha=0.4, zorder=0, linestyle='--')
+    for algo_idx, algorithm in enumerate(algos):
+        if algorithm == 'naive_v1': continue
+
+        this_color = alg_color[algorithm]
+        this_label = alg_to_legend[algorithm]
+        this_jitter = alg_to_add_jitter[algorithm]
 
         d = {'N': Ns}
         for seed_idx, seed in enumerate(seeds):
@@ -175,20 +186,20 @@ def make_plots():
         df = pd.DataFrame(data = d)
 
         melt_df = df.melt('N', var_name='cols', value_name='vals')
-        melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) + alg_to_add_jitter[algo] # Add jitter
-        sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6, label=alg_to_legend[algo])
+        melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) + this_jitter # Add jitter
+        # print(algorithm, alg_to_legend[algorithm], algo_idx, alg_color[algorithm])
+        # import ipdb; ipdb.set_trace()
+        # empty_df = {'N' : [], 'vals' : []}
+        # sns.scatterplot(x="N", y="vals", data = df, ax = ax, alpha = 0.6, color=this_color)
 
-        bars = 1.96 * np.std(losses[:, algo_idx, :], axis = 1) # Slice a specific algo, get a 2D array
+        bars = (1.96/(10**0.5)) * np.std(losses[:, algo_idx, :], axis = 1) # Slice a specific algo, get a 2D array
         means = np.mean(losses[:, algo_idx, :], axis = 1)
-        plt.errorbar(np.array(Ns) + alg_to_add_jitter[algo], means, yerr = bars, fmt = '+', capsize = 5, ecolor=alg_color[algo], elinewidth = 1.5, zorder = 100, mec=alg_color[algo], mew = 1.5)
-
-
-    # for algo_idx, algo in enumerate(algos):
-    #     plt.plot(Ns, np.mean(losses[:, algo_idx, :], axis = 1), label=alg_to_legend[algo])
-    # plt.plot(Ns, np.mean(losses[:, 4, :], axis = 1), label='FastPAM') # Treat FastPAM as a special case
+        print(algorithm, this_color, this_label, this_jitter)
+        plt.plot(np.array(Ns) + this_jitter, means, color=this_color)
+        plt.errorbar(np.array(Ns) + this_jitter, means, yerr = bars, fmt = '+', capsize = 5, ecolor = this_color, elinewidth = 1.5, zorder = 100, mec=this_color, mew = 1.5, label = this_label)
 
     plt.xlabel("$n$")
-    plt.ylabel("Final Loss ($L$)")
+    plt.ylabel(r'Final Loss Normalized to PAM ($L/L_{PAM}$)')
     plt.legend()
     showx()
 
