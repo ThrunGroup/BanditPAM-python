@@ -37,16 +37,19 @@ def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
 
         # bins = np.arange(min(means) - binsize, max(means) + binsize, binsize)
 
-        metric_title = '$L_2$' if metric == 'L2' else '$L_1$'
+        metric_title = '$l_2$' if metric == 'L2' else ('$L_1$' if metric == 'L1' else 'cosine')
         sns.distplot(costs,
             #bins = bins,
-            kde_kws = {'label' : "Gaussian KDE"},
+            norm_hist = True,
+            hist = True,
+            # kde_kws = {'label' : "Gaussian KDE"},
             )
-        plt.title("Histogram of $\sigma$ for point " + str(a) + " in " + dataset_name + ", " + metric_title + " distance")
+        plt.title("Histogram of arm returns for 4 points (" + dataset_name + ", $d = $" + metric_title + ")")
         plt.ylabel('Frequency')
-        plt.xlabel('$L$')
-        plt.legend(loc="upper right")
-        showx()
+        plt.xlabel('Reward')
+        # plt.legend(loc="upper right")
+    plt.savefig('figures/sigma-'+dataset_name+'-'+metric+'.pdf')
+        # plt.clf()
 
 
 
@@ -64,13 +67,14 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
 
         costs = cost_fn(dataset, [a], ref_idcs, best_distances, metric = metric, use_diff = False, dist_mat = None)
         means[a_idx] = np.mean(costs)
-    # import ipdb; ipdb.set_trace()
     print(max(means))
 
     # Warning: unsafe global references
 
     if dataset_name == 'MNIST' and metric == 'L2':
-        binsize = 0.125*2
+        binsize = 0.125
+    elif dataset_name == 'MNIST' and metric == 'COSINE':
+        binsize = 0.0125
     elif dataset_name == 'SCRNAPCA' and metric == 'L2':
         binsize = 0.0125/4
     elif dataset_name == 'SCRNA' and metric == 'L1':
@@ -80,16 +84,17 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
 
     print(dataset_name, metric)
     print(bins)
-    metric_title = '$L_2$' if metric == 'L2' else '$L_1$'
+    metric_title = '$l_2$' if metric == 'L2' else ('$L_1$' if metric == 'L1' else 'cosine')
     sns.distplot(means,
         bins = bins,
         kde_kws = {'label' : "Gaussian KDE"},
         )
-    plt.title("Histogram of true arm parameters for " + dataset_name + ", " + metric_title + " distance")
+    plt.title("True arm parameters among " + str(subsample_size) + " arms (" + dataset_name + ", $d = $" + metric_title + ")")
     plt.ylabel('Frequency')
     plt.xlabel('$\mu$')
     plt.legend(loc="upper right")
-    plt.show()
+    plt.savefig('figures/mu-'+dataset_name+'-'+metric+'.pdf')
+    plt.clear()
 
 #min: 0.54499 25th: 1.01669 median: 1.18792 75th: 1.41559 max: 1.94342 mean: 1.21168
 def extract_sigmas(str_):
@@ -123,13 +128,14 @@ def make_MNIST_sigma_dist_example():
     showx()
 
 if __name__ == '__main__':
-    # dataset_name = 'SCRNA'
-    # metric = 'L1'
-    # subsamp_refs = True
-    #
-    # args = Namespace(dataset = dataset_name, metric = metric)
-    # points, labels, sigma = load_data(args)
-    #
-    # # get_dist_of_means(dataset = points, metric = metric, subsample_size = 100, subsamp_refs = subsamp_refs)
-    # get_fixed_sigma_dist(dataset = points, metric = metric, target_size = 4, subsamp_refs = False)
-    make_MNIST_sigma_dist_example()
+    dataset_name = 'SCRNAPCA'
+    metric = 'L2'
+    subsamp_refs = True
+    args = Namespace(dataset = dataset_name, metric = metric)
+    points, labels, sigma = load_data(args)
+
+    # get_dist_of_means(dataset = points, metric = metric, subsample_size = 1000, subsamp_refs = subsamp_refs)
+
+    get_fixed_sigma_dist(dataset = points, metric = metric, target_size = 4, subsamp_refs = False)
+
+    # make_MNIST_sigma_dist_example()
