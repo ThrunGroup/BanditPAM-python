@@ -137,23 +137,23 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
 
             bars = 1.96 * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             means = np.mean(np_data[kN_idx, :, :], axis = 1)
-            plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5, label="95%% confidence interval")
+            plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5, label="95% confidence interval")
 
 
             sl, icpt, r_val, p_val, _ = sp.stats.linregress(Nks_plot, means)
             x_min, x_max = plt.xlim()
             y_min, y_max = plt.ylim()
-            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit \nslope=%0.3f'%(sl))
+            plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit, slope=%0.3f'%(sl))
 
             if build_or_swap == 'build':
                 # NOTE: kN^2 here in build step
-                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)')
+                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$kn^2$ PAM scaling')
             elif build_or_swap == 'swap':
                 # NOTE: N^2 if using FP1 trick and clusters are balanced
                 # NOTE: Could also plot kN^2 for when clusters are not balanced
-                plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+                plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$kn^2$ PAM scaling')
             else: # weighted
-                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$N^2$ algorithm (est)'%(sl))
+                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$kn^2$ PAM scaling')
 
             print("Slope is:", sl)
 
@@ -168,9 +168,9 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         elif fix_k_or_N == 'N':
             raise Exception("Fill this in")
 
-        plt.xlabel("log10(N)")
-        plt.ylabel("log10(# of distance computations)")
-        plt.title("scRNA-PCA, $d = L2, k = 5$")
+        plt.xlabel("log10($n$)")
+        plt.ylabel("log10($d_{avg}$)")
+        plt.title("MNIST, $d = L_2, k = 5$")
         showx()
         # plt.savefig('figures/scRNA-PCA-L2-k-5.pdf')
 
@@ -282,14 +282,23 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'HOC4_paper'
 
-    #for MNIST L2
+    #for MNIST L2, k = 5
+    # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
+    dataset = 'MNIST'
+    metric = 'L2'
+    Ns = [10000, 20000, 40000, 70000]
+    ks = [5]
+    seeds = range(42, 52)
+    dir_ = 'MNIST_L2_k5_paper'
+
+    #for MNIST L2, k = 10
     # NOTE: Not using all exps since it looks like some didn't complete for higher seeds
     # dataset = 'MNIST'
     # metric = 'L2'
     # Ns = [3000, 10000, 30000, 70000]
     # ks = [10]
     # seeds = range(42, 52)
-    # dir_ = 'MNIST_paper'
+    # dir_ = 'MNIST_L2_k5_paper'
 
     #for MNIST COSINE
     # NOTE: not all exps complete
@@ -321,12 +330,12 @@ def main():
 
     # #for scRNA, L1, K = 5
     # #NOTE: Not all experiments are done
-    dataset = 'SCRNA'
-    metric = 'L1'
-    Ns = [10000, 20000, 30000, 40000]
-    ks = [5]
-    seeds = range(42, 46)
-    dir_ = 'SCRNA_L1_paper'
+    # dataset = 'SCRNA'
+    # metric = 'L1'
+    # Ns = [10000, 20000, 30000, 40000]
+    # ks = [5]
+    # seeds = range(42, 46)
+    # dir_ = 'SCRNA_L1_paper'
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.

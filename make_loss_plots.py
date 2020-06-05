@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 def showx():
     plt.draw()
@@ -117,6 +119,30 @@ def make_plots():
     Ns = [500, 1000, 1500, 2000, 2500, 3000]
     k = 5
 
+    mult_jitter = 20
+
+    alg_to_legend = {
+        'naive_v1' : 'PAM',
+        'ucb' : 'Bandit-PAM',
+        'clarans' : 'CLARANS',
+        'em_style' : 'Voronoi Iteration',
+        'fp' : 'FastPAM',
+    }
+
+    ADD_JITTER = 35
+    alg_to_add_jitter = {
+        'ucb' : ADD_JITTER,
+        'clarans' : -ADD_JITTER,
+        'em_style' : ADD_JITTER,
+        'fp' : -ADD_JITTER,
+    }
+
+    alg_color = {
+        'ucb' : 'b',
+        'clarans' : 'r',
+        'em_style' : 'g',
+        'fp' : 'y',
+    }
     losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))
 
     for N_idx, N in enumerate(Ns):
@@ -136,10 +162,33 @@ def make_plots():
             naive_value = losses[N_idx, 0, seed_idx]
             losses[N_idx, :, seed_idx] /= naive_value
 
+    sns.set()
+    sns.set_style('white')
+    fig, ax = plt.subplots(figsize = (6, 6))
+    algos.append('fp') # NOTE
     for algo_idx, algo in enumerate(algos):
-        plt.plot(Ns, np.mean(losses[:, algo_idx, :], axis = 1), label=algo)
-    plt.plot(Ns, np.mean(losses[:, 4, :], axis = 1), label='FastPAM') # Treat FastPAM as a special case
+        if algo == 'naive_v1': continue
 
+        d = {'N': Ns}
+        for seed_idx, seed in enumerate(seeds):
+            d["seed_" + str(seed)] = losses[:, algo_idx, seed_idx]
+        df = pd.DataFrame(data = d)
+
+        melt_df = df.melt('N', var_name='cols', value_name='vals')
+        melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) + alg_to_add_jitter[algo] # Add jitter
+        sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6, label=alg_to_legend[algo])
+
+        bars = 1.96 * np.std(losses[:, algo_idx, :], axis = 1) # Slice a specific algo, get a 2D array
+        means = np.mean(losses[:, algo_idx, :], axis = 1)
+        plt.errorbar(np.array(Ns) + alg_to_add_jitter[algo], means, yerr = bars, fmt = '+', capsize = 5, ecolor=alg_color[algo], elinewidth = 1.5, zorder = 100, mec=alg_color[algo], mew = 1.5)
+
+
+    # for algo_idx, algo in enumerate(algos):
+    #     plt.plot(Ns, np.mean(losses[:, algo_idx, :], axis = 1), label=alg_to_legend[algo])
+    # plt.plot(Ns, np.mean(losses[:, 4, :], axis = 1), label='FastPAM') # Treat FastPAM as a special case
+
+    plt.xlabel("$n$")
+    plt.ylabel("Final Loss ($L$)")
     plt.legend()
     showx()
 
