@@ -82,9 +82,7 @@ convenience of the reviewers, we have included the `.tree` files so they can be
 used directly.
 
 The HOC4 ASTs also require precomputation of the pairwise distance matrix
-between trees; this matrix is included in `tree-3630.dist`.
-
-To compute this matrix from scratch, run `python tree_utils.py -d HOC4`. Note
+between trees. To compute this matrix from scratch, run `python tree_utils.py -d HOC4`. Note
 that this computation takes several hours.
 
 ## Required: ELKI Implementation of FastPAM
