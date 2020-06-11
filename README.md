@@ -83,7 +83,8 @@ that this computation takes several hours.
 ## Required: ELKI Implementation of FastPAM
 
 For comparison to FastPAM, an existing baseline, we use the ELKI implementation
-available from https://elki-project.github.io/tutorial/. The GUI allows for the
+available from https://elki-project.github.io/releases/. A tutorial is available
+at https://elki-project.github.io/tutorial/. The GUI allows for the
 use of FastPAM; to use FastPAM; open up the GUI, set the `dcb.in` field to be
 the input data (CSV format), set `algorithm` to be clustering -> kmeans ->
 KMedoidsFastPAM, and set `kmeans.k` to be the desired number of medoids.
