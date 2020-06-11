@@ -271,7 +271,7 @@ def main():
     # dataset = 'HOC4'
     # metric = 'PRECOMP'
     # Ns = [1000, 2000, 3000, 3360]
-    # ks = [3]
+    # ks = [2]
     # seeds = range(42, 52)
     # dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
