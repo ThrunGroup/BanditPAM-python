@@ -1,8 +1,3 @@
-import numpy as np
-import copy
-
-from data_utils import *
-
 '''
 The only existing implementation of CLARANS, in pyclustering, is far too slow.
 We implement our own below.
@@ -14,6 +9,12 @@ IEEE TRANSACTIONS ON KNOWLEDGE AND DATA ENGINEERING, VOL. 14, NO. 5,
 SEPTEMBER/OCTOBER 2002.
 http://www.cs.ecu.edu/dingq/CSCI6905/readings/CLARANS.pdf
 '''
+
+import numpy as np
+import copy
+
+from data_utils import *
+
 
 def CLARANS_build_and_swap(args):
     '''
