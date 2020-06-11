@@ -318,7 +318,8 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
 
 def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False, use_diff = True, dist_mat = None):
     '''
-    Returns the new losses if we were to perform the swaps in swaps
+    Returns the new losses if we were to perform the swaps in swaps, as in
+    cost_fn_difference above, but using the FastPAM1 optimization.
 
     NOTE:
     The FastPAM1 optimization consists of two mini-optimizations:
@@ -326,37 +327,20 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         (b) Cache d(x_new, x_ref) for every pair x_new and x_ref, since this doesn't change with old
     Then compute Delta_TD for every pair (x_old, x_new) using these CACHED values
 
-    You have already incorporated the optimization (a) by keeping track of the second_best_distances and
-    using the selector in your loop; this optimization is already included in the above function, cost_fn_difference
+    Both (a) and (b) are implemented.
 
-    You just need to implement optimization (b) -- should be easy!
+    See cases in comment for cost_fn_difference; same cases appear here.
     '''
-    # IDEA: I think the best way to do this is to keep track of the medoid a point is assigned to,
-    # to avoid re-assigning the medoids every time
-    # Cases:
-    #   - The current best distance uses c1, a currently assigned medoid, and c2 would become the new closest medoid
-    #   - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
-    #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
-    #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
-
     num_targets = len(swaps)
     reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric, dist_mat = dist_mat)
 
     new_losses = np.zeros(num_targets)
     sigmas = np.zeros(num_targets)
 
-    # for each swap
-    #   for each ref point -- cases are on REF points
-    #       if ref point is NOT assigned to o, new_losses += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
-    #       if ref point IS assigned to o:
-    #           if ref_point would be assigned to n: new_losses += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
-    #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
-    #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
     N = len(imgs)
 
-    # Full FastPAM1 approach:
     distinct_new_medoids = set([s[1] for s in swaps])
-    ALL_new_med_distances = np.zeros((len(distinct_new_medoids), len(tmp_refs))) ## NOTE: Re-indexing distinct elems!!
+    ALL_new_med_distances = np.zeros((len(distinct_new_medoids), len(tmp_refs))) # WARNING: Re-indexing distinct elems!!
     reidx_lookup = {}
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
@@ -370,12 +354,12 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
 
 
     for s_idx, s in enumerate(swaps):
-        # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
+        # WARNING: When referring to best_distances, use indices. Otherwise, use tmp_refs[indices]
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]
         new_medoid = s[1]
-        case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
-        case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
+        case1 = np.where(reference_closest_medoids == old_medoid)[0] # List of indices
+        case2 = np.where(reference_closest_medoids != old_medoid)[0] # List of indices
         # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
         new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
         case1_losses = np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] )
@@ -388,10 +372,6 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         new_losses[s_idx] = np.sum(case1_losses) + np.sum(case2_losses)
 
         if return_sigma:
-            # NOTE: Be careful here. We're defining the arm parameter as
-            # the new loss, not the CHANGE in loss. So \sigma should be
-            # the variance in the new induced loss, NOT the variance in the CHANGE
-            # This shouldn't affect \sigma because the change = old - new and old is fixed
             sigmas[s_idx] = np.std(np.hstack((case1_losses, case2_losses))) / SIGMA_DIVISOR
 
     new_losses /= len(tmp_refs)
@@ -403,12 +383,10 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
 
 def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None, dist_mat = None):
     '''
-    For each point, calculate the minimum distance to any medoid
+    For each point, calculate the minimum distance to any medoid.
 
-    medoids: a list of medoid INDICES
-    dataset: a numpy array of POINTS
-
-    DO NOT CALL THIS FROM RANDOM FNS WHICH SAMPLE THE DATASET, E.G. UCB
+    Do not call this from random fns which subsample the dataset, or your
+    indices will be thrown off.
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
     assert not (return_second_best and len(medoids) < 2), "Need at least 2 medoids to avoid infs when asking for return_second_best"
@@ -427,17 +405,18 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     else:
         refs = subset
 
-    # NOTE: use a *Heap* or sorted linked list for BD, 2BD, 3BD etc and eject as necessary if doing multiple swaps
+    # NOTE: Use a Heap or sorted linked list for best distance, second best
+    # distance, third best distance, etc and pop as necessary if doing multiple
+    # swaps
 
     best_distances = np.array([float('inf') for _ in refs])
     second_best_distances = np.array([float('inf') for _ in refs])
     closest_medoids = np.array([-1 for _ in refs])
 
-    # Example: subset = [15, 32, 57] then loop is (p_idx, point) = (1, 15), (2, 32), (3, 57)
     # NOTE: Could speed this up with array broadcasting and taking min across medoid axis
     for p_idx, point in enumerate(refs):
         for m in medoids:
-            # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
+            # WARNING: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
             if metric == 'PRECOMP':
                 # NOTE: Can probably consolidate this with case below by just saying dist_mat = None if not precomp
                 if inner_d_fn(m, point, metric, dist_mat) < best_distances[p_idx]:
@@ -575,6 +554,7 @@ def extract_values(str_):
 if __name__ == "__main__":
     create_gaussians(1000, 0.5, 42)
 
+    ####### Use the code below to visualize the some medoids with t-SNE
     # args = get_args(sys.argv[1:])
     # total_images, total_labels, sigma = load_data(args)
     # np.random.seed(args.seed)
