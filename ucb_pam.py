@@ -1,13 +1,25 @@
+'''
+Contains the UCB-based implementation of PAM (dubbed BanditPAM).
+
+This is the core algorithm.
+'''
+
 from data_utils import *
 import itertools
 
 def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric = None, return_sigma = False, dist_mat = None):
-    # NOTE: Fix this with array broadcasting
+    '''
+    For the given targets, which are candidate points to be assigned as medoids
+    during a build step, we compute the changes in loss they would induce
+    on a subsample of batch_size reference points (tmp_refs).
+
+    The returned value is an array of estimated changes in loss for each target.
+    '''
+
+    # TODO: Improve this with array broadcasting
     N = len(imgs)
     estimates = np.zeros(len(targets))
     sigmas = np.zeros(len(targets))
-    # NOTE: Should this sampling be done with replacement? And do I need shuffling?
-    # NOTE: Also, should the point be able to sample itself?
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype = 'int')
     for tar_idx, target in enumerate(targets):
         if best_distances[0] == np.inf:
@@ -26,7 +38,15 @@ def build_sample_for_targets(imgs, targets, batch_size, best_distances, metric =
     return estimates.round(DECIMAL_DIGITS)
 
 def UCB_build(args, imgs, sigma, dist_mat = None):
+    '''
+    Performs the BUILD step of BanditPAM. Analogous to the BUILD step of PAM,
+    BanditPAM assigns the initial medoids one-by-one by choosing the point at
+    each step that would lower the total loss the most. Instead of computing the
+    change in loss for every other point, it estimates these changes in loss.
+    '''
+
     B_logstring = init_logstring()
+
     ### Parameters
     metric = args.metric
     N = len(imgs)
@@ -44,15 +64,6 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
         num_medoids_found = 0
         best_distances = np.inf * np.ones(N)
 
-    # Iteratively:
-    # Pretend each previous arm is fixed.
-    # For new arm candidate, true parameter is the TRUE loss when using the point as medoid
-        # As a substitute, can measure the "gain" of using this point -- negative DECREASE in distance (the lower the distance, the better)
-    # We sample this using UCB algorithm to get confidence bounds on what that loss will be
-    # Update ucb, lcb, and empirical estimate by sampling WITH REPLACEMENT(NOTE)
-        # If more than n points, just compute exactly -- otherwise, there's a failure mode where
-        # Two points very close together require shittons of samples to distinguish their mean distance
-
     for k in range(num_medoids_found, args.num_medoids):
         compute_sigma = True
 
@@ -68,7 +79,6 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
         exact_mask = np.zeros(N)
         sigmas = np.zeros(N)
 
-        # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
         original_batch_size = 100
         base = 1 # Right now, use constant batch size
 
@@ -76,9 +86,10 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
             if args.verbose >= 1:
                 print("Step count:", step_count, ", Candidates:", len(candidates), candidates)
 
-            # NOTE: tricky computations below
             this_batch_size = int(original_batch_size * (base**step_count))
 
+            # Find the points whose change in loss should be computed exactly,
+            # because >= N reference points have already been sampled.
             compute_exactly = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))[0]
             if len(compute_exactly) > 0:
                 if args.verbose >= 1:
@@ -91,20 +102,20 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
                 T_samples[compute_exactly] += N
                 candidates = np.setdiff1d(candidates, compute_exactly) # Remove compute_exactly points from candidates so they're bounds don't get updated below
 
-            if len(candidates) == 0: break # The last candidates were computed exactly
+            if len(candidates) == 0: break # The last remaining candidates were computed exactly
 
-            # Don't update all estimates, just pulled arms
+            # Gather more evaluations of the change in loss for some reference points
             if compute_sigma:
+                # Estimate sigma from the data, if necessary
                 sample_costs, sigmas = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = True, dist_mat = dist_mat)
                 compute_sigma = False
             else:
                 sample_costs = build_sample_for_targets(imgs, candidates, this_batch_size, best_distances, metric = metric, return_sigma = False, dist_mat = dist_mat)
 
+            # Update running average of estimates and confidence bounce
             estimates[candidates] = \
                 ((T_samples[candidates] * estimates[candidates]) + (this_batch_size * sample_costs)) / (this_batch_size + T_samples[candidates])
-
             T_samples[candidates] += this_batch_size
-            #cb_delta = (sigma / SIGMA_DIVISOR) * np.sqrt(np.log(1 / p) / T_samples[candidates])
             cb_delta = sigmas[candidates] * np.sqrt(np.log(1 / p) / T_samples[candidates])
             lcbs[candidates] = estimates[candidates] - cb_delta
             ucbs[candidates] = estimates[candidates] + cb_delta
@@ -112,9 +123,9 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
             candidates = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )[0]
             step_count += 1
 
-        new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         # Breaks exact ties with first. Also converts array to int.
         # This does indeed happen, for example in ucb k = 50, n = 100, s = 42, d = MNIST
+        new_medoid = np.arange(N)[ np.where( lcbs == lcbs.min() ) ]
         new_medoid = new_medoid[0]
 
         if args.verbose >= 1:
@@ -124,38 +135,35 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric, dist_mat = dist_mat)
         print("Computed exactly for:", exact_mask.sum())
 
-        # min, 25, median, 75, max, mean
+        # get information about sigmas: min, 25, median, 75, max, mean
         sigma_arr = [np.min(sigmas), np.quantile(sigmas, 0.25), np.median(sigmas), np.quantile(sigmas, 0.75), np.max(sigmas), np.mean(sigmas)]
         B_logstring = update_logstring(B_logstring, k, best_distances, exact_mask.sum(), p, sigma_arr)
 
     return medoids, B_logstring
 
 
-
-
-
 def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1 = False, metric = None, return_sigma = False, dist_mat = None):
     '''
-    Note that targets is a TUPLE ( [o_1, o_2, o_3, ... o_m], [n_1, n_2, ... n_m] )
-    The corresponding target swaps are [o_1, n_1], [o_2, n_2], .... [o_m, n_m]
+    For the given targets (potential swaps) during a swap step, we compute the
+    changes in loss they would induce on a subsample of batch_size reference
+    points (tmp_refs) when the swap is performed.
 
-    This fn should measure the "gain" from performing the swap
+    The returned value is an array of estimated changes in loss for each target
+    (swap).
     '''
-    # NOTE: Fix this with array broadcasting
+    # NOTE: Improve this with array broadcasting
     # Also generalize and consolidate it with the fn of the same name in the build step
     orig_medoids = targets[0]
     new_medoids = targets[1]
     assert len(orig_medoids) == len(new_medoids), "Must pass equal number of original medoids and new medoids"
-    # NOTE: Need to preserve order of swaps that are passed!!! Otherwise estimates will be for the wrong swaps!
-    # NOTE: Otherwise, estimates won't be indexed properly -- only ok if we do 1 target at a time
+    # NOTE: Need to preserve order of swaps that are passed - otherwise estimates will be for the wrong swaps
+    # I.e. there will be an error if estimates aren't indexed properly -- only ok if we do 1 target at a time
 
-    swaps = list(zip(orig_medoids, new_medoids)) # Zip doesn't throw an error for unequal lengths, it just drops extraneous points
+    # WARNING: Zip doesn't throw an error for unequal lengths, it just drops extraneous points
+    swaps = list(zip(orig_medoids, new_medoids))
 
     N = len(imgs)
     k = len(current_medoids)
-
-    # NOTE: Should this sampling be done with replacement? And do I need shuffling?
-    # NOTE: Also, should the point be able to sample itself? ANS: Yes, in the case of outliers, for example
 
     tmp_refs = np.array(np.random.choice(N, size = batch_size, replace = False), dtype='int')
     if FastPAM1:
@@ -173,13 +181,19 @@ def swap_sample_for_targets(imgs, targets, current_medoids, batch_size, FastPAM1
 
 
 def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
+    '''
+    Performs the SWAP step of BanditPAM. Analogous to the SWAP step of PAM,
+    BanditPAM chooses medoids to swap with non-medoids by performing the swap
+    that would lower the total loss the most at each step. Instead of computing
+    the exact change in loss for every other point, it estimates these changes.
+    '''
+
     S_logstring = init_logstring()
     metric = args.metric
     k = len(init_medoids)
     N = len(imgs)
     p = 1. / (N * k * 1000)
-    max_iter = 1e1
-    # NOTE: Right now can compute amongst all k*n arms. Later make this k*(n-k)
+    max_iter = 1e4
 
     medoids = init_medoids.copy()
     # NOTE: best_distances is NOT updated in future rounds - the analogy from build is broken. Maybe rename the variable
@@ -191,14 +205,6 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
         compute_sigma = True
         iter += 1
 
-        # NOTE: Performing a lot of redundant computation in this loop.
-        # Can add the trick from FastPAM1 to only compute the points whose medoids have changed
-        # Or maybe just compute the "benefit" of swapping medoids, instead of total distance?
-
-        # Identify best of k * (n-k) arms to swap by averaging new loss over all points
-        # Identify Candidates
-        # Get samples for candidates
-        # NOTE: Right now doing k*N targets, but shouldn't allow medoids to swap each other: get k(n-k)
         candidates = np.array(list(itertools.product(range(k), range(N)))) # A candidate is a PAIR
         lcbs = 1000 * np.ones((k, N)) # NOTE: Instantiating these as np.inf gives runtime errors and nans. Find a better way to do this instead of using 1000
         estimates = 1000 * np.ones((k, N))
@@ -207,18 +213,18 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
         T_samples = np.zeros((k, N))
         exact_mask = np.zeros((k, N))
 
-        # NOTE: What should this batch_size be? 20? Also note that this will result in (very minor) inefficiencies when batch_size > 1
         original_batch_size = 100
         base = 1 # Right now, use constant batch size
 
         step_count = 0
         while(len(candidates) > 0):
             if args.verbose >= 1:
-                print("SWAP Step count:", step_count)#, ", Candidates:", len(candidates), candidates)
+                print("SWAP Step count:", step_count)
 
-            # NOTE: tricky computations below
             this_batch_size = int(original_batch_size * (base**step_count))
 
+            # Find swaps whose returns should be computed exactly, because >= N
+            # reference points have already been sampled
             comp_exactly_condition = np.where((T_samples + this_batch_size >= N) & (exact_mask == 0))
             compute_exactly = np.array(list(zip(comp_exactly_condition[0], comp_exactly_condition[1])))
             if len(compute_exactly) > 0:
@@ -232,25 +238,26 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
                 exact_mask[exact_accesses] = 1
                 T_samples[exact_accesses] += N
 
-                cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) ) # BUG: Fix this since it's 2D
+                cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
             if len(candidates) == 0: break # The last candidates were computed exactly
 
-            # Don't update all estimates, just pulled arms
+            # Gather more evaluations of the change in loss for some reference points
             accesses = (candidates[:, 0], candidates[:, 1])
             if compute_sigma:
+                # Estimate sigma from the data, if necessary
                 new_samples, sigmas = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = True, dist_mat = dist_mat)
                 sigmas = sigmas.reshape(k, N) # So that can access it with sigmas[accesses] below
                 compute_sigma = False
             else:
                 new_samples = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = False, dist_mat = dist_mat)
 
+            # Update running average of estimates and confidence bounce
             estimates[accesses] = \
                 ((T_samples[accesses] * estimates[accesses]) + (this_batch_size * new_samples)) / (this_batch_size + T_samples[accesses])
             T_samples[accesses] += this_batch_size
-            # NOTE: Sigmas is contains a value for EVERY arm, even not the candidates, so need [accesses]
-            # cb_delta = (sigma / 5) * np.sqrt(np.log(1 / p) / T_samples[accesses])
+            # NOTE: Sigmas is contains a value for EVERY arm, even non-candidates, so need [accesses]
             cb_delta = sigmas[accesses] * np.sqrt(np.log(1 / p) / T_samples[accesses])
             lcbs[accesses] = estimates[accesses] - cb_delta
             ucbs[accesses] = estimates[accesses] + cb_delta
@@ -285,6 +292,10 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None):
     return medoids, S_logstring, iter, loss
 
 def UCB_build_and_swap(args):
+    '''
+    Run the entire BanditPAM algorithm, both the BUILD step and the SWAP step
+    '''
+
     num_swaps = -1
     final_loss = -1
     dist_mat = None

@@ -1,6 +1,6 @@
 '''
 This is an "optimized" version of PAM, and should be used to certify
-correctness, but is relatively slow since PAM is O(kn^2).
+correctness, but is relatively slow since it's still O(kn^2) in each iteration.
 
 In particular, it contains the following optimizations over naive_pam:
 1. n --> (n-k) in the BUILD step (but not in the SWAP step for convenience)
