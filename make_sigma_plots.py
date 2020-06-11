@@ -115,7 +115,7 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
     plt.xlabel('$\mu$')
     plt.legend(loc="upper right")
     plt.savefig('figures/mu-'+dataset_name+'-'+metric+'.pdf')
-    plt.clear()
+    plt.clf()
 
 def extract_sigmas(str_):
     '''
@@ -155,10 +155,10 @@ def make_MNIST_sigma_dist_example():
     plt.ylabel("$\sigma_i$")
     plt.title("Distribution of $\sigma_i$ in each BUILD assignment")
     plt.savefig('figures/MNIST_sigmas_example.pdf')
-    showx()
+    plt.clf()
 
 if __name__ == '__main__':
-    dataset_name = 'SCRNAPCA'
+    dataset_name = 'MNIST'
     metric = 'L2'
     subsamp_refs = True
     args = Namespace(dataset = dataset_name, metric = metric)

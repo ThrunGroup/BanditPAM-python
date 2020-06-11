@@ -170,6 +170,9 @@ the code for the necessary specific set of experiments in `main()` and changing
 the filename in the call to `savefig` in `plot_slice_sns()`. Figures 2(a), 2(b),
 and 2(c) are generated in the same way.
 
+To remake Appendix Figure 2, 3, 4, and 5, run `python make_sigma_plots.py`,
+modifying the dataset and metric specified in `main()` as necessary.
 
+Appendix Figure 6 is remade using `python parse_profiles.py` as specified above.
 
 # Information About Each File
