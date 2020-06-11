@@ -34,8 +34,8 @@ def showx():
 
 def verify_logfiles():
     '''
-    Verifies that BanditPAM followed the exact same optimization path as PAM, by
-    parsing the logfiles of both experiments.
+    Verifies that BanditPAM returns the same BUILD and SWAP medoid assignments
+    as PAM, by parsing the logfiles.
     '''
 
     ucb_logfiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:5] == 'L-ucb']

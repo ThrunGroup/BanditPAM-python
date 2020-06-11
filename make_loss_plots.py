@@ -1,15 +1,27 @@
+'''
+Compare the losses of BanditPAM and various baselines: PAM, FastPAM, EM, CLARANS
+Used to generate Figure 1(a) of the paper.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
 def showx():
+    '''
+    Convenience function for plotting matplotlib plots and closing on key press.
+    '''
+
     plt.draw()
-    plt.pause(1) # <-------
+    plt.pause(1)
     input("<Hit Enter To Close>")
     plt.close()
 
 def get_file_loss(file_):
+    '''
+    Get the final loss of an experiment from the logfile
+    '''
     if 'ucb' in file_ or 'naive_v1' in file_:
         num_lines = 4
     else:
@@ -26,6 +38,10 @@ def get_file_loss(file_):
         return float(final_loss)
 
 def get_swaps(file_):
+    '''
+    Get the number of swaps performed in an experiment from the logfile.
+    '''
+
     with open(file_, 'r') as fin:
         swaps = []
 
@@ -50,18 +66,33 @@ def get_swaps(file_):
         return swaps
 
 def get_build_meds(file_):
+    '''
+    Get the medoids returned by just the BUILD step for an experiment, from its
+    logfile.
+    '''
+
     with open(file_, 'r') as fin:
         line = fin.readline()
     return line.strip()
 
 
 def get_swap_meds(file_):
+    '''
+    Get the final medoids returned by the SWAP step for an experiment, from
+    its logfile.
+    '''
+
     with open(file_, 'r') as fin:
         line = fin.readline()
         line = fin.readline()
     return line.strip()
 
 def verify_optimization_paths():
+    '''
+    Verifies that BanditPAM followed the exact same optimization path as PAM, by
+    parsing the logfiles of both experiments.
+    '''
+
     loss_dir = 'profiles/Loss_plots_paper/'
 
     algos = ['naive_v1', 'ucb']
@@ -92,26 +123,33 @@ def verify_optimization_paths():
                 print(naive_swapped)
                 print(ucb_swapped)
 
-
             if ucb_swaps != naive_swaps:
                 print("Build medoids disagree on " + str(N) + ',' + str(seed))
                 print(naive_swaps)
                 print(ucb_swaps)
 
 def get_FP_loss(N, seed):
+    '''
+    Get the losses from running FastPAM. These were manually obtained by using
+    the ELKI GUI implementation of FastPAM.
+    '''
+
     with open('ELKI/manual_fastpam_losses.txt', 'r') as fin:
         prefix = "N=" + str(N) + ",seed=" + str(seed + 42)+":"
 
         line = fin.readline()
         while line[:len(prefix)] != prefix:
-            # import ipdb; ipdb.set_trace()
             line = fin.readline()
 
         fp_loss = float(line.split(':')[-1])/N
-        print(N, seed + 42, fp_loss)
         return fp_loss
 
 def make_plots():
+    '''
+    Make a plot showing the relative losses of BanditPAM, EM, CLARANS, and
+    FastPAM, normalized to PAM's loss. Used for Figure 1(a) of the paper.
+    '''
+
     loss_dir = 'profiles/Loss_plots_paper/'
 
     algos = ['naive_v1', 'ucb', 'clarans', 'em_style', 'fp']
@@ -153,6 +191,7 @@ def make_plots():
         'em_style' : 2,
         'fp' : 1,
     }
+    
     losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))
 
     for N_idx, N in enumerate(Ns):
@@ -164,12 +203,8 @@ def make_plots():
                 else:
                     losses[N_idx, algo_idx, seed_idx] = get_file_loss(filename)
 
-    # FastPAM special case
-    # for N_idx, N in enumerate(Ns):
-    #     for seed_idx, seed in enumerate(seeds):
-    #         losses[N_idx, 4, seed_idx] = get_FP_loss(N, seed)
 
-    # Normalize losses
+    # Normalize losses to PAM
     for N_idx, N in enumerate(Ns):
         for seed_idx, seed in enumerate(seeds):
             naive_value = losses[N_idx, 0, seed_idx]
@@ -178,12 +213,10 @@ def make_plots():
     sns.set()
     sns.set_style('white')
     fig, ax = plt.subplots(figsize = (6, 5))
-    # bottom, top = plt.ylim()
     plt.ylim(0.995, 1.07)
     plt.xlim(250, 3250)
     ax.axhline(1, ls='-.', color = 'black', zorder = -100, linewidth = 0.4)
-    # x_min,x_max = plt.xlim()
-    # plt.plot([0, 3000], [1, 1.1], color='k', alpha=0.4, zorder=0, linestyle='--')
+
     for algo_idx, algorithm in enumerate(algos):
         if algorithm == 'naive_v1': continue
 
@@ -199,10 +232,7 @@ def make_plots():
 
         melt_df = df.melt('N', var_name='cols', value_name='vals')
         melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) + this_jitter # Add jitter
-        # print(algorithm, alg_to_legend[algorithm], algo_idx, alg_color[algorithm])
-        # import ipdb; ipdb.set_trace()
-        # empty_df = {'N' : [], 'vals' : []}
-        # sns.scatterplot(x="N", y="vals", data = df, ax = ax, alpha = 0.6, color=this_color)
+
 
         bars = (1.96/(10**0.5)) * np.std(losses[:, algo_idx, :], axis = 1) # Slice a specific algo, get a 2D array
         means = np.mean(losses[:, algo_idx, :], axis = 1)
@@ -214,7 +244,6 @@ def make_plots():
     plt.ylabel(r'Final Loss Normalized to PAM ($L/L_{PAM}$)')
     plt.title("$L/L_{PAM}$ vs. $n$ (MNIST, $d = l_2, k = 5$)")
     plt.legend()
-    # showx()
     plt.savefig('figures/loss_plot.pdf')
 
 
@@ -222,10 +251,3 @@ if __name__ == "__main__":
     loss_dir = 'profiles/Loss_plots_paper/'
     verify_optimization_paths()
     make_plots()
-
-# print(get_file_loss(loss_dir + 'L-clarans-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 2))
-# print(get_file_loss(loss_dir + 'L-em_style-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 2))
-# print(get_file_loss(loss_dir + 'L-ucb-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 4))
-# print(get_file_loss(loss_dir + 'L-naive_v1-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-', 4))
-# print(get_swaps(loss_dir + 'L-naive_v1-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-'))
-# print(get_swaps(loss_dir + 'L-ucb-True-BS-v-0-k-5-N-500-s-46-d-MNIST-m-L2-w-'))
