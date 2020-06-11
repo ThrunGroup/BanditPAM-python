@@ -21,11 +21,11 @@ def main():
     algos = ['ucb']
     seeds = range(10)
 
-    ######## MNIST, L2 distance, k = 5 and k = 10
-    # dataset = 'MNIST'
-    # Ns = [3000, 10000, 20000, 40000, 70000]
-    # ks = [5, 10]
-    # metric = 'L2'
+    ####### MNIST, L2 distance, k = 5 and k = 10
+    dataset = 'MNIST'
+    Ns = [3000, 10000, 20000, 40000, 70000]
+    ks = [5, 10]
+    metric = 'L2'
 
     ######## MNIST, Cosine distance, k = 5
     # dataset = 'MNIST'
@@ -58,10 +58,10 @@ def main():
 
     with open('auto_exp_config.py', 'w+') as fout:
         fout.write("experiments = [\n")
-        for seed in seeds:
-            for N in Ns:
-                for algo in algos:
-                    for k in ks:
+        for k in ks:
+            for seed in seeds:
+                for N in Ns:
+                    for algo in algos:
                         # Adding 42 to seed for comparison with earlier experiments
                         exp = write_exp(algo, k, N, 42 + seed, dataset, metric)
                         if exp is not None:
