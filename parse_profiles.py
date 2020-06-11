@@ -225,6 +225,7 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric,
                             raise Exception("Warning: Log file not found for ", logfile)
 
                         T = get_swap_T(logfile)
+                        print(T, k)
 
                         b_p = pstats.Stats(build_profile_name)
                         for row in snakevizcode.table_rows(b_p):
@@ -291,12 +292,12 @@ def main():
     # dir_ = 'MNIST_L2_k5_paper'
 
     #for MNIST L2, k = 10
-    dataset = 'MNIST'
-    metric = 'L2'
-    Ns = [3000, 10000, 30000, 70000]
-    ks = [10]
-    seeds = range(42, 52)
-    dir_ = 'MNIST_L2_k10_paper'
+    # dataset = 'MNIST'
+    # metric = 'L2'
+    # Ns = [3000, 10000, 30000, 70000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_L2_k10_paper'
 
     #for MNIST COSINE
     # dataset = 'MNIST'
@@ -323,12 +324,12 @@ def main():
     # dir_ = 'SCRNAPCA_L2_k5_paper'
 
     # #for scRNA, L1, K = 5
-    # dataset = 'SCRNA'
-    # metric = 'L1'
-    # Ns = [10000, 20000, 30000, 40000]
-    # ks = [5]
-    # seeds = range(42, 52)
-    # dir_ = 'SCRNA_L1_paper'
+    dataset = 'SCRNA'
+    metric = 'L1'
+    Ns = [10000, 20000, 30000, 40000]
+    ks = [5]
+    seeds = range(42, 52)
+    dir_ = 'SCRNA_L1_paper'
 
 
     # By calling these functions twice, we're actually mining the data from the profiles twice.
