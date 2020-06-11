@@ -65,7 +65,7 @@ def json_stats(stats):
             (keyfmt(*ck), list(cv)) for ck, cv in stats.stats[k][-1].items())
         nstats[nk]['display_name'] = keyfmt(os.path.basename(k[0]), k[1], k[2])
 
-    # remove anything that both never called anything and was never called
+    # Remove anything that both never called anything and was never called
     # by anything. This is profiler cruft.
     no_calls = set(k for k, v in nstats.items() if not v['children'])
     called = set(chain.from_iterable(
