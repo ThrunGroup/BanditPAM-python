@@ -1,13 +1,24 @@
+'''
+Convenience code to automatically generate a list of experiments to run.
+Default output is to auto_exp_config.py.
+'''
+
 import itertools
 
 def write_exp(algo, k, N, seed, dataset, metric):
+    '''
+    Takes the experiment variables and outputs a string description
+    to go into a config file.
+    '''
     if algo == 'naive_v1' and (N > 10000 or k > 5):
+
         return None
     return "\t['" + algo + "', 'BS', 0, " + str(k) + ", " + str(N) + \
         ", " + str(seed) + ", '" + dataset + "', '" + metric + "', ''],\n"
 
 def main():
-    algos = ['ucb']#, 'naive_v1']
+    # Possible algos are ['ucb', 'naive_v1', 'em_style', 'csh', and 'clarans']
+    algos = ['ucb']
     dataset = 'SCRNA'
     metric = 'L1'
 
@@ -30,10 +41,11 @@ def main():
     with open('auto_exp_config.py', 'w+') as fout:
         fout.write("experiments = [\n")
         for seed in seeds:
-            for N in Ns: # NOTE: Switched this loop
-                for algo in algos: # NOTE: with this loop
+            for N in Ns:
+                for algo in algos:
                     for k in ks:
-                        exp = write_exp(algo, k, N, 42 + seed, dataset, metric) #NOTE: Adding 42 for comparisons with earlier implementations
+                        # Adding 42 to seed for comparison with earlier experiments
+                        exp = write_exp(algo, k, N, 42 + seed, dataset, metric)
                         if exp is not None:
                             fout.write(exp)
         fout.write("]")
