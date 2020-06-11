@@ -19,20 +19,38 @@ def write_exp(algo, k, N, seed, dataset, metric):
 def main():
     # Possible algos are ['ucb', 'naive_v1', 'em_style', 'csh', and 'clarans']
     algos = ['ucb']
-    dataset = 'SCRNA'
-    metric = 'L1'
+    seeds = range(10)
 
-    # Ns = [3000, 10000, 20000, 40000, 70000] # For MNIST
-    Ns = [3000, 10000, 20000, 30000, 40000] # for SCRNA and SCRNA-PCA and
+    ######## MNIST, L2 distance, k = 5 and k = 10
+    # dataset = 'MNIST'
+    # Ns = [3000, 10000, 20000, 40000, 70000]
+    # ks = [5, 10]
+    # metric = 'L2'
 
-    ks = [5]
-    seeds = range(6, 8)
+    ######## MNIST, Cosine distance, k = 5
+    # dataset = 'MNIST'
+    # Ns = [3000, 10000, 20000, 40000, 70000]
+    # ks = [5]
+    # metric = 'COSINE'
 
+    ######## SCRNA, L1 distance, k = 5
+    # dataset = 'SCRNA'
+    # Ns = [3000, 10000, 20000, 30000, 40000]
+    # ks = [5]
+    # metric = 'L1'
 
-    # Ns = [1000, 2000, 3000, 3360] # for HOC4
-    # ks = [2] $ for HOC4
+    ######## SCRNAPCA, L2 distance, k = 5 and k = 10
+    # dataset = 'SCRNAPCA'
+    # Ns = [3000, 10000, 20000, 30000, 40000]
+    # ks = [5, 10]
+    # metric = 'L2'
 
-    ##### For loss plots
+    ######## HOC4, Tree edit distance (precomputed), k = 2 and k = 3
+    # Ns = [1000, 2000, 3000, 3360]
+    # ks = [2, 3]
+    # metric = 'PRECOMP'
+
+    ######## For loss plots
     # algos = ['clarans', 'em_style']#, 'ucb']#, 'naive_v1']
     # seeds = range(10)
     # Ns = [10000, 30000, 70000]
