@@ -267,7 +267,7 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric,
 def main():
     algos = ['ucb'] # Could also include 'naive_v1'
 
-    # for HOC4
+    #### for HOC4
     # dataset = 'HOC4'
     # metric = 'PRECOMP'
     # Ns = [1000, 2000, 3000, 3360]
@@ -275,7 +275,7 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
-    #for MNIST L2, k = 5
+    #### for MNIST L2, k = 5
     # dataset = 'MNIST'
     # metric = 'L2'
     # Ns = [10000, 20000, 40000, 70000]
@@ -283,15 +283,15 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'MNIST_L2_k5_paper'
 
-    #for MNIST L2, k = 10
-    # dataset = 'MNIST'
-    # metric = 'L2'
-    # Ns = [3000, 10000, 30000, 70000]
-    # ks = [10]
-    # seeds = range(42, 52)
-    # dir_ = 'MNIST_L2_k10_paper'
+    ### for MNIST L2, k = 10
+    dataset = 'MNIST'
+    metric = 'L2'
+    Ns = [3000, 10000, 30000, 70000]
+    ks = [10]
+    seeds = range(42, 52)
+    dir_ = 'MNIST_L2_k10_paper'
 
-    #for MNIST COSINE
+    ##### for MNIST COSINE
     # dataset = 'MNIST'
     # metric = 'COSINE'
     # Ns = [3000, 10000, 20000, 40000]
@@ -299,7 +299,7 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'MNIST_COSINE_k5_paper'
 
-    # #for scRNAPCA, L2, K = 10
+    #### for scRNAPCA, L2, K = 10
     # dataset = 'SCRNAPCA'
     # metric = 'L2'
     # Ns = [10000, 20000, 30000, 40000]
@@ -307,7 +307,7 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'SCRNAPCA_L2_k10_paper' # NOTE: SCRNA_PCA_paper_more_some_incomplete contains data for some more values of N.
 
-    # #for scRNAPCA, L2, K = 5
+    #### for scRNAPCA, L2, K = 5
     # dataset = 'SCRNAPCA'
     # metric = 'L2'
     # Ns = [10000, 20000, 30000, 40000]
@@ -315,7 +315,7 @@ def main():
     # seeds = range(42, 52)
     # dir_ = 'SCRNAPCA_L2_k5_paper'
 
-    # #for scRNA, L1, K = 5
+    #### for scRNA, L1, K = 5
     # dataset = 'SCRNA'
     # metric = 'L1'
     # Ns = [10000, 20000, 30000, 40000]

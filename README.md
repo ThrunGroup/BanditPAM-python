@@ -22,7 +22,7 @@ parameters:
 - metric (e.g. L2)
 - intial medoids (usually blank)
 
-When an experiment is run, a profiler is run and tallies the number of times the
+When an experiment is conducted, a profiler is run and tallies the number of times the
 distance function is called, as well as other statistics such as wall clock
 time. These profiles are stored in files prefixed with `p-`.
 
@@ -60,7 +60,7 @@ The SCRNA-PCA dataset referred to in the appendix contains the SCRNA dataset,
 but projected onto the top 10 principal components, which is available from the
 same webpage and is labeled "Clustering analysis".
 
-These datasets have been preprocessed with `scrna_preprocessing.py`
+These datasets have been preprocessed with `scrna_preprocessing.py`.
 
 ### HOC4
 
@@ -78,7 +78,7 @@ The HOC4 ASTs also require precomputation of the pairwise distance matrix
 between trees; this matrix is included in `tree-3630.dist`.
 
 To compute this matrix from scratch, run `python tree_utils.py -d HOC4`. Note
-that this computation takes a while.
+that this computation takes several hours.
 
 ## Required: ELKI Implementation of FastPAM
 
@@ -157,6 +157,18 @@ comments in `run_profiles.py`.
 
 All of the necessary profiles to recreate the figures from the paper are already
 included in this zip archive. Instructions on recreating each plot are below:
+
+To remake Figure 1(a), run `python make_loss_plots.py`. This retrieves the final
+losses for each algorithm from the corresponding logfiles. In the case of
+FastPAM, however, the losses were manually computed by inputting the different
+subsets into the ELKI GUI. See `make_manual_MNIST_subsets.py` for instructions
+on how to programatically create the different random subsets of MNIST for use
+in the ELKI GUI version of FastPAM.
+
+To remake Figures 1(b) and 1(c), run `python parse_profiles.py`, (un)commenting
+the code for the necessary specific set of experiments in `main()` and changing
+the filename in the call to `savefig` in `plot_slice_sns()`. Figures 2(a), 2(b),
+and 2(c) are generated in the same way.
 
 
 

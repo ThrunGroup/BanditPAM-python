@@ -191,7 +191,7 @@ def make_plots():
         'em_style' : 2,
         'fp' : 1,
     }
-    
+
     losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))
 
     for N_idx, N in enumerate(Ns):
@@ -249,5 +249,5 @@ def make_plots():
 
 if __name__ == "__main__":
     loss_dir = 'profiles/Loss_plots_paper/'
-    verify_optimization_paths()
+    # verify_optimization_paths()
     make_plots()
