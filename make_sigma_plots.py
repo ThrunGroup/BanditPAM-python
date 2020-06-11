@@ -1,3 +1,8 @@
+'''
+Make the plots of how sigmas evolve in different experiments. Used to make
+Appendix Figures 2, 3, 4, and 5.
+'''
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -6,15 +11,19 @@ from tests import Namespace
 
 def showx():
     plt.draw()
-    plt.pause(1) # <-------
+    plt.pause(1)
     input("<Hit Enter To Close>")
     plt.close()
 
 
 def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
     '''
-    Use this to estimate sigma, as in sigma-sub-Gaussian, for a couple of points
+    For fixed arms, used to see the spread of possible loss changes for
+    different reference points.
+
+    Used to make Appendix Figures 4 and 5.
     '''
+
     arms = np.random.choice(len(dataset), size = target_size, replace = False)
     best_distances = np.inf * np.ones(len(dataset))
     for a_idx, a in enumerate(arms):
@@ -59,6 +68,13 @@ def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
 
 
 def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
+    '''
+    Use this to plot distribution of true mean arm parameters, \mu_i, for many
+    arms.
+
+    Used to make Appendix Figure 3.
+    '''
+
     arms = np.random.choice(len(dataset), size = subsample_size, replace = False)
     means = np.zeros(len(arms))
     best_distances = np.inf * np.ones(len(dataset))
@@ -101,14 +117,23 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
     plt.savefig('figures/mu-'+dataset_name+'-'+metric+'.pdf')
     plt.clear()
 
-#min: 0.54499 25th: 1.01669 median: 1.18792 75th: 1.41559 max: 1.94342 mean: 1.21168
 def extract_sigmas(str_):
+    '''
+    Get the distribution statistics of sigmas from a string from the logfile:
+    min, 25th percentile, median, 75th percentile, max.
+    '''
+
     tokens = str_.split(' ')
     nums = [tokens[i] for i in range(1, 10, 2)]
     floats = list(map(float, nums))
     return floats
 
 def make_MNIST_sigma_dist_example():
+    '''
+    Used to plot evolution of sigmas in different BUILD steps of an experiment.
+    Used to make Appendix Figure 2.
+    '''
+
     # Taken from L-ucb-True-BS-v-0-k-5-N-70000-s-51-d-MNIST-m-L2-w-
     step1 = "min: 0.47623 25th: 1.03397 median: 1.21351 75th: 1.44496 max: 2.33667 mean: 1.27651"
     step2 = "min: 0.0 25th: 0.27304 median: 0.36676 75th: 0.48846 max: 1.28567 mean: 0.4005"
@@ -139,8 +164,8 @@ if __name__ == '__main__':
     args = Namespace(dataset = dataset_name, metric = metric)
     points, labels, sigma = load_data(args)
 
-    # get_dist_of_means(dataset = points, metric = metric, subsample_size = 1000, subsamp_refs = subsamp_refs)
+    get_dist_of_means(dataset = points, metric = metric, subsample_size = 1000, subsamp_refs = subsamp_refs)
 
     get_fixed_sigma_dist(dataset = points, metric = metric, target_size = 4, subsamp_refs = False)
 
-    # make_MNIST_sigma_dist_example()
+    make_MNIST_sigma_dist_example()
