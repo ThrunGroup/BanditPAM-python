@@ -7,7 +7,9 @@ implementation is used for the wall clock time comparisons.
 
 # Introduction
 
-Each experiment in this repository is specified by a number of parameters:
+Throughout this repo, an "experiment" refers to a specific $k$-medoids problem
+we wish to solve. Each experiment in this repository is specified by a number of
+parameters:
 - algorithm (ucb, also known as BanditPAM, or naive_v1, which refers to PAM)
 - a string specifying whether to run the BUILD and/or SWAP steps
 - verbosity
@@ -20,7 +22,7 @@ Each experiment in this repository is specified by a number of parameters:
 
 When an experiment is run, a profiler is run and tallies the number of times the
 distance function is called, as well as other statistics such as wall clock
-time. These profiles are prefixed with `p-`.
+time. These profiles are stored in files prefixed with `p-`.
 
 Additionally, logfiles are written for every experiment. These logfiles contain
 information like the medoids assigned after the BUILD step, the final medoids
@@ -28,7 +30,7 @@ chosen after the SWAP step, the final loss, as well as further details such as
 the number of swaps performed. The logfiles are prefixed with `L-`.
 
 All profiles and logfiles necessary to recreate the plots in the paper are
-provided in the '/profiles/' directory. We also include instructions on how to
+provided in the `/profiles/` directory. We also include instructions on how to
 create these profiles and logfiles from scratch (see below).
 
 # Requirements
