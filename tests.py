@@ -1,3 +1,10 @@
+'''
+Run tests to verify Bandit-PAM (ucb_pam) and PAM (naive_v1) are running
+correctly.
+
+You can run the tests with `py.test tests.py`
+'''
+
 import tests_exp_config
 import run_profiles
 import data_utils
@@ -7,10 +14,20 @@ import sys
 import argparse
 
 class Namespace:
+    '''
+    Initializes an empty Namespace, of the type that argparse returns.
+    Use this when you need a dummy "args" that isn't yet available in the code
+    e.g. initializing "args" in test_exps() below
+    '''
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
 def test_exps():
+    '''
+    Runs each test in tests_exp_config.py. Each line in tests_exp_config.py is a
+    different experiment, and the last 2 elements are the medoids we expect
+    after the build and swap steps.
+    '''
     for exp in tests_exp_config.experiments:
         print(exp)
         args = Namespace()

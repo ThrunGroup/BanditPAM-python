@@ -1,5 +1,4 @@
 experiments = [
-
     # algorithm, build and/or swap, verbosity, num_medoids, sample_size, seed, dataset, warm start medoids, anticipated build results, anticipated swap results
     ['ucb', 'BS', 0, 10, 100, 42, 'MNIST', 'L2', '', [16, 32, 70, 87, 24, 90, 49, 99, 82, 94], [16, 70, 90, 49, 99, 82, 94, 25, 63, 31]],
     ['ucb', 'BS', 0, 10, 300, 42, 'MNIST', 'L2', '', [285,41,23,4,99,31,193,273,124,129], [41,23,99,31,193,273,124,129,116,297]],
