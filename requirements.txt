@@ -1,0 +1,10 @@
+tornado==6.0.1
+numpy==1.16.2
+pandas==0.24.1
+mnist==0.2.2
+seaborn==0.10.1
+zss==1.2.0
+scipy==1.2.1
+scikit_learn_extra==0.1.0b2
+matplotlib==3.0.3
+scikit_learn==0.23.1
