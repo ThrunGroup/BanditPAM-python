@@ -99,7 +99,7 @@ def verify_optimization_paths():
                 print(ucb_swaps)
 
 def get_FP_loss(N, seed):
-    with open('manual_fastpam_losses.txt', 'r') as fin:
+    with open('ELKI/manual_fastpam_losses.txt', 'r') as fin:
         prefix = "N=" + str(N) + ",seed=" + str(seed + 42)+":"
 
         line = fin.readline()
