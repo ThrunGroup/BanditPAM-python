@@ -360,7 +360,6 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         new_medoid = s[1]
         case1 = np.where(reference_closest_medoids == old_medoid)[0] # List of indices
         case2 = np.where(reference_closest_medoids != old_medoid)[0] # List of indices
-        # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
         new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
         case1_losses = np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] )
         case2_losses = np.minimum( new_medoid_distances[case2], reference_best_distances[case2] )
@@ -469,7 +468,7 @@ def estimate_sigma(dataset, N = None, metric = None):
             this_tar_distances[ref_idx] = d(sample[tar_idx], sample[ref_idx], metric = metric)
         distances[tar_idx] = np.mean(this_tar_distances)
 
-    distances -= np.mean(distances) # Center distances
+    distances -= np.mean(distances)
     plt.hist(distances)
     if metric == "L1":
         for sigma in np.arange(5, 50, 5):
@@ -490,6 +489,12 @@ def estimate_sigma(dataset, N = None, metric = None):
 
 # TODO: Explicitly pass metric instead of args.metric here
 def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
+    '''
+    Swaps the medoid-nonmedoid pair in best_swap if it would lower the loss on
+    the datapoints in imgs. Returns a string describing whether the swap was
+    performed, as well as the new medoids and new loss.
+    '''
+
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
     orig_medoid = medoids[best_swap[0]]
     new_medoid = best_swap[1]
@@ -516,6 +521,10 @@ def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
     return performed_or_not, new_medoids, min(new_loss, loss)
 
 def visualize_medoids(dataset, medoids, visualization = 'tsne'):
+    '''
+    Helper function to visualize the given medoids of a dataset using t-SNE
+    '''
+
     if visualization == 'tsne':
         X_embedded = TSNE(n_components=2).fit_transform(dataset)
         plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c='b')
@@ -525,6 +534,10 @@ def visualize_medoids(dataset, medoids, visualization = 'tsne'):
         raise Exception('Bad Visualization Arg')
 
 def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
+    '''
+    Create some 2-D Gaussian toy data.
+    '''
+
     np.random.seed(seed)
     cluster1_size = int(N * ratio)
     cluster2_size = N - cluster1_size
@@ -547,6 +560,10 @@ def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
 
 
 def extract_values(str_):
+    '''
+    Helper function for extracting the sigma statistics from a string in a
+    logfile.
+    '''
     float_arr = str_.split(' ')
     float_arr = [float(float_arr[idx]) for idx in range(1, 11, 2)]
     return float_arr
