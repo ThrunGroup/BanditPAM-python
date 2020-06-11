@@ -1,5 +1,7 @@
 '''
-TODO: Need to spot check this file's results, but the plots look ok
+Code to automatically parse the profiles produced from running experiments.
+In particular, plots the scaling of BanditPAM vs. N for various dataset sizes N.
+Used to demonstrate O(NlogN) scaling.
 '''
 
 import sys
@@ -14,18 +16,28 @@ import snakevizcode
 
 from generate_config import write_exp
 
+# Possible line numbers for the empty_counter fn
 FN_NAME_1 = 'data_utils.py:129(empty_counter)'
 FN_NAME_2 = 'data_utils.py:141(empty_counter)'
 FN_NAME_3 = 'data_utils.py:142(empty_counter)'
 
 def showx():
+    '''
+    Convenience function for plotting matplotlib plots and closing on key press.
+    '''
+
     plt.draw()
-    plt.pause(1) # <-------
+    plt.pause(1)
     input("<Hit Enter To Close>")
     plt.close()
 
 
 def verify_logfiles():
+    '''
+    Verifies that BanditPAM followed the exact same optimization path as PAM, by
+    parsing the logfiles of both experiments.
+    '''
+
     ucb_logfiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:5] == 'L-ucb']
     for u_lfile in sorted(ucb_logfiles):
         n_lfile = u_lfile.replace('ucb', 'naive_v1')
@@ -53,56 +65,16 @@ def verify_logfiles():
             else:
                 print("OK: Results for", u_lfile, n_lfile, "agree")
 
-
-def plot_slice(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
-    raise Exception("This needs to be updated")
-    assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
-
-    if fix_k_or_N == 'k':
-        kNs = ks
-        Nks = Ns
-    elif fix_k_or_N == 'N':
-        kNs = Ns
-        Nks = ks
-
-    for kN_idx, kN in enumerate(kNs):
-        if fix_k_or_N == 'k':
-            if take_log:
-                np_data = np.log10(dcalls_array)
-                Nks_plot = np.log10(Nks)
-            else:
-                np_data = dcalls_array
-                Nks_plot = Nks
-
-            plt.title(algo + " " + build_or_swap.upper() + " scaling with N for k = " + str(kN))
-            plt.xlabel("N")
-            means = np.mean(np_data[kN_idx, :, :], axis = 1)
-            plt.plot(Nks_plot, means, 'b-') # Slice a specific k, get a 2D array
-            for seed_idx, seed in enumerate(seeds):
-                plt.plot(Nks_plot, np_data[kN_idx, :, seed_idx], 'o')
-                print(np_data[kN_idx, :, seed_idx])
-
-            bars = (1.96/(10**0.5)) * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
-            # plt.errorbar(Nks, np.mean(np_data[kN_idx, :, :], axis = 1), yerr = bars, ecolor='red', elinewidth=3, zorder = 100)
-            plt.errorbar(Nks_plot, means, yerr = bars,  fmt='+', capsize=3, elinewidth=2, markeredgewidth=2, color='black', label='Nominal 95% CI', zorder=100)
-            print("Summary:")
-            print(Nks_plot, means)
-
-        elif fix_k_or_N == 'N':
-            raise Exception("Need to update with above")
-            plt.title(algo + " " + build_or_swap.upper() + " scaling with k for N = " + str(kN))
-            plt.xlabel("k")
-            plt.xticks(np.arange(0, 110, 10))
-            plt.plot(Nks, np.mean(np_data[:, kN_idx, :], axis = 1), 'b-') # Slice a specific N, get a 2D array
-            for seed_idx, seed in enumerate(seeds):
-                plt.plot(Nks, np_data[:, kN_idx, seed_idx], 'o')
-                print(np_data[:, kN_idx, seed_idx])
-
-        showx()
-
 def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
+    '''
+    Plots the number of distance calls vs. N, for various algorithms, seeds,
+    values of k, and weightings between build and swap.
+
+    Requires the array of distance calls for the algo, for each k, N, and seed.
+    '''
     assert fix_k_or_N == 'N' or fix_k_or_N == 'k', "Bad slice param"
 
+    # Determine what we're fixing and what we're plotting the scaling against
     if fix_k_or_N == 'k':
         kNs = ks
         Nks = Ns
@@ -124,57 +96,63 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
 
             fig, ax = plt.subplots(figsize = (7,7))
 
-            d = {'N': Nks_plot}#, 'avg_d_calls': np.mean(np_data[kN_idx, :, :], axis = 1)}
+            # Make a dataframe with the relevant data, for plotting with seaborn
+            d = {'N': Nks_plot}
             for seed_idx, seed in enumerate(seeds):
                 d["seed_" + str(seed)] = np_data[kN_idx, :, seed_idx]
             df = pd.DataFrame(data = d)
             print(df)
 
+            # Combine the different seeds into 1 column
             melt_df = df.melt('N', var_name='cols', value_name='vals')
             melt_df['N'] += np.random.randn(melt_df['N'].shape[0]) * 0.01 # Add jitter
             sns.scatterplot(x="N", y="vals", data = melt_df, ax = ax, alpha = 0.6)
-            # sns.scatterplot(x="N", y="avg_d_calls", data = df, ax = ax)
 
+            # Plot means and error bars
             bars = (1.96/(10**0.5)) * np.std(np_data[kN_idx, :, :], axis = 1) # Slice a specific k, get a 2D array
             means = np.mean(np_data[kN_idx, :, :], axis = 1)
             plt.errorbar(Nks_plot, means, yerr = bars, fmt = '+', capsize = 5, ecolor='black', elinewidth = 1.5, zorder = 100, mec='black', mew = 1.5, label="95% confidence interval")
 
-
+            # Plot line of best fit
             sl, icpt, r_val, p_val, _ = sp.stats.linregress(Nks_plot, means)
             x_min, x_max = plt.xlim()
             y_min, y_max = plt.ylim()
             plt.plot([x_min, x_max], [x_min * sl + icpt, x_max * sl + icpt], color='black', label='Linear fit, slope=%0.3f'%(sl))
 
             if build_or_swap == 'build':
-                # NOTE: kN^2 here in build step
+                # Plot reference kN^2 line here in build step for PAM
                 plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$kn^2$ PAM scaling')
             elif build_or_swap == 'swap':
-                # NOTE: N^2 if using FP1 trick and clusters are balanced
-                # NOTE: Could also plot kN^2 for when clusters are not balanced
+                # Plot reference N^2 line here in build step for PAM + FP1
+                # (no dependence on k)
                 plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$kn^2$ PAM scaling')
-            else: # weighted
+            else:
+                # weighted reference line for
                 plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$kn^2$ PAM scaling')
 
             print("Slope is:", sl)
 
+            # Manually modify legend labels for prettiness
             handles, labels = ax.get_legend_handles_labels()
             labels, handles = zip(*sorted(zip(labels, handles), key=lambda t: t[0]))
             ax.legend(handles[::-1], labels[::-1], loc="upper left")
 
-            # plt.xticks(Nks_plot.tolist(), ['10^3, 3*10^3, 10^4, 3*10^4, 7*10^4'])
-            # locs, labels = plt.xticks()
-            # plt.grid()
-
         elif fix_k_or_N == 'N':
-            raise Exception("Fill this in")
+            raise Exception("Fixing N and plotting vs. k not yet supported")
 
         plt.xlabel("$\log 10(n)$")
         plt.ylabel("$\log 10$(average # of distance computations per step)")
-        # showx()
+
+        # Modify these lines based on dataset
         plt.title("MNIST, $d = l_2, k = 10$")
-        # plt.savefig('figures/MNIST-L2-k10-extra.pdf')
+        plt.savefig('figures/MNIST-L2-k10-extra.pdf')
 
 def get_swap_T(logfile):
+    '''
+    Get the number of swap steps performed in an experiment, from parsing the
+    logfile
+    '''
+
     with open(logfile, 'r') as fin:
         line = fin.readline()
         while line[:10] != 'Num Swaps:':
@@ -184,6 +162,20 @@ def get_swap_T(logfile):
     return T
 
 def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric, dir_):
+    '''
+    A function which mines the number of distance calls for each experiment,
+    from the dumped profiles. Creates a numpy array with the distance call
+    counts.
+
+    It does this by:
+        - first, identifying the filenames where the experiment profiles and
+            logfiles are stored (the logfile is used for the number of swap
+            steps)
+        - searching each profile (build and swap) for the number of distance
+            calls
+        - weighting the distance calls between the build step and swap step as
+            necessary
+    '''
     dcalls_array = np.zeros((len(ks), len(Ns), len(seeds)))
 
     if build_or_swap == 'build':
@@ -273,7 +265,7 @@ def show_plots(fix_k_or_N, build_or_swap, Ns, ks, seeds, algos, dataset, metric,
         plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap)
 
 def main():
-    algos = ['ucb']#, 'naive_v1']
+    algos = ['ucb'] # Could also include 'naive_v1'
 
     # for HOC4
     # dataset = 'HOC4'
@@ -324,27 +316,20 @@ def main():
     # dir_ = 'SCRNAPCA_L2_k5_paper'
 
     # #for scRNA, L1, K = 5
-    dataset = 'SCRNA'
-    metric = 'L1'
-    Ns = [10000, 20000, 30000, 40000]
-    ks = [5]
-    seeds = range(42, 52)
-    dir_ = 'SCRNA_L1_paper'
+    # dataset = 'SCRNA'
+    # metric = 'L1'
+    # Ns = [10000, 20000, 30000, 40000]
+    # ks = [5]
+    # seeds = range(42, 52)
+    # dir_ = 'SCRNA_L1_paper'
 
-
-    # By calling these functions twice, we're actually mining the data from the profiles twice.
-    # Not a big deal but should fix
     # show_plots('k', 'build', Ns, ks, seeds, algos, dataset, metric, dir_)
     # show_plots('k', 'swap', Ns, ks, seeds, algos, dataset, metric, dir_)
     # show_plots('k', 'weighted', Ns, ks, seeds, algos, dataset, metric, dir_)
     show_plots('k', 'weighted_T', Ns, ks, seeds, algos, dataset, metric, dir_)
 
-    # show_plots('N', 'build', Ns, ks, seeds, algos, dataset, metric)
-    # show_plots('N', 'swap', Ns, ks, seeds, algos, dataset, metric)
-
 
 if __name__ == '__main__':
     # verify_logfiles()
     # print("FILES VERIFIED\n\n")
-
     main()
