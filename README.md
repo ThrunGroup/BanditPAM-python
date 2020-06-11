@@ -66,7 +66,8 @@ The SCRNA-PCA dataset referred to in the appendix contains the SCRNA dataset,
 but projected onto the top 10 principal components, which is available from the
 same webpage and is labeled "Clustering analysis".
 
-These datasets have been preprocessed with `scrna_preprocessing.py`.
+These datasets have been preprocessed with `preprocess_scrna.py`, which expects
+the files to be saved in specific locations (see the constants at top of file).
 
 ### HOC4
 
@@ -180,7 +181,6 @@ Appendix Figure 6 is remade using `python parse_profiles.py` as specified above.
 - `run_profiles.py` :
 
 ## Helpers
-
 - `data_utils.py` : A number of common functions used by several algorithms
 - `tree_utils.py` : Helper methods to parse the HOC4 ASTs
 - `make_manual_MNIST_subsets.py` : Helper functions to create the subsets of
