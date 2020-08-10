@@ -1,0 +1,19 @@
+% !TEX root = 0-main.tex
+
+\section{Discussion and Conclusions}
+\label{sec:discussion}
+
+In all experiments, we have observed that the numbers of SWAPs are very small, typically fewer than 10, justifying the assumption of having an upper limit on the PAM SWAP step prior to running the algorithm in Sec. \ref{sec:theory}.   
+
+We also observe that for all datasets, the randomly sampled distances have an empirical distribution similar to Gaussian distribution (Appendix Figures \ref{fig:sigma_ex_MNIST}-\ref{fig:sigma_ex_SCRNAPCA}), justifying the sub-Gaussian assumption in Sec. \ref{sec:theory}.
+In addition, we observe that the the sub-Gaussian parameters are different for different steps and different points (Appendix Figures \ref{fig:MNIST_sigmas_example}), justifying the adaptive estimation of the sub-Gaussianity parameters in SubSec. \ref{subsec:algdetails}.
+
+In addition, the distribution of the true arm parameters also mostly have a heavy-tailed distribution (Appendix Figure \ref{fig:mu_dist}), justifying the distributional assumption of $\mu_i$'s in Sec. \ref{sec:theory}. 
+
+% We consider two different settings for each dataset. The first setting is that in which UltraPAM must return the same results as PAM. In this setting, we find that UltraPAM demonstrates significant algorithmic speedups over PAM, while returning the same results with high probability. In the second setting, we relax this requirement that UltraPAM returns the same results as PAM. In the latter setting, we find that UltraPAM demonstrates an even greater speedup over PAM, while finding final medoid assignments that are nearly the same quality as those found by PAM and occasionally even better.
+
+% \textbf{Applications and Impact:}  
+
+% We provide opportunities for future work in Appendix \ref{sec:future}.
+
+Our application to the HOC4 dataset also suggests a method for scaling personalized feedback to individual students in online courses. If limited resources are available, instructors can choose to provide feedback on just the \textit{medoids} of submitted solutions instead of exhaustively providing feedback on \textit{every} unique solution, of which there may be several thousand. Instructors can then refer individual students to the feedback provided for their closest medoid. We anticipate that this approach can be applied generally for students of Massive Open Online Courses (MOOCs), thereby enabling more equitable access to education and personalized feedback for students.
