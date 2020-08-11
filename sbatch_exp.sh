@@ -4,6 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=107G
+#SBATCH --nodelist=scq2
 
 #SBATCH --job-name="sample"
 #SBATCH --output=sample-%j.out

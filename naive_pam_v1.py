@@ -145,7 +145,7 @@ def naive_build_and_swap(args):
         swapped_medoids, S_logstring, num_swaps, final_loss = naive_swap(args, imgs, init_medoids)
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss
+    return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, -1 #-1 placeholder for uniq_d
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

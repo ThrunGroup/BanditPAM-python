@@ -23,8 +23,8 @@ def main():
 
     ####### MNIST, L2 distance, k = 5 and k = 10
     dataset = 'MNIST'
-    Ns = [3000, 10000, 20000, 40000, 70000]
-    ks = [5, 10]
+    Ns = [1000]#, 10000, 20000, 40000, 70000]
+    ks = [5, 10, 30, 50, 100, 200]
     metric = 'L2'
 
     ######## MNIST, Cosine distance, k = 5
