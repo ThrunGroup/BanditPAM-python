@@ -68,7 +68,7 @@ def parse_logstring(logstring):
             output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
     return output
 
-def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss):
+def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, uniq_d):
     '''
     Write results of an experiment to the given file, including:
     medoids after BUILD step, medoids after SWAP step, etc.
@@ -78,6 +78,7 @@ def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_
         fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         fout.write("\nNum Swaps: " + str(num_swaps))
         fout.write("\nFinal Loss: " + str(final_loss))
+        fout.write("\nUnique Distance Computations: " + str(uniq_d))
         fout.write("\nBuild Logstring:" + parse_logstring(B_logstring))
         fout.write("\nSwap Logstring:" + parse_logstring(S_logstring))
 
@@ -98,7 +99,7 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
     if 'B' in tmp:
         args.build_ao_swap = 'B'
         prof = cProfile.Profile()
-        built_medoids, _1, B_logstring, _2, _3, _4 = prof.runcall(method_name, args)
+        built_medoids, _1, B_logstring, _2, _3, _4, _5 = prof.runcall(method_name, args)
         prof.dump_stats(B_prof_fname)
         computed_B = True
     if 'S' in tmp:
@@ -106,9 +107,9 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
         assert computed_B, "ERROR: BUILD step was not run, Using warm start medoids from a previous experiment"
         args.warm_start_medoids = ','.join(map(str, list(built_medoids)))
         prof = cProfile.Profile()
-        _1, swapped_medoids, _2, S_logstring, num_swaps, final_loss = prof.runcall(method_name, args)
+        _1, swapped_medoids, _2, S_logstring, num_swaps, final_loss, uniq_d = prof.runcall(method_name, args)
         prof.dump_stats(S_prof_fname)
-    write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss)
+    write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, uniq_d)
 
 def write_loss(medoids_fname, final_medoids, final_loss):
     '''

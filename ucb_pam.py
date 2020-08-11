@@ -121,7 +121,9 @@ def UCB_build(args, imgs, sigma, dist_mat = None):
             for c_e in candidates:
                 for c_r in calc_refs:
                     cache_computed[c_e, c_r] = 1
-            print("Unique distances computed:", np.sum(cache_computed))
+
+            if args.verbose >= 1:
+                print("Unique distances computed:", np.sum(cache_computed))
 
             # Update running average of estimates and confidence bounce
             estimates[candidates] = \
@@ -273,7 +275,9 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None, cache_computed = 
                 for c_r in calc_refs:
                     cache_computed[acc_[0], c_r] = 1
                     cache_computed[acc_[1], c_r] = 1
-            print("Unique distances computed:", np.sum(cache_computed))
+
+            if args.verbose >= 1:
+                print("Unique distances computed:", np.sum(cache_computed))
 
             # Update running average of estimates and confidence bounce
             estimates[accesses] = \
@@ -337,8 +341,11 @@ def UCB_build_and_swap(args):
 
     built_medoids = []
     B_logstring = {}
+    N = len(imgs)
     if 'B' in args.build_ao_swap:
+        assert args.cache_computed is None, "Cache_computed should be None"
         built_medoids, B_logstring, cache_computed = UCB_build(args, imgs, sigma, dist_mat = dist_mat)
+        args.cache_computed = cache_computed
         print("Built medoids", built_medoids)
 
     swapped_medoids = []
@@ -353,10 +360,11 @@ def UCB_build_and_swap(args):
         else:
             init_medoids = built_medoids.copy()
 
-        swapped_medoids, S_logstring, num_swaps, final_loss = UCB_swap(args, imgs, sigma, init_medoids, dist_mat = dist_mat, cache_computed = cache_computed)
+        swapped_medoids, S_logstring, num_swaps, final_loss = UCB_swap(args, imgs, sigma, init_medoids, dist_mat = dist_mat, cache_computed = args.cache_computed)
         print("Final medoids", swapped_medoids)
 
-    return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss
+    uniq_d = np.sum(args.cache_computed)
+    return built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, uniq_d
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])

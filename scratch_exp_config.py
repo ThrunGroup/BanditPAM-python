@@ -5,14 +5,5 @@ experiments = [
     # ['ucb', 'BS', 0, 5, 3000, 42, 'SCRNA', 'L1', ''],
     # ['clarans', 'BS', 0, 5, 10000, 42, 'MNIST', 'L2', ''],
 
-    ['em_style', 'BS', 0, 5, 70000, 42, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 43, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 44, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 45, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 46, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 47, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 48, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 49, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 50, 'MNIST', 'L2', ''],
-    ['em_style', 'BS', 0, 5, 70000, 51, 'MNIST', 'L2', ''],
+    ['ucb', 'BS', 1, 2, 500, 42, 'MNIST', 'L2', ''],
 ]

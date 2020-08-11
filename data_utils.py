@@ -36,6 +36,7 @@ def get_args(arguments):
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
+    parser.add_argument('-c', '--cache_computed', help = 'Cache computed', default = None)
     parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str)
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
