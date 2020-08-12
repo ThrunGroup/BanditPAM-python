@@ -39,6 +39,7 @@ def remap_args(args, exp):
     args.dataset = exp[6]
     args.metric = exp[7]
     args.warm_start_medoids = exp[8]
+    args.cache_computed = None
     return args
 
 def get_filename(exp, args):

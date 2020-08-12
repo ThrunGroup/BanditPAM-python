@@ -254,7 +254,7 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None, cache_computed = 
                 cand_condition = np.where( (lcbs < ucbs.min()) & (exact_mask == 0) )
                 candidates = np.array(list(zip(cand_condition[0], cand_condition[1])))
 
-                for e_a in exact_accesses:
+                for e_a in zip(exact_accesses[0], exact_accesses[1]):
                     for c_r in calc_refs:
                         cache_computed[e_a[0], c_r] = 1
                         cache_computed[e_a[1], c_r] = 1
@@ -271,7 +271,7 @@ def UCB_swap(args, imgs, sigma, init_medoids, dist_mat = None, cache_computed = 
             else:
                 new_samples, _, calc_refs = swap_sample_for_targets(imgs, accesses, medoids, this_batch_size, args.fast_pam1, metric = metric, return_sigma = False, dist_mat = dist_mat)
 
-            for acc_ in accesses:
+            for acc_ in zip(accesses[0], accesses[1]):
                 for c_r in calc_refs:
                     cache_computed[acc_[0], c_r] = 1
                     cache_computed[acc_[1], c_r] = 1
