@@ -1,0 +1,211 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2020
+
+% ready for submission
+% \usepackage{neurips_2020}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+% \usepackage[preprint]{neurips_2020} 
+
+\usepackage[preprint, nonatbib]{neurips_2020} %Mo
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+    % \usepackage[final]{neurips_2020}
+
+% to avoid loading the natbib package, add option nonatbib:
+    %  \usepackage[nonatbib]{neurips_2020}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+%\usepackage{natbib}
+\usepackage{amsthm}
+\usepackage{graphicx}      % graphics
+\usepackage{subcaption}
+% \usepackage[noend]{algorithmic}      % Added by Mo
+% \usepackage{algorithm}
+% \usepackage{algorithmicx}
+% \usepackage{algpseudocode}  % Added by Mo
+% \usepackage[ruled]{algorithm2e} %Added by Mo
+\usepackage{bbm} %Mo
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\usepackage{algorithm}      %Mo 
+% \usepackage{algorithmic} %Mo
+\usepackage[noend]{algpseudocode}
+
+% \usepackage[noend]{algorithm2e}
+
+\usepackage{xcolor}
+
+\newcommand{\martin}[1]{\noindent{\textcolor{blue}{\textbf{ Martin:} \textsf{#1} }}}
+
+\newcommand{\ilan}[1]{\noindent{\textcolor{purple}{\textbf{ Ilan:} \textsf{#1} }}}
+
+\newcommand{\mo}[1]{\noindent{\textcolor{brown}{\textbf{ Mo:} \textsf{#1} }}}
+
+\newcommand{\algnamenospace}{Bandit-PAM}
+\newcommand{\algname}{Bandit-PAM }
+\newcommand{\algaprnamenospace}{Bandit-PAM-apr}
+\newcommand{\algaprname}{Bandit-PAM-apr }
+
+\include{_1-defs}
+
+\renewcommand{\paragraph}[1]{\noindent {\bf #1}}
+
+
+
+\title{\algnamenospace: Almost Linear Time $k$-Medoids Clustering via Multi-Armed Bandits}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+\author{%
+  Mo Tiwari  \\
+  Department of Computer Science\\
+  Stanford University\\
+  \texttt{motiwari@stanford.edu} \\
+   \And
+   Martin Jinye Zhang \\
+   T.H. Chan School of Public Health \\
+   Harvard University \\
+   \texttt{jinyezhang@hsph.harvard.edu} \\
+   \And
+   James Mayclin \\
+   Department of Computer Science\\
+   Stanford University\\
+   \texttt{jmayclin@stanford.edu} \\
+   \And
+   Sebastian Thrun \\
+   Department of Computer Science\\
+   Stanford University\\
+   \texttt{thrun@stanford.edu} \\
+   \And
+   Chris Piech \\
+   Department of Computer Science\\
+   Stanford University\\
+   \texttt{piech@cs.stanford.edu} \\
+   \And
+   Ilan Shomorony\\
+   Electrical and Computer Engineering\\
+   University of Illinois at Urbana-Champaign\\
+   \texttt{ilans@illinois.edu}
+}
+
+% \author{%
+%   David S.~Hippocampus\thanks{Use footnote for providing further information
+%     about author (webpage, alternative address)---\emph{not} for acknowledging
+%     funding agencies.} \\
+%   Department of Computer Science\\
+%   Stanford University\\
+%   Stanford, CA 94305 \\
+%   \texttt{hippo@cs.cranberry-lemon.edu} \\
+%   % examples of more authors
+%   % \And
+%   % Coauthor \\
+%   % Affiliation \\
+%   % Address \\
+%   % \texttt{email} \\
+%   % \AND
+%   % Coauthor \\
+%   % Affiliation \\
+%   % Address \\
+%   % \texttt{email} \\
+%   % \And
+%   % Coauthor \\
+%   % Affiliation \\
+%   % Address \\
+%   % \texttt{email} \\
+%   % \And
+%   % Coauthor \\
+%   % Affiliation \\
+%   % Address \\
+%   % \texttt{email} \\
+% }
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+% \martin{Clustering is a ubiquitous task in machine learning. Comparing to the commonly-used $k$-means clustering algorithm, $k$-medoids clustering algorithms support arbitrary distance metrics and are more interpretable, for they require the cluster center to be one of the points in the dataset. 
+% Current state-of-the-art $k$-medoids clustering algorithms, like partition around the medoid (PAM), are iterative and scale quadratically in dataset size $n$ in each iteration, which makes them prohibitively expensive to run on large datasets.
+% We propose a new algorithm, called BanditPAM, that reduces the dependency on the dataset size from $O(n^2)$ to $O(n\log n)$ in each iteration. BanditPAM is a randomized algorithm based on a connection with the multi-armed bandit problem. We theoretically prove that Bandit-PAM tracks the exact optimization path of PAM and returns the same result with high probability. We experimentally validate our results on a number of real-world datasets, including code.org submission data, single-cell RNA-seq data, and MNIST handwritten digits data. We observe speedups up to 50x in wall clock time over state-of-the-art algorithms. }
+
+Clustering is a ubiquitous task in data science.
+Compared to the commonly used $k$-means clustering algorithm, $k$-medoids clustering algorithms require the cluster centers to be actual data points and support arbitrary distance metrics, allowing for greater interpretability and the clustering of structured objects.
+Current state-of-the-art $k$-medoids clustering algorithms, such as Partitioning Around Medoids (PAM), are iterative and are quadratic in the dataset size $n$ for each iteration, being prohibitively expensive for large datasets.
+We propose \algnamenospace, a randomized algorithm inspired by techniques from multi-armed bandits, that significantly improves the computational efficiency of PAM.
+We theoretically prove that \algname reduces the complexity of each PAM iteration from $O(n^2)$ to $O(n\log n)$ and returns the same results with high probability, under assumptions on the data that often hold in practice.
+We empirically validate our results on several large-scale real-world datasets, including a coding exercise submissions dataset from Code.org, the 10x Genomics 68k PBMC single-cell RNA sequencing dataset, and the MNIST handwritten digits dataset.
+We observe that \algname returns the same results as PAM while performing up to 200x fewer distance computations. 
+The improvements demonstrated by \algname enable $k$-medoids clustering on a wide range of applications, including identifying cell types in large-scale single-cell data and providing scalable feedback for students learning computer science online. We also release Python\footnote{https://github.com/motiwari/BanditPAM-python} and C++\footnote{https://github.com/jmayclin/BanditPAM} implementations of our algorithm.
+%\martin{I substantially changed this paragraph and please take a look}
+
+
+% Clustering is a ubiquitous task in data science and machine learning.
+% Compared to the commonly used $k$-means clustering algorithm, $k$-medoids clustering algorithms 
+% % Compared to the commonly used $k$-means clustering algorithm, $k$-\underline{medoids} clustering algorithms 
+% % \martin{Underline is not conventional in abstract}
+% % Ilan: changed this a bit since one could argue that, in principle, k-means also ``supports'' arbitrary distances, but it's inefficient
+% require the cluster centers to be actual datapoints and are more flexible in their support of distance metrics, both of which allow for greater interpretability and the clustering of arbitrary objects.
+% Current state-of-the-art $k$-medoids clustering algorithms, such as Partitioning Around Medoids (PAM), are iterative and are quadratic in the dataset size, $n$, for each iteration.
+% This makes them prohibitively expensive to run on large datasets.
+% We propose \algnamenospace, a randomized algorithm inspired by techniques from multi-armed bandits, that reduces the dependence on the dataset size from $O(n^2)$ to $O(n\log n)$ in each iteration. We prove that \algname returns the same results as PAM, tracking the same optimization path exactly, with high probability. 
+% We experimentally validate our results on a number of real-world datasets, including the Code.org Hour of Code \#4 \martin{maybe a less specific name that highlights the characteristics of the data}, a single-cell RNA sequencing dataset, and the MNIST handwritten digits dataset. On MNIST, we observe speedups of up to approximately 3.5x over state-of-the-art without needing to store the pairwise distance matrix \martin{Maybe talk more about distance evaluations here, as the wall clock time result is less impressive}. On the Hour of Code \#4 dataset, \algname enables scalable feedback for students learning computer science.
+% \martin{Need a bit more of the context.}
+
+
+% \ilan{I prefer ``representative point'' to exemplar}. 
+%\ilan{I think we need a bit more on the conceptual contribution. What can we say about the main algorithmic idea? That we view medoid-point swaps as arm pulls? Or is that too much detail?}
+%\martin{Be precise that this is for different steps. Don't worry too much of verbosity. We will shorten things later.}
+
+%Furthermore, we find that we can relax the requirement of returning the same results as PAM to  achieve larger speedups in wall clock time for negligible concessions in final loss. In rare cases, we also find that relaxing this requirement actually leads to improvements in the final clustering. 
+
+%
+
+% The $k$-medoids algorithm is a commonly used clustering algorithm to find representative points of a dataset. Current state-of-the-art algorithms for the $k$-medoids problem are iterative and scale quadratically in dataset size in each iteration, which makes them prohibitively expensive to run on large datasets. We propose a new algorithm, called UPAM, that reduces the dependency on dataset size $N$ from $O(N^2)$ to $O(N$log$N)$ in each iteration. Intuitively, UPAM reduces the computational problem in PAM to a statistical one using techniques from the multi-armed bandits literature. We prove theoretical guarantees that UPAM will return exactly the same results and terminate in the same number of iterations as PAM, under assumptions that are commonly satisfied in practice. We experimentally validate our results on a number of real-world datasets, and see speedups as large as 50x in wall clock time over state-of-the-art algorithms. Our algorithm can be used as a modular stand-in replacement in several popular downstream algorithms in which PAM is currently used as a subroutine, such as CLARA.
+\end{abstract}
+
+\input{1-intro}
+
+\input{2-preliminaries}
+
+\input{3-algorithm}
+
+\input{4-theory}
+
+\input{5-exps}
+
+\input{6-discussion}
+
+\input{8-broaderimpact}
+
+% \begin{ack}
+% \label{ack}
+% My mom, and \cite{kaufman1990partitioning} for natbib
+% \end{ack}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\input{9-appendix}
+
+\end{document}

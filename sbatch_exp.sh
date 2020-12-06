@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --partition=sc-quick --qos=normal
-#SBATCH --time=48:00:00
+#SBATCH --time=72:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=100G
+#SBATCH --mem=107G
 
 #SBATCH --job-name="sample"
 #SBATCH --output=sample-%j.out
@@ -20,6 +20,7 @@ echo "SLURMTMPDIR="$SLURMTMPDIR
 echo "working directory = "$SLURM_SUBMIT_DIR
 
 # sample process (list hostnames of the nodes you've requested)
+source /sailhome/motiwari/python35/bin/activate
 python -u run_profiles.py -e auto_exp_config.py -p
 
 # can try the following to list out which GPU you have access to

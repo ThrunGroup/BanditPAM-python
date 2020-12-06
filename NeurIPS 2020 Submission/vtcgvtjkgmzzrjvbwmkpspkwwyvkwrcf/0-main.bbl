@@ -1,0 +1,242 @@
+\begin{thebibliography}{10}
+
+\bibitem{audibert2010best}
+Jean-Yves Audibert and S{\'e}bastien Bubeck.
+\newblock Best arm identification in multi-armed bandits.
+\newblock In {\em Arxiv}, 2010.
+
+\bibitem{bagaria2018medoids}
+Vivek Bagaria, Govinda Kamath, Vasilis Ntranos, Martin Zhang, and David Tse.
+\newblock Medoids in almost-linear time via multi-armed bandits.
+\newblock In {\em International Conference on Artificial Intelligence and
+  Statistics}, pages 500--509, 2018.
+
+\bibitem{bagaria2018adaptive}
+Vivek Bagaria, Govinda~M Kamath, and David~N Tse.
+\newblock Adaptive monte-carlo optimization.
+\newblock {\em arXiv preprint arXiv:1805.08321}, 2018.
+
+\bibitem{baharav2019ultra}
+Tavor Baharav and David Tse.
+\newblock Ultra fast medoid identification via correlated sequential halving.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  3650--3659, 2019.
+
+\bibitem{bradley1997clustering}
+Paul~S Bradley, Olvi~L Mangasarian, and W~Nick Street.
+\newblock Clustering via concave minimization.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  368--374, 1997.
+
+\bibitem{cholera}
+Donald Cameron and Ian Jones.
+\newblock John snow, the broad street pump and modern epidemiology.
+\newblock In {\em International Journal of Epidemiology}, volume~12, page
+  393–396, 1983.
+
+\bibitem{chang2005adaptive}
+Hyeong~Soo Chang, Michael~C Fu, Jiaqiao Hu, and Steven~I Marcus.
+\newblock An adaptive sampling algorithm for solving markov decision processes.
+\newblock {\em Operations Research}, 53(1):126--139, 2005.
+
+\bibitem{hoc4dataset}
+Code.org.
+\newblock Research at code.org.
+\newblock {\em Code.org}, 2013.
+
+\bibitem{estivill2001robust}
+Vladimir Estivill-Castro and Michael~E Houle.
+\newblock Robust distance-based clustering with applications to spatial data
+  mining.
+\newblock {\em Algorithmica}, 30(2):216--242, 2001.
+
+\bibitem{even2002pac}
+Eyal Even-Dar, Shie Mannor, and Yishay Mansour.
+\newblock Pac bounds for multi-armed bandit and markov decision processes.
+\newblock In {\em International Conference on Computational Learning Theory},
+  pages 255--270. Springer, 2002.
+
+\bibitem{induceddemand}
+Kent Hymel, Kenneth Small, and Kurt Van~Dender.
+\newblock Induced demand and reboundeffects in road transport.
+\newblock In {\em Transportation Research B, Methodological}, volume~44, page
+  1220–1241, 2010.
+
+\bibitem{jain1988algorithms}
+Anil~K Jain and Richard~C Dubes.
+\newblock {\em Algorithms for clustering data}.
+\newblock Prentice-Hall, Inc., 1988.
+
+\bibitem{jamieson2014lil}
+Kevin Jamieson, Matthew Malloy, Robert Nowak, and S{\'e}bastien Bubeck.
+\newblock lil’ucb: An optimal exploration algorithm for multi-armed bandits.
+\newblock In {\em Conference on Learning Theory}, pages 423--439, 2014.
+
+\bibitem{jamieson2014best}
+Kevin Jamieson and Robert Nowak.
+\newblock Best-arm identification algorithms for multi-armed bandits in the
+  fixed confidence setting.
+\newblock In {\em 2014 48th Annual Conference on Information Sciences and
+  Systems (CISS)}, pages 1--6. IEEE, 2014.
+
+\bibitem{jamieson2016non}
+Kevin Jamieson and Ameet Talwalkar.
+\newblock Non-stochastic best arm identification and hyperparameter
+  optimization.
+\newblock In {\em Artificial Intelligence and Statistics}, pages 240--248,
+  2016.
+
+\bibitem{kaufman1987clustering}
+Leonard Kaufman and Peter~J Rousseeuw.
+\newblock Clustering by means of medoids. statistical data analysis based on
+  the l1 norm.
+\newblock {\em Y. Dodge, Ed}, pages 405--416, 1987.
+
+\bibitem{kaufman1990partitioning}
+Leonard Kaufman and Peter~J Rousseeuw.
+\newblock Partitioning around medoids (program pam).
+\newblock {\em Finding groups in data: an introduction to cluster analysis},
+  pages 68--125, 1990.
+
+\bibitem{kocsis2006bandit}
+Levente Kocsis and Csaba Szepesv{\'a}ri.
+\newblock Bandit based monte-carlo planning.
+\newblock In {\em European conference on machine learning}, pages 282--293.
+  Springer, 2006.
+
+\bibitem{kveton2019bbootstrap}
+Branislav Kveton, Csaba Szepesvari, and Mohammad Ghavamzadeh.
+\newblock Perturbed-history exploration in stochastic multi-armed bandits.
+\newblock In {\em Proceedings of the 28th International Joint Conference on
+  Artificial Intelligence}, 2019.
+
+\bibitem{kveton2019abootstrap}
+Branislav Kveton, Csaba Szepesvari, Sharan Vaswani, Zheng Wen, Mohammad
+  Ghavamzadeh, and Tor Lattimore.
+\newblock Garbage in, reward out: Bootstrapping exploration in multi-armed
+  bandits.
+\newblock In {\em International Conference on Machine Learning}, page
+  3601–3610, 2019.
+
+\bibitem{lai1985asymptotically}
+Tze~Leung Lai and Herbert Robbins.
+\newblock Asymptotically efficient adaptive allocation rules.
+\newblock {\em Advances in applied mathematics}, 6(1):4--22, 1985.
+
+\bibitem{lecun1998gradient}
+Yann LeCun, L{\'e}on Bottou, Yoshua Bengio, and Patrick Haffner.
+\newblock Gradient-based learning applied to document recognition.
+\newblock {\em Proceedings of the IEEE}, 86(11):2278--2324, 1998.
+
+\bibitem{leskovec2020mining}
+Jure Leskovec, Anand Rajaraman, and Jeffrey~David Ullman.
+\newblock {\em Mining of massive data sets}.
+\newblock Cambridge university press, 2020.
+
+\bibitem{li2016hyperband}
+Lisha Li, Kevin Jamieson, Giulia DeSalvo, Afshin Rostamizadeh, and Ameet
+  Talwalkar.
+\newblock Hyperband: A novel bandit-based approach to hyperparameter
+  optimization.
+\newblock {\em arXiv preprint arXiv:1603.06560}, 2016.
+
+\bibitem{lloyd1982least}
+Stuart Lloyd.
+\newblock Least squares quantization in pcm.
+\newblock {\em IEEE transactions on information theory}, 28(2):129--137, 1982.
+
+\bibitem{scrnabestpractices}
+Malte Luecken and Fabian Theis.
+\newblock Current best practices in single-cell rna-seq analysis: A tutorial.
+\newblock {\em Molecular Systems Biology}, 155:e8746(6), 2019.
+
+\bibitem{macqueen1967some}
+James MacQueen et~al.
+\newblock Some methods for classification and analysis of multivariate
+  observations.
+\newblock In {\em Proceedings of the fifth Berkeley symposium on mathematical
+  statistics and probability}, volume~1, pages 281--297. Oakland, CA, USA,
+  1967.
+
+\bibitem{mishra2007clustering}
+Nina Mishra, Robert Schreiber, Isabelle Stanton, and Robert~E Tarjan.
+\newblock Clustering social networks.
+\newblock In {\em International Workshop on Algorithms and Models for the
+  Web-Graph}, pages 56--67. Springer, 2007.
+
+\bibitem{navarro2001guided}
+Gonzalo Navarro.
+\newblock A guided tour to approximate string matching.
+\newblock {\em ACM computing surveys (CSUR)}, 33(1):31--88, 2001.
+
+\bibitem{ng2002clarans}
+Raymond~T. Ng and Jiawei Han.
+\newblock Clarans: A method for clustering objects for spatial data mining.
+\newblock {\em IEEE transactions on knowledge and data engineering},
+  14(5):1003--1016, 2002.
+
+\bibitem{ntranos2016fast}
+Vasilis Ntranos, Govinda~M Kamath, Jesse~M Zhang, Lior Pachter, and N~Tse
+  David.
+\newblock Fast and accurate single-cell rna-seq analysis by clustering of
+  transcript-compatibility counts.
+\newblock {\em Genome biology}, 17(1):112, 2016.
+
+\bibitem{overton1983quadratically}
+Michael~L Overton.
+\newblock A quadratically convergent method for minimizing a sum of euclidean
+  norms.
+\newblock {\em Mathematical Programming}, 27(1):34--63, 1983.
+
+\bibitem{park2009simple}
+Hae-Sang Park and Chi-Hyuck Jun.
+\newblock A simple and fast algorithm for k-medoids clustering.
+\newblock {\em Expert systems with applications}, 36(2):3336--3341, 2009.
+
+\bibitem{reynolds2006clustering}
+Alan~P Reynolds, Graeme Richards, Beatriz de~la Iglesia, and Victor~J
+  Rayward-Smith.
+\newblock Clustering rules: a comparison of partitioning and hierarchical
+  clustering algorithms.
+\newblock {\em Journal of Mathematical Modelling and Algorithms},
+  5(4):475--504, 2006.
+
+\bibitem{schubert2019faster}
+Erich Schubert and Peter~J Rousseeuw.
+\newblock Faster k-medoids clustering: improving the pam, clara, and clarans
+  algorithms.
+\newblock In {\em International Conference on Similarity Search and
+  Applications}, pages 171--187. Springer, 2019.
+
+\bibitem{schubert2019elki}
+Erich Schubert and Arthur Zimek.
+\newblock Elki: A large open-source library for data analysis-elki release 0.7.
+  5" heidelberg".
+\newblock {\em arXiv preprint arXiv:1902.03616}, 2019.
+
+\bibitem{song2017pamae}
+Hwanjun Song, Jae-Gil Lee, and Wook-shin Han.
+\newblock Pamae: Parallel k -medoids clustering with high accuracy and
+  efficiency.
+\newblock In {\em Proc. 23 ACM SIGKDD Int’l Conf. on Knowledge Discovery and
+  Data Mining}, volume~1, pages 281--297. Oakland, CA, USA, 1967.
+
+\bibitem{wang2020bootstrap}
+Chi-Hua Wang, Yang Yu, Botao Hao, and Guang Cheng.
+\newblock Residual bootstrap exploration for bandit algorithms.
+\newblock In {\em Arxiv}, 2020.
+
+\bibitem{zhang2019adaptive}
+Martin Zhang, James Zou, and David Tse.
+\newblock Adaptive monte carlo multiple testing via multi-armed bandits.
+\newblock In {\em International Conference on Machine Learning}, pages
+  7512--7522, 2019.
+
+\bibitem{zheng2017massively}
+Grace~XY Zheng, Jessica~M Terry, Phillip Belgrader, Paul Ryvkin, Zachary~W
+  Bent, Ryan Wilson, Solongo~B Ziraldo, Tobias~D Wheeler, Geoff~P McDermott,
+  Junjie Zhu, et~al.
+\newblock Massively parallel digital transcriptional profiling of single cells.
+\newblock {\em Nature communications}, 8(1):1--12, 2017.
+
+\end{thebibliography}

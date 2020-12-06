@@ -1,3 +1,16 @@
+'''
+A number of convenience functions used by the different algorithms.
+Also includes some constants.
+
+There are 5 functions that call d and therefore require the an explicit metric:
+- cost_fn
+- cost_fn_difference
+- cost_fn_difference_FP1
+- get_best_distances
+- estimate_sigma
+- medoid_swap
+'''
+
 import os
 import sys
 import numpy as np
@@ -15,16 +28,6 @@ from sklearn.metrics import pairwise_distances
 DECIMAL_DIGITS = 5
 SIGMA_DIVISOR = 1
 
-
-'''
-There are 5 functions that call d and therefore require the metric specification:
-- cost_fn
-- cost_fn_difference
-- cost_fn_difference_FP1
-- get_best_distances
-- estimate_sigma
-'''
-
 def get_args(arguments):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -33,6 +36,7 @@ def get_args(arguments):
     parser.add_argument('-N', '--sample_size', help = 'Sampling size of dataset', type = int, default = 700)
     parser.add_argument('-s', '--seed', help = 'Random seed', type = int, default = 42)
     parser.add_argument('-d', '--dataset', help = 'Dataset to use', type = str, default = 'MNIST')
+    parser.add_argument('-c', '--cache_computed', help = 'Cache computed', default = None)
     parser.add_argument('-m', '--metric', help = 'Metric to use (L1 or L2)', type = str)
     parser.add_argument('-f', '--force', help = 'Recompute Experiments', action = 'store_true')
     parser.add_argument('-p', '--fast_pam1', help = 'Use FastPAM1 optimization', action = 'store_true')
@@ -45,8 +49,8 @@ def get_args(arguments):
 
 def load_data(args):
     '''
-    Load the entire (train + test) MNIST dataset
-    returns: MNIST data reshaped into flattened arrays, all labels
+    Load the different datasets, as a numpy matrix if possible. In the case of
+    HOC4 and HOC18, load the datasets as a list of trees.
     '''
     if args.dataset == 'MNIST':
         N = 70000
@@ -65,25 +69,18 @@ def load_data(args):
         assert((total_labels == np.hstack((train_labels, test_labels))).all()) # NOTE: hstack since 1-D
         assert(total_images.shape == (N, m, m))
         assert(total_labels.shape == (N,))
-        # if args.verbose >= 2:
-        #     plt.imshow(train_images[0], cmap = 'gray')
-        #     plt.show()
-        # NOTE: Normalizing images
+
+        # Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
     elif args.dataset == "SCRNA":
-        #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv.gz', sep=',', compression='gzip', index_col=0)
-        #temp_df_ref = pd.read_csv('martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/data.csv', sep=',', index_col=0)
-        file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
+        file = 'person1/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
         data_ = np.load(file)
-        # sigma = estimate_sigma(data_, 300, metric="L2")
-        sigma = 25 # NOTE: Really need to optimize this...
+        sigma = 25
         return data_, None, sigma
     elif args.dataset == "SCRNAPCA":
-        file = 'martin/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/analysis_csv/pca/projection.csv'
+        file = 'person1/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/analysis_csv/pca/projection.csv'
         df = pd.read_csv(file, sep=',', index_col = 0)
         np_arr = df.to_numpy()
-        # import ipdb; ipdb.set_trace()
-        # sigma = estimate_sigma(np_arr, 300, metric = "L2")
         sigma = 0.01
         return np_arr, None, sigma
     elif args.dataset == 'HOC4':
@@ -94,7 +91,10 @@ def load_data(args):
             with open(tree_f, 'rb') as fin:
                 tree = pickle.load(fin)
                 trees.append(tree)
-        print("NUM TREES:", len(trees))
+
+        if args.verbose >= 1:
+            print("NUM TREES:", len(trees))
+
         return trees, None, 0.0
     elif args.dataset == 'HOC18':
         dir_ = 'hoc_data/hoc18/trees/'
@@ -104,7 +104,10 @@ def load_data(args):
             with open(tree_f, 'rb') as fin:
                 tree = pickle.load(fin)
                 trees.append(tree)
-        print("NUM TREES:", len(trees))
+
+        if args.verbose >= 1:
+            print("NUM TREES:", len(trees))
+
         return trees, None, 0.0
     elif args.dataset == 'GAUSSIAN':
         dataset = create_gaussians(args.sample_size, ratio = 0.6, seed = args.seed, visualize = False)
@@ -113,18 +116,30 @@ def load_data(args):
         raise Exception("Didn't specify a valid dataset")
 
 def init_logstring():
+    '''
+    Create an empty logstring with the desired fields. The logstrings will be
+    updated by the algorithms.
+    '''
+
     logstring = {
         'loss' : {},
         'compute_exactly' : {},
         'p' : {},
         'sigma' : {},
+        'swap' : {},
     }
     return logstring
 
-def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
+def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma, swap = None):
+    '''
+    Update a given logstring (python dict) with the results of a BUILD or SWAP
+    iteration.
+    '''
+
     logstring['loss'][k] = np.mean(best_distances)
     logstring['compute_exactly'][k] = compute_exactly
     logstring['p'][k] = p
+
     if type(sigma) == list:
         logstring['sigma'][k] = ""
         logstring['sigma'][k] += " min: " + str(round(sigma[0], DECIMAL_DIGITS))
@@ -135,41 +150,48 @@ def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma):
         logstring['sigma'][k] += " mean: " + str(round(sigma[5], DECIMAL_DIGITS))
     else:
         logstring['sigma'][k] = sigma
+
+    if swap is not None:
+        logstring['swap'][k] = str(swap[0]) + ',' + str(swap[1])
+
     return logstring
 
 def empty_counter():
+    '''
+    Empty function that is called once for every distance call. Allows for easy
+    counting of the number of distance calls
+    '''
+
     pass
 
 def d(x1, x2, metric = None):
     '''
-    Note: If you really want to memoize these computations, you should probably
-    make the empty_counter calls happen first (they won't happen otherwise), and
-    break the actual distance computation into a sub-function with memoization.
-    Do this carefully -- it might be a problem with multithreading.
+    Computes the distance between x1 and x2. If x2 is a list, computes the
+    distance between x1 and every x2.
+
+    Later, these computations should be memoized. But if you really want to
+    memoize these computations, you should make the empty_counter calls happen
+    first (they won't happen otherwise), and break the actual distance
+    computation into a sub-function with memoization. Do this carefully to avoid
+    problems with multithreading.
     '''
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
         # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
-        # NOTE: SO MAKE SURE YOU KNOW WHAT YOU'RE DOING -- X1 AND X2 ARE NOT SYMMETRIC
+        # NOTE: So make sure you know what you're doing -- x1 and x2 are not symmetric
 
         # WARNING:
         # Currently, the code is structured in cost_fn and cost_fn_difference_FP1 such that
         # we're only doing 1 arm at a time -- so x1.shape should be 1.
-        # If x1.shape > 1, we were mis-calculating the number of distance computations (yikes!!)
-        # This is ameliorated by having the double loop over x1.shape[0] and x2.shape[0]
-        # Having the assertion is redundant but good defense programming for now
-        # Existing experiments should be ok since x1.shape[0] was always 1
-        # but should rerun all experiments just in case. Timestamp: Sunday, 5/24/2020 2:28PM
+        # Distance call accuracy is enforced by having the double loop over
+        # x1.shape[0] and x2.shape[0]
 
-        # x1 is (1, d)
-        # x2 is (n, d)
-        # return should be (n)
+        # x1 is (1, d), x2 is (n, d) return should be (n)
         assert x1.shape[0] == 1, "X1 is misshapen!"
         for _unused1 in range(x1.shape[0]):
             for _unused2 in range(x2.shape[0]):
                 empty_counter()
 
-        # NOTE: Assume first coordinate indexes tuples
         if metric == "L2":
             return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
         elif metric == "L1":
@@ -180,7 +202,6 @@ def d(x1, x2, metric = None):
             raise Exception("Bad metric specified")
 
     else:
-        # WARNING: See warning above. Extra-defensive here.
         assert x1.shape == x2.shape # 1 datapoint each, of dimension d
         assert len(x1.shape) == 1
         empty_counter()
@@ -195,7 +216,14 @@ def d(x1, x2, metric = None):
             raise Exception("Bad metric specified")
 
 def d_tree(x1, x2, metric = None, dist_mat = None):
+    '''
+    Use this function for computing the edit distance between two trees.
+    Supports both on-the-fly computation (metric == 'TREE') as well as using the
+    precomputed distance matrix (metric == 'PRECOMP')
+    '''
+
     if metric == 'TREE':
+        # Compute the tree edit distance on-the-fly
         assert metric == 'TREE', "Bad args to tree distance fn"
         assert type(x1) == Node, "First arg must always be a single node" # Code is currently structured to loop over arms
         if type(x2) == Node:
@@ -208,9 +236,10 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
             return np.array([simple_distance(x1, x2_elem) for x2_elem in x2])
         else:
             raise Exception("Bad x2 type tree distance fn")
-    else:
-        assert metric == 'PRECOMP', "Bad args to tree distance fn"
+    elif metric == 'PRECOMP':
+        # Use the precomputed distance matrix
         assert dist_mat is not None, "Must pass distance matrix!"
+        assert type(x1) == int or type(x1) == np.int64, "Must pass x1 as an int"
         if type(x2) == int or type(x2) == np.int64:
             # 1-on-1 comparison
             empty_counter()
@@ -218,18 +247,22 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
         elif type(x2) == np.ndarray:
             for _unused in x2:
                 empty_counter()
-            print(x2)
             return np.array([dist_mat[x1, x2_elem] for x2_elem in x2])
         else:
             raise Exception("Bad x2 type tree distance fn", type(x2))
+    else:
+        raise Exception('Bad metric argument to tree distance function')
 
 def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff = True, dist_mat = None):
     '''
-    Returns the "cost" of point tar as a medoid:
-    Distances from tar to ref if it's less than the existing best distance,
-    best distance otherwise
+    Returns the "cost" of adding the pointpoint tar as a medoid:
+    distances from tar to ref if it's less than the existing best distance,
+    best_distances[ref_idx] otherwise
 
-    Use this only in the BUILD step
+    This is called by the BUILD step of naive PAM and BanditPAM (ucb_pam).
+
+    Contains special cases for handling trees, both with precomputed distance
+    matrix and on-the-fly computation.
     '''
     if metric == 'TREE':
         assert type(dataset[tar_idx]) == Node, "Misshapen!"
@@ -238,6 +271,7 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff =
         return np.minimum(d_tree(dataset[tar_idx], dataset[ref_idx], metric), best_distances[ref_idx])
     elif metric == 'PRECOMP':
         assert type(dataset[tar_idx]) == Node, "Misshapen!"
+        # Need to pass indices of nodes instead of nodes themselves
         if use_diff:
             return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx]) - best_distances[ref_idx]
         return np.minimum(d_tree(tar_idx, ref_idx, metric, dist_mat), best_distances[ref_idx])
@@ -246,62 +280,29 @@ def cost_fn(dataset, tar_idx, ref_idx, best_distances, metric = None, use_diff =
             return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx]) - best_distances[ref_idx]
         return np.minimum(d(dataset[tar_idx].reshape(1, -1), dataset[ref_idx], metric), best_distances[ref_idx])
 
-# def cost_fn_difference_total(reference_dataset, full_dataset, target, current_medoids, best_distances):
 def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
     '''
-    Returns the "cost" of point tar as a medoid:
-    Distances from tar to ref if it's less than the existing best distance,
-    best distance otherwise
+    Do not use this function. Always run experiments with the FastPAM1
+    optimization, because it yields the same result.
+
+    Returns the difference in costs for the tmp_refs if we were to perform the
+    swap in swaps. Let c1 = swap[0], c2 = swap[1]. Then there are 4 cases:
+      - The current best distance uses c1, a currently assigned medoid, and c2 would become the new closest medoid
+      - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
+      - The current best distance does NOT use c1, and c2 would become the new closest medoid
+      - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
     '''
-    # NOTE: Each member of swap is a PAIR
 
-    # BUG: This function seems wrong
-    # The gain is the difference between min(new_medoid, best_distance) - min(old_medoid, best_distance)
-    # i.e. the difference in loss/distance for each point
+    raise Exception('This function is no longer supported. Please use FP1')
 
-    # BUG: What if the best_distances uses c1 as a medoid? Seems to be a bug here
-    # IDEA: I think the best way to do this is to keep track of the medoid a point is assigned to,
-    # to avoid re-assigning the medoids every time
-    # Cases:
-    #   - The current best distance uses c1, a currently assigned medoid, and c2 would become the new closest medoid
-    #   - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
-    #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
-    #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
-
-    # NOTE: need to avoid performing this list modification; it's too expensive
-    # NOTE: Very expensive for distance calls!
-    # NOTE: How about using the "gain" in the loss instead?
     num_targets = len(swaps)
     reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric, dist_mat = dist_mat)
-
-    # gains = new - old .... should negative
     new_losses = np.zeros(num_targets)
-
-    # for each swap
-    #   for each ref point -- cases are on REF points
-    #       if ref point is NOT assigned to o, new_losses += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
-    #       if ref point IS assigned to o:
-    #           if ref_point would be assigned to n: new_losses += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
-    #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
-    #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
     N = len(imgs)
 
-    #############
-    # Approach 1: DOESN'T WORK
-    # import ipdb; ipdb.set_trace()
-    #
-    # # NOTE: right now loop is over for s in swaps. Actually only need to compute it for distinct old_medoids (hope compiler gets this)
-    # case1s = np.array([np.where(reference_closest_medoids == current_medoids[s[0]])[0] for s in swaps]) # Non-square... only depends on s[0]
-    # case2s = np.array([np.where(reference_closest_medoids != current_medoids[s[0]])[0] for s in swaps]) # Non-square... only depends on s[0]
-    # # NOTE: right now loop is over for s in swaps. Could change this to be for only distinct new_medoids (hope compiler gets this)
-    # new_medoid_distances = np.array([d(imgs[s[1]].reshape(1, -1), imgs[tmp_refs]) for s in swaps]) # Square... only depends on s[1]
-    # new_losses += np.sum( np.minimum( new_medoid_distances[:, case1s], reference_second_best_distances[case1s] ), axis = 1) #case1
-    # new_losses += np.sum( np.minimum( new_medoid_distances[:, case2s], reference_best_distances[case2s] ), axis = 1 ) #case2
-
-    #######################
-    # Approach 2:
     for s_idx, s in enumerate(swaps):
-        # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
+        raise Exception("This fn does not support tree edit distance / precomp yet. May not be an issue;comment this line out if you're OK with that.")
+        # WARNING: When referring to best_distances, use indices. Otherwise, use tmp_refs[indices]
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]
         new_medoid = s[1]
@@ -311,10 +312,6 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
         new_medoid_distances = d(imgs[new_medoid].reshape(1, -1), imgs[tmp_refs], metric)
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] ) ) #case1
         new_losses[s_idx] += np.sum( np.minimum( new_medoid_distances[case2], reference_best_distances[case2] ) ) #case2
-        # NOTE: Can remove this since we're subtracting a constant from every candidate -- so not actually the difference
-        # new_losses[s_idx] -= np.sum(reference_best_distances) # negative terms from both case1 and case2
-    ##########################
-
 
     new_losses /= len(tmp_refs)
 
@@ -322,7 +319,8 @@ def cost_fn_difference(imgs, swaps, tmp_refs, current_medoids, metric = None):
 
 def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None, return_sigma = False, use_diff = True, dist_mat = None):
     '''
-    Returns the new losses if we were to perform the swaps in swaps
+    Returns the new losses if we were to perform the swaps in swaps, as in
+    cost_fn_difference above, but using the FastPAM1 optimization.
 
     NOTE:
     The FastPAM1 optimization consists of two mini-optimizations:
@@ -330,56 +328,39 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         (b) Cache d(x_new, x_ref) for every pair x_new and x_ref, since this doesn't change with old
     Then compute Delta_TD for every pair (x_old, x_new) using these CACHED values
 
-    You have already incorporated the optimization (a) by keeping track of the second_best_distances and
-    using the selector in your loop; this optimization is already included in the above function, cost_fn_difference
+    Both (a) and (b) are implemented.
 
-    You just need to implement optimization (b) -- should be easy!
+    See cases in comment for cost_fn_difference; same cases appear here.
     '''
-    # IDEA: I think the best way to do this is to keep track of the medoid a point is assigned to,
-    # to avoid re-assigning the medoids every time
-    # Cases:
-    #   - The current best distance uses c1, a currently assigned medoid, and c2 would become the new closest medoid
-    #   - The current best distance uses c1, but swapping it to c2 would mean a totally different medoid c3 becomes the closest
-    #   - The current best distance does NOT use c1, and c2 would become the new closest medoid
-    #   - The current distance does NOT use c1, and c2 would also NOT be the new closest medoid, so the point is unaffected
-
     num_targets = len(swaps)
     reference_best_distances, reference_closest_medoids, reference_second_best_distances = get_best_distances(current_medoids, imgs, subset = tmp_refs, return_second_best = True, metric = metric, dist_mat = dist_mat)
 
     new_losses = np.zeros(num_targets)
     sigmas = np.zeros(num_targets)
 
-    # for each swap
-    #   for each ref point -- cases are on REF points
-    #       if ref point is NOT assigned to o, new_losses += min(best_distances[ref_point], d(new_med, ref_point)) - best_distances[ref_point] (CASE1)
-    #       if ref point IS assigned to o:
-    #           if ref_point would be assigned to n: new_losses += d(new_med, ref_point) - best_distances[ref_point] -- CAN be positive (CASE2)
-    #           else: new_losses += second_best_distances[ref_point] - best_distance[ref_point] -- WILL be positive (CASE3)
-    #           Combine these (Cases 2 and 3) into CASE 2: min( d(new_med, ref_point), second_best_distances[ref_point]) - best_distances[ref_point]
     N = len(imgs)
 
-    # Full FastPAM1 approach:
     distinct_new_medoids = set([s[1] for s in swaps])
-    ALL_new_med_distances = np.zeros((len(distinct_new_medoids), len(tmp_refs))) ## NOTE: Re-indexing distinct elems!!
+    ALL_new_med_distances = np.zeros((len(distinct_new_medoids), len(tmp_refs))) # WARNING: Re-indexing distinct elems!!
     reidx_lookup = {}
     for d_n_idx, d_n in enumerate(distinct_new_medoids):
         reidx_lookup[d_n] = d_n_idx # Smarter way to do this?
         if metric == 'TREE':
             ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric)
         elif metric == 'PRECOMP':
-            ALL_new_med_distances[d_n_idx] = d_tree(imgs[d_n], imgs[tmp_refs], metric, dist_mat)
+            # Must pass indices to precomp instead of nodes
+            ALL_new_med_distances[d_n_idx] = d_tree(d_n, tmp_refs, metric, dist_mat)
         else:
             ALL_new_med_distances[d_n_idx] = d(imgs[d_n].reshape(1, -1), imgs[tmp_refs], metric)
 
 
     for s_idx, s in enumerate(swaps):
-        # NOTE: WHEN REFERRING TO BEST_DISTANCES AND BEST_DISTANCES, USE INDICES. OTHERWISE, USE TMP_REFS[INDICES]!!
+        # WARNING: When referring to best_distances, use indices. Otherwise, use tmp_refs[indices]
         # This is because best_distance is computed above and only returns the re-indexed subset
         old_medoid = current_medoids[s[0]]
         new_medoid = s[1]
-        case1 = np.where(reference_closest_medoids == old_medoid)[0] # INDICES
-        case2 = np.where(reference_closest_medoids != old_medoid)[0] # INDICES
-        # NOTE: Many redundant computations of d here -- imgs[new_medoid] is the new medoid in lots of swaps!
+        case1 = np.where(reference_closest_medoids == old_medoid)[0] # List of indices
+        case2 = np.where(reference_closest_medoids != old_medoid)[0] # List of indices
         new_medoid_distances = ALL_new_med_distances[reidx_lookup[new_medoid]]
         case1_losses = np.minimum( new_medoid_distances[case1], reference_second_best_distances[case1] )
         case2_losses = np.minimum( new_medoid_distances[case2], reference_best_distances[case2] )
@@ -391,10 +372,6 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
         new_losses[s_idx] = np.sum(case1_losses) + np.sum(case2_losses)
 
         if return_sigma:
-            # NOTE: Be careful here. We're defining the arm parameter as
-            # the new loss, not the CHANGE in loss. So \sigma should be
-            # the variance in the new induced loss, NOT the variance in the CHANGE
-            # This shouldn't affect \sigma because the change = old - new and old is fixed
             sigmas[s_idx] = np.std(np.hstack((case1_losses, case2_losses))) / SIGMA_DIVISOR
 
     new_losses /= len(tmp_refs)
@@ -406,12 +383,10 @@ def cost_fn_difference_FP1(imgs, swaps, tmp_refs, current_medoids, metric = None
 
 def get_best_distances(medoids, dataset, subset = None, return_second_best = False, metric = None, dist_mat = None):
     '''
-    For each point, calculate the minimum distance to any medoid
+    For each point, calculate the minimum distance to any medoid.
 
-    medoids: a list of medoid INDICES
-    dataset: a numpy array of POINTS
-
-    DO NOT CALL THIS FROM RANDOM FNS WHICH SAMPLE THE DATASET, E.G. UCB
+    Do not call this from random fns which subsample the dataset, or your
+    indices will be thrown off.
     '''
     assert len(medoids) >= 1, "Need to pass at least one medoid"
     assert not (return_second_best and len(medoids) < 2), "Need at least 2 medoids to avoid infs when asking for return_second_best"
@@ -430,18 +405,20 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     else:
         refs = subset
 
-    # NOTE: use a *Heap* or sorted linked list for BD, 2BD, 3BD etc and eject as necessary if doing multiple swaps
+    # NOTE: Use a Heap or sorted linked list for best distance, second best
+    # distance, third best distance, etc and pop as necessary if doing multiple
+    # swaps
 
     best_distances = np.array([float('inf') for _ in refs])
     second_best_distances = np.array([float('inf') for _ in refs])
     closest_medoids = np.array([-1 for _ in refs])
 
-    # Example: subset = [15, 32, 57] then loop is (p_idx, point) = (1, 15), (2, 32), (3, 57)
     # NOTE: Could speed this up with array broadcasting and taking min across medoid axis
     for p_idx, point in enumerate(refs):
         for m in medoids:
-            # BUG, WARNING, NOTE: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
+            # WARNING: If dataset has been shuffled, than the medoids will refer to the WRONG medoids!!!
             if metric == 'PRECOMP':
+                # NOTE: Can probably consolidate this with case below by just saying dist_mat = None if not precomp
                 if inner_d_fn(m, point, metric, dist_mat) < best_distances[p_idx]:
                     second_best_distances[p_idx] = best_distances[p_idx]
                     best_distances[p_idx] = inner_d_fn(m, point, metric, dist_mat)
@@ -464,14 +441,19 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
 
 
 def gaussian(mu, sigma, x):
-    # NOTE: Could use scipy.stats.norm for this
+    '''
+    Calculate the value of a Gaussian PDF for the given parameters.
+    Could use scipy.stats.norm for this instead.
+    '''
     exponent = (-0.5 * ((x - mu) / sigma)**2)
     return np.exp( exponent ) / (sigma * np.sqrt(2 * np.pi))
 
 def estimate_sigma(dataset, N = None, metric = None):
     '''
-    Use this to estimate sigma, as in sigma-sub-Gaussian
+    In early development, this fn was used to estimate sigma, as in
+    sigma-sub-Gaussian. It's no longer used.
     '''
+
     if N is None:
         N = len(dataset)
 
@@ -487,7 +469,7 @@ def estimate_sigma(dataset, N = None, metric = None):
             this_tar_distances[ref_idx] = d(sample[tar_idx], sample[ref_idx], metric = metric)
         distances[tar_idx] = np.mean(this_tar_distances)
 
-    distances -= np.mean(distances) # Center distances
+    distances -= np.mean(distances)
     plt.hist(distances)
     if metric == "L1":
         for sigma in np.arange(5, 50, 5):
@@ -508,6 +490,12 @@ def estimate_sigma(dataset, N = None, metric = None):
 
 # TODO: Explicitly pass metric instead of args.metric here
 def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
+    '''
+    Swaps the medoid-nonmedoid pair in best_swap if it would lower the loss on
+    the datapoints in imgs. Returns a string describing whether the swap was
+    performed, as well as the new medoids and new loss.
+    '''
+
     # NOTE Store these explicitly to avoid incorrect reference after medoids have been updated when printing
     orig_medoid = medoids[best_swap[0]]
     new_medoid = best_swap[1]
@@ -534,6 +522,10 @@ def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
     return performed_or_not, new_medoids, min(new_loss, loss)
 
 def visualize_medoids(dataset, medoids, visualization = 'tsne'):
+    '''
+    Helper function to visualize the given medoids of a dataset using t-SNE
+    '''
+
     if visualization == 'tsne':
         X_embedded = TSNE(n_components=2).fit_transform(dataset)
         plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c='b')
@@ -543,6 +535,10 @@ def visualize_medoids(dataset, medoids, visualization = 'tsne'):
         raise Exception('Bad Visualization Arg')
 
 def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
+    '''
+    Create some 2-D Gaussian toy data.
+    '''
+
     np.random.seed(seed)
     cluster1_size = int(N * ratio)
     cluster2_size = N - cluster1_size
@@ -564,9 +560,19 @@ def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
     return np.vstack((cluster1, cluster2))
 
 
+def extract_values(str_):
+    '''
+    Helper function for extracting the sigma statistics from a string in a
+    logfile.
+    '''
+    float_arr = str_.split(' ')
+    float_arr = [float(float_arr[idx]) for idx in range(1, 11, 2)]
+    return float_arr
+
 if __name__ == "__main__":
     create_gaussians(1000, 0.5, 42)
 
+    ####### Use the code below to visualize the some medoids with t-SNE
     # args = get_args(sys.argv[1:])
     # total_images, total_labels, sigma = load_data(args)
     # np.random.seed(args.seed)

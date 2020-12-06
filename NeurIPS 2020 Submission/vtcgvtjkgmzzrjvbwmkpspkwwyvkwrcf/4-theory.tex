@@ -1,0 +1,134 @@
+% !TEX root = 0-main.tex
+
+\section{Analysis of the Algorithm \label{sec:theory}}
+
+% \mo{I feel that we should be more explicit about what "optimization trajectory" is earlier in the paper}
+The goal of \algname
+% , described in Algorithms~\ref{alg:ultrapam-build} and \ref{alg:ultrapam-swap} seeks 
+is to track the optimization trajectory of the standard PAM algorithm, ultimately identifying the same set of $k$ medoids with high probability.
+In this section, we formalize this statement
+and provide bounds on the number of distance computations required by Bandit-PAM.
+
+% Suppose that PAM is run on a dataset $\X = \{x_1,...,x_n\}$.
+% Let $m_1,...,m_k$ be the $k$ medoids identified in the BUILD step of PAM, and let $(x_{i_1},y_{i_1}),(x_{i_2},y_{i_2}),...,(x_{i_T},y_{i_T})$
+% \martin{$y_{i_T}$ should be $y_{i_T}$?} 
+% be the full sequence of PAM SWAPS, for $\left(x_{i_j}, y_{i_j}\right) \in \X \times \X$, $j=1,..., T$.
+
+We will assume that both PAM and \algname place a hard constraint $T$ on the maximum number of SWAP steps that are allowed. 
+Notice that, as long as \algname finds the correct solution to the search problem \eqref{eqn:build_search} at each BUILD step and to the search problem \eqref{eqn:swap_search} at each SWAP step, it will reproduce the sequence of BUILD and SWAP steps of PAM identically, returning the same set of $k$ medoids in the end.
+% Both the set of initial medoids found by BUILD and the set of SWAP steps for PAM can be recursively defined via \eqref{eqn:build_search} and \eqref{eqn:swap_search}.
+% 
+% This means that, provided that \algname picks the same initial $k$ medoids and performs the same swaps as PAM, $k + T$ calls to Algorithm~\ref{alg:bandit_based_search} will be performed.
+The hard constraint $T$ guarantees that, even if the trajectories of PAM and \algname deviate from each other, at most $k+T$ calls to Algorithm~\ref{alg:bandit_based_search} will be performed.
+
+Consider one call to Algorithm~\ref{alg:bandit_based_search} and suppose $x^*$ is the optimal target point (i.e., the one with minimum $\mu_x$).
+% In order to provide a guarantee on the total number of distance computations required by \algnamenospace, we consider each of the calls to Algorithm~\ref{alg:bandit_based_search} individually.
+For another target point $x \in \Star$,
+% in a given call to Algorithm~\ref{alg:bandit_based_search}, 
+let $\Delta_x = \mu_x - \mu_{x^*}$.
+To state the next result, we will assume that, for a randomly sampled reference point, say $x_J$,
+the random variable $Y = g_x(x_J)$ is $\sigma$-sub-Gaussian; i.e. that $\Pr(|Y-E[Y]| > t) < 2 \exp\left(-t^2/(2 \sigma^2)\right)$, for some known parameter $\sigma$.
+%and that 
+% Notice that, strictly speaking, $Y = L_x(x_J)$ only takes value in a finite set and must be $\sigma$-sub-Gaussian for some $\sigma$. \martin{We need it to not depend on $n$} \ilan{The statement of the theorem is for a fixed $n$, so it still holds if $\sigma$ is a function of $n$. We could add a line after the theorem saying that, if $sigma_x^2/\Delta_x^2 = \Theta(1)$ for all $x$, then $M$ is $O(n\log n)$ with high probability.}
+% \martin{
+In addition, we assume that the data is generated in a way such that the mean rewards $\mu_x$ follow a sub-Gaussian distribution (see Sec.~\ref{sec:discussion} for a discussion).
+
+
+% Moreover, we assume that $\sigma/\min_x \Delta_x = O(1)$ on all calls to Algorithm~\ref{alg:bandit_based_search}. 
+
+% \iscomment{See appendix XXX for a discussion}.
+
+% Later, we discuss the practical implications of these assumptions. \iscomment{}
+% As we illustrate in Section~\ref{sec:exps}, in practice $\sigma$ can be estimated from the data.
+% We then have the following result.
+
+
+\begin{theorem} \label{thm:nlogn}
+% Suppose that, on a dataset $\X$, the PAM algorithm converges after $T$ SWAP steps.
+If \algname is run on a dataset $\X$ with $\delta = n^{-3}$, then it returns the same set of $k$ medoids as PAM with probability $1-2(k+T)/n$. 
+Furthermore, 
+% with probability $1-2(k+T)/n$, 
+the total number of distance computations $M_{\rm total}$ required satisfies
+\aln{
+E[M_{\rm total}] = O\left( (k+T) n \log n \right).
+}
+\end{theorem}
+
+% \ilan{it's a bit tricky to get an expected result for theorem 1, since in principle Bandit-PAM could keep running forever. one solution would be to only allow $\log n$ SWAPS}
+% \martin{Ilan: I suggest converting the high probability bound to the bound on $E[M]$, which is easier to understand.}
+
+% \martin{We note that $T$ can also be thought of an upper bound on the number of SWAPs performed that is specified before running the algorithm. } 
+When the number of desired medoids $k$ is a constant and the number of allowed SWAP steps is small (which is often sufficient in practice, as discussed in Sec. \ref{sec:discussion}), Theorem~\ref{thm:nlogn} implies that only $O(n \log n)$ distance computations are necessary to reproduce the results of PAM with high probability.
+
+In order to prove Theorem~\ref{thm:nlogn}, we prove a more detailed result for each call that \algname makes to Algorithm~\ref{alg:bandit_based_search}.
+For this more specific case, we assume that, for target point $x$, $g_x(x_J)$ is $\sigma_x$-sub-Gaussian, where $\sigma_x$ is a parameter specific to $x$ (and can change across different calls to Algorithm~\ref{alg:bandit_based_search}).
+As it turns out, in practice one can estimate each $\sigma_x$ by performing a small number of distance computations.
+% As we show in Sec.~\ref{sec:exps}, 
+Allowing $\sigma_x$ to be estimated separately for each arm is beneficial in practice, as discussed in Sec.~\ref{sec:discussion}.
+The following theorem is proved in Appendix~\ref{app:thmproof}.
+
+
+
+% As we illustrate in Section~\ref{sec:exps}, in practice $\sigma$ can be estimated from the data.
+
+% \ilan{say this later}
+% We also point out that $\sigma$ will be different for different target points $x$, and will be different across different calls to Algorithm~\ref{alg:bandit_based_search}.
+% % arms (i.e., each candidate new medoid $x$) and will depend on which BUILD step we are in.
+% We then have the following guarantee.
+
+
+\begin{theorem} \label{thm:specific}
+For $\delta = n^{-3}$, with probability at least $1-\tfrac{2}{n}$, Algorithm~\ref{alg:bandit_based_search}
+returns the correct solution to \eqref{eqn:build_search} (for a BUILD step) or \eqref{eqn:swap_search} (for a SWAP step),
+using a total of $M$ distance computations, where
+% \aln{
+% N \leq \sum_{x \in \X} \min \left( \frac{ 24 \sigma_x^2}{\Delta_x^2} \log n , 2n \right).
+% }
+% \aln{
+% M \leq \sum_{x \in \X} \min \left[ \frac{24}{\Delta_x^2} \left(\sigma_x+\frac{ \sigma_{x^*}}{\sigma_x}\right)^2 \log n + \batchsize, 2n \right]
+% .
+% }
+\aln{
+E[M] \leq 4n + \sum_{x \in \X}  \min \left[ \frac{24}{\Delta_x^2} \left(\sigma_x+\sigma_{x^*} \right)^2 \log n + \batchsize, 2n \right].
+}
+\end{theorem}
+% \martin{$M$ is a random variable. The bound here is a bit funny}
+% \ilan{I followed the statement of meddit. Is it not clear that ``with prob. $1-2/n$'' applies to the bound on $M$?}
+% \martin{I think a standard way is to upper bound $\mathbb{E}[M]$ ($\mathbb{E}[M] = \mathbb{E}[M \vert \text{bound holds}] + \mathbb{E}[M \vert \text{bound does not hold }] * \frac{2}{n}$)}
+
+% \martin{Move the proof to appendix}
+
+
+
+
+
+% \martin{Need a theorem giving $O(n \log n)$ from the instance-specific bound $M \leq \sum_{x \in \X} \min \left[ \frac{24}{\Delta_x^2} \left(\sigma_x+\frac{ \sigma_{x^*}}{\sigma_x}\right)^2 \log n + \batchsize, 2n \right]
+% .$}
+
+% \martin{Need a theorem giving the overall correctness assuming the number of SWAP iterations $T$.}
+
+
+While the assumption that $\sigma_x$ is known for every $x$ may seem excessive, it is worth pointing out that Algorithm~\ref{alg:bandit_based_search} does not need to know all $\sigma_x$s exactly and an upper bound is sufficient.
+Notice that, if a random variable is $\sigma$-sub-Gaussian, it is also $\sigma'$-sub-Gaussian for $\sigma' > \sigma$.
+Hence, if we have a universal upper bound $\sigma_{\rm ub}> \sigma_x$ for all $x$, the algorithm can be run with $\sigma_{\rm ub}$ replacing each $\sigma_x$.
+In that case, a direct consequence of Theorem~\ref{thm:specific} is that the total number of distance computations per call to Algorithm~\ref{alg:bandit_based_search} satisfies
+\al{
+E[M] & \leq 4n + \sum_{x \in \X}  96 \frac{\sigma^2_{\rm ub}}{\Delta_x^2} \log n + \batchsize 
+% \\
+% & 
+\leq  4n + 96 \left(\frac{\sigma_{\rm ub}}{\min_x \Delta_x}\right)^2
+% \sum_{x \in \X}  \min (\log n + \batchsize, 2n)
+n \log n.
+\label{eq:expectedM}
+}
+Furthermore, as proved in Appendix 2 of Bagaria et al.~\cite{bagaria2018medoids}, such an instance-wise bound converts to an $O(n \log n)$ bound when $\mu_i$'s follow a sub-Gaussan distribution.
+% Therefore, as long as $\sigma_{\rm ub}/\min_x \Delta_x = O(1)$, each call to Algorithm~\ref{alg:bandit_based_search} requires, in expectation, $O(n \log n)$.
+Moreover, from Theorem~\ref{thm:specific}, the probability that Algorithm~\ref{alg:bandit_based_search} does not return the target point $x$ with the smallest value of $\mu_x$ is at most $2/n$.
+% if we assume that the PAM algorithm converges after $T$ SWAP steps, 
+By the union bound, the probability that \algname does not return the same set of $k$ medoids as PAM is at most $2(k+T)/n$.
+Moreover, since at most $k+T$ calls to Algorithm~\ref{alg:bandit_based_search} are made, from \eqref{eq:expectedM} we see that the total number of distance computations $M_{\rm total}$ required by \algname satisfies $E[M_{\rm total}] = O((k+T) n \log n)$.
+% Provided that \algname correctly tracks the optimization trajectory of PAM (which occurs with probability $1-2(k+T)/n$), the total number of distance computations will be $M = O((k+T)n \log n)$.
+This proves Theorem~\ref{thm:nlogn}.
+
+
+
