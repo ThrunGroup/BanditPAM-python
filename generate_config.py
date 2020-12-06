@@ -10,7 +10,7 @@ def write_exp(algo, k, N, seed, dataset, metric):
     Takes the experiment variables and outputs a string description
     to go into a config file.
     '''
-    if algo == 'naive_v1' and (N > 10000 or k > 5):
+    if algo == 'naive_v1' and (N > 10000 or k > 100):
 
         return None
     return "\t['" + algo + "', 'BS', 0, " + str(k) + ", " + str(N) + \
@@ -18,13 +18,14 @@ def write_exp(algo, k, N, seed, dataset, metric):
 
 def main():
     # Possible algos are ['ucb', 'naive_v1', 'em_style', 'csh', and 'clarans']
-    algos = ['ucb']
+    algos = ['naive_v1']
     seeds = range(10)
 
     ####### MNIST, L2 distance, k = 5 and k = 10
     dataset = 'MNIST'
     Ns = [1000]#, 10000, 20000, 40000, 70000]
-    ks = [5, 10, 30, 50, 100, 200]
+    #ks = [5, 10, 30, 50, 100, 200]
+    ks = [30, 50]
     metric = 'L2'
 
     ######## MNIST, Cosine distance, k = 5

@@ -38,32 +38,44 @@ def verify_logfiles():
     as PAM, by parsing the logfiles.
     '''
 
-    ucb_logfiles = [os.path.join('profiles', x) for x in os.listdir('profiles') if os.path.isfile(os.path.join('profiles', x)) and x != '.DS_Store' and x[:5] == 'L-ucb']
-    for u_lfile in sorted(ucb_logfiles):
-        n_lfile = u_lfile.replace('ucb', 'naive_v1')
-        if not os.path.exists(n_lfile):
-            print("Warning: no naive experiment", n_lfile)
-        else:
-            disagreement = False
-            with open(u_lfile, 'r') as fin1:
-                with open(n_lfile, 'r') as fin2:
-                    l1_1 = fin1.readline()
-                    l1_2 = fin1.readline()
-
-                    l2_1 = fin2.readline()
-                    l2_2 = fin2.readline()
-
-                    # NOTE: This is a stricter condition than necessary, enforcing both build and swap agreement instead of just swap
-                    if l1_1 != l2_1 or l1_2 != l2_2:
-                        disagreement = True
-
-            if disagreement:
-                print("\n")
-                print(l1_2.strip())
-                print(l2_2.strip())
-                print("ERROR: Results for", u_lfile, n_lfile, "disagree!!")
+    parent_dirs = [
+        # 'profiles/HOC4_PRECOMP_k2k3_paper',
+        # 'profiles/MNIST_COSINE_k5_paper',
+        # 'profiles/MNIST_L2_k10_paper',
+        # 'profiles/MNIST_L2_k5_paper',
+        # 'profiles/SCRNAPCA_L2_k10_paper',
+        # 'profiles/SCRNAPCA_L2_k5_paper',
+        # 'profiles/SCRNA_L1_paper',
+        # 'profiles/Loss_plots_paper',
+        'profiles/profiles',
+    ]
+    for parent_dir in parent_dirs:
+        ucb_logfiles = [os.path.join(parent_dir, x) for x in os.listdir(parent_dir) if os.path.isfile(os.path.join(parent_dir, x)) and x != '.DS_Store' and x[:5] == 'L-ucb']
+        for u_lfile in sorted(ucb_logfiles):
+            n_lfile = u_lfile.replace('ucb', 'naive_v1')
+            if not os.path.exists(n_lfile):
+                print("Warning: no naive experiment", n_lfile)
             else:
-                print("OK: Results for", u_lfile, n_lfile, "agree")
+                disagreement = False
+                with open(u_lfile, 'r') as fin1:
+                    with open(n_lfile, 'r') as fin2:
+                        l1_1 = fin1.readline().strip().split(",")
+                        l1_2 = fin1.readline().strip().split(",")
+
+                        l2_1 = fin2.readline().strip().split(",")
+                        l2_2 = fin2.readline().strip().split(",")
+
+                        # NOTE: This is a stricter condition than necessary, enforcing both build and swap agreement instead of just swap
+                        if sorted(l1_2) != sorted(l2_2):
+                            disagreement = True
+
+                if disagreement:
+                    print("\n")
+                    print(sorted(l1_2))
+                    print(sorted(l2_2))
+                    print("ERROR: Results for", u_lfile, n_lfile, "disagree!!")
+                else:
+                    print("OK: Results for", u_lfile, n_lfile, "agree")
 
 def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap, take_log = True):
     '''
@@ -128,7 +140,9 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
                 plt.plot([x_min, x_max], [x_min * 2, x_max * 2], color='red', label='$kn^2$ PAM scaling')
             else:
                 # weighted reference line for
-                plt.plot([x_min, x_max], [np.log10(kN) + x_min * 2, np.log10(kN) + x_max * 2], color='red', label='$kn^2$ PAM scaling')
+                plt.plot([x_min, x_max], [(x_min) * 2, (x_max) * 2], color='#f781bf', linestyle=':', label='$n^2$ FastPAM1 scaling')
+                plt.plot([x_min, x_max], [np.log10(kN) + (x_min) * 2, np.log10(kN) + (x_max) * 2], color='#4daf4a', linestyle='-.', label='$kn^2$ PAM scaling')
+
 
             print("Slope is:", sl)
 
@@ -144,8 +158,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         plt.ylabel("$\log 10$(average # of distance computations per step)")
 
         # Modify these lines based on dataset
-        plt.title("MNIST, $d = l_2, k = 10$")
-        plt.savefig('figures/MNIST-L2-k10-extra.pdf')
+        plt.title("HOC4, $d =$ tree edit distance, $k = 2$")
+        plt.savefig('figures/HOC4-with-FP1.pdf')
 
 def get_swap_T(logfile):
     '''
@@ -268,12 +282,12 @@ def main():
     algos = ['ucb'] # Could also include 'naive_v1'
 
     #### for HOC4
-    # dataset = 'HOC4'
-    # metric = 'PRECOMP'
-    # Ns = [1000, 2000, 3000, 3360]
-    # ks = [2]
-    # seeds = range(42, 52)
-    # dir_ = 'HOC4_PRECOMP_k2k3_paper'
+    dataset = 'HOC4'
+    metric = 'PRECOMP'
+    Ns = [1000, 2000, 3000, 3360]
+    ks = [2]
+    seeds = range(42, 52)
+    dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
     #### for MNIST L2, k = 5
     # dataset = 'MNIST'
@@ -284,12 +298,12 @@ def main():
     # dir_ = 'MNIST_L2_k5_paper'
 
     ### for MNIST L2, k = 10
-    dataset = 'MNIST'
-    metric = 'L2'
-    Ns = [3000, 10000, 30000, 70000]
-    ks = [10]
-    seeds = range(42, 52)
-    dir_ = 'MNIST_L2_k10_paper'
+    # dataset = 'MNIST'
+    # metric = 'L2'
+    # Ns = [3000, 10000, 30000, 70000]
+    # ks = [10]
+    # seeds = range(42, 52)
+    # dir_ = 'MNIST_L2_k10_paper'
 
     ##### for MNIST COSINE
     # dataset = 'MNIST'
@@ -331,5 +345,5 @@ def main():
 
 if __name__ == '__main__':
     # verify_logfiles()
-    # print("FILES VERIFIED\n\n")
+    print("FILES VERIFIED\n\n")
     main()

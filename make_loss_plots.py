@@ -161,7 +161,7 @@ def make_plots():
 
     alg_to_legend = {
         'naive_v1' : 'PAM',
-        'ucb' : 'Bandit-PAM',
+        'ucb' : 'BanditPAM',
         'clarans' : 'CLARANS',
         'em_style' : 'Voronoi Iteration',
         'fp' : 'FastPAM',
