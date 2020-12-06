@@ -154,8 +154,8 @@ def plot_slice_sns(dcalls_array, fix_k_or_N, Ns, ks, algo, seeds, build_or_swap,
         elif fix_k_or_N == 'N':
             raise Exception("Fixing N and plotting vs. k not yet supported")
 
-        plt.xlabel("$\log 10(n)$")
-        plt.ylabel("$\log 10$(average # of distance computations per step)")
+        plt.xlabel("$\log_{10}(n)$")
+        plt.ylabel("$\log_{10}$(average # of distance computations per step)")
 
         # Modify these lines based on dataset
         plt.title("HOC4, $d =$ tree edit distance, $k = 2$")
