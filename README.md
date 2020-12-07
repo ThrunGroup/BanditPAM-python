@@ -103,7 +103,7 @@ The HOC4 ASTs were preprocessed into zss trees using `tree_utils.py`. For the
 convenience of the reviewers, we have included the `.tree` files so they can be
 used directly.
 
-The HOC4 ASTs also require precomputation of the pairwise distance matrix
+The HOC4 experiments also require precomputation of the pairwise distance matrix
 between trees. To compute this matrix from scratch, run `python tree_utils.py -d HOC4`. Note
 that this computation takes several hours.
 
