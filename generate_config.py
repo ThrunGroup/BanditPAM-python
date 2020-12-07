@@ -11,7 +11,6 @@ def write_exp(algo, k, N, seed, dataset, metric):
     to go into a config file.
     '''
     if algo == 'naive_v1' and (N > 10000 or k > 100):
-
         return None
     return "\t['" + algo + "', 'BS', 0, " + str(k) + ", " + str(N) + \
         ", " + str(seed) + ", '" + dataset + "', '" + metric + "', ''],\n"
@@ -23,9 +22,8 @@ def main():
 
     ####### MNIST, L2 distance, k = 5 and k = 10
     dataset = 'MNIST'
-    Ns = [1000]#, 10000, 20000, 40000, 70000]
-    #ks = [5, 10, 30, 50, 100, 200]
-    ks = [30, 50]
+    Ns = [1000, 10000, 20000, 40000, 70000]
+    ks = [5, 10]
     metric = 'L2'
 
     ######## MNIST, Cosine distance, k = 5
