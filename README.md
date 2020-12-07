@@ -64,7 +64,7 @@ in `requirements.txt` and can be installed via `pip install -r requirements.txt`
 
 If you are using a virtualenv, please ensure that you are able to run
 `python --version` and `pip --version` from your virtualenv. There are known
-issues with virtualenvs on Mac, unrelated to this work (for example, openssl
+issues with virtualenvs on Mac OSX, unrelated to this work (for example, openssl
 errors that manifest with errors like `cannot import name md5`). See
 https://stackoverflow.com/questions/59123154/importerror-cannot-import-name-md5
 
