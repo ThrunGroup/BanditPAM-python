@@ -1,6 +1,6 @@
 '''
 Uses the EM-style (Voronoi Iteration) approach to computing k-medoids.
-We use the implementation from sklearn_extra
+We use the implementation from sklearn_extra.
 '''
 
 from sklearn_extra.cluster import KMedoids
@@ -11,14 +11,10 @@ from data_utils import *
 def EM_build_and_swap(args):
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
-    if args.metric == 'TREE':
-        raise Exception("EM does not support non-matrix data")
-    else:
-        imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-
     if args.metric != "L2":
         raise Exception("EM does not support metrics other than L2")
 
+    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     metric = 'euclidean'
     kmedoids = KMedoids(n_clusters = args.num_medoids, metric = metric, random_state = None).fit(imgs)
     medoids = kmedoids.medoid_indices_.tolist()
@@ -31,7 +27,6 @@ def EM_build_and_swap(args):
         print(loss)
 
     return medoids, loss
-
 
 if __name__ == "__main__":
     args = get_args(sys.argv[1:])
