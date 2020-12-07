@@ -7,7 +7,6 @@ There are 5 functions that call d and therefore require the an explicit metric:
 - cost_fn_difference
 - cost_fn_difference_FP1
 - get_best_distances
-- estimate_sigma
 - medoid_swap
 '''
 
@@ -50,7 +49,7 @@ def get_args(arguments):
 def load_data(args):
     '''
     Load the different datasets, as a numpy matrix if possible. In the case of
-    HOC4 and HOC18, load the datasets as a list of trees.
+    HOC4, load the datasets as a list of trees.
     '''
     if args.dataset == 'MNIST':
         N = 70000
@@ -58,19 +57,10 @@ def load_data(args):
         sigma = 0.7
         train_images = mnist.train_images()
         train_labels = mnist.train_labels()
-
         test_images = mnist.test_images()
         test_labels = mnist.test_labels()
-
         total_images = np.append(train_images, test_images, axis = 0)
         total_labels = np.append(train_labels, test_labels, axis = 0)
-
-        assert((total_images == np.vstack((train_images, test_images))).all())
-        assert((total_labels == np.hstack((train_labels, test_labels))).all()) # NOTE: hstack since 1-D
-        assert(total_images.shape == (N, m, m))
-        assert(total_labels.shape == (N,))
-
-        # Normalizing images
         return total_images.reshape(N, m * m) / 255, total_labels, sigma
     elif args.dataset == "SCRNA":
         file = 'person1/fresh_68k_pbmc_donor_a_filtered_gene_bc_matrices/NUMPY_OUT/np_data.npy'
@@ -96,22 +86,6 @@ def load_data(args):
             print("NUM TREES:", len(trees))
 
         return trees, None, 0.0
-    elif args.dataset == 'HOC18':
-        dir_ = 'hoc_data/hoc18/trees/'
-        tree_files = [dir_ + tree for tree in os.listdir(dir_) if tree != ".DS_Store"]
-        trees = []
-        for tree_f in tree_files:
-            with open(tree_f, 'rb') as fin:
-                tree = pickle.load(fin)
-                trees.append(tree)
-
-        if args.verbose >= 1:
-            print("NUM TREES:", len(trees))
-
-        return trees, None, 0.0
-    elif args.dataset == 'GAUSSIAN':
-        dataset = create_gaussians(args.sample_size, ratio = 0.6, seed = args.seed, visualize = False)
-        return dataset
     else:
         raise Exception("Didn't specify a valid dataset")
 
@@ -159,38 +133,21 @@ def update_logstring(logstring, k, best_distances, compute_exactly, p, sigma, sw
 def empty_counter():
     '''
     Empty function that is called once for every distance call. Allows for easy
-    counting of the number of distance calls
+    counting of the number of distance calls.
     '''
-
     pass
 
 def d(x1, x2, metric = None):
     '''
     Computes the distance between x1 and x2. If x2 is a list, computes the
     distance between x1 and every x2.
-
-    Later, these computations should be memoized. But if you really want to
-    memoize these computations, you should make the empty_counter calls happen
-    first (they won't happen otherwise), and break the actual distance
-    computation into a sub-function with memoization. Do this carefully to avoid
-    problems with multithreading.
     '''
     assert len(x1.shape) == len(x2.shape), "Arrays must be of the same dimensions in distance computation"
     if len(x1.shape) > 1:
-        # NOTE: x1.shape is NOT the same as x2.shape! In particular, x1 is being BROADCAST to x2.
-        # NOTE: So make sure you know what you're doing -- x1 and x2 are not symmetric
-
-        # WARNING:
-        # Currently, the code is structured in cost_fn and cost_fn_difference_FP1 such that
-        # we're only doing 1 arm at a time -- so x1.shape should be 1.
-        # Distance call accuracy is enforced by having the double loop over
-        # x1.shape[0] and x2.shape[0]
-
-        # x1 is (1, d), x2 is (n, d) return should be (n)
         assert x1.shape[0] == 1, "X1 is misshapen!"
         for _unused1 in range(x1.shape[0]):
             for _unused2 in range(x2.shape[0]):
-                empty_counter()
+                empty_counter() # Counts the number of distance computations
 
         if metric == "L2":
             return np.linalg.norm(x1 - x2, ord = 2, axis = 1)
@@ -202,9 +159,9 @@ def d(x1, x2, metric = None):
             raise Exception("Bad metric specified")
 
     else:
-        assert x1.shape == x2.shape # 1 datapoint each, of dimension d
+        assert x1.shape == x2.shape
         assert len(x1.shape) == 1
-        empty_counter()
+        empty_counter() # Counts the number of distance computations
 
         if metric == "L2":
             return np.linalg.norm(x1 - x2, ord = 2)
@@ -225,10 +182,9 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
     if metric == 'TREE':
         # Compute the tree edit distance on-the-fly
         assert metric == 'TREE', "Bad args to tree distance fn"
-        assert type(x1) == Node, "First arg must always be a single node" # Code is currently structured to loop over arms
+        assert type(x1) == Node, "First arg must always be a single node"
         if type(x2) == Node:
-            # 1-on-1 comparison
-            empty_counter()
+            empty_counter() # 1-on-1 comparison
             return simple_distance(x1, x2)
         elif type(x2) == np.ndarray:
             for _unused in x2:
@@ -241,8 +197,7 @@ def d_tree(x1, x2, metric = None, dist_mat = None):
         assert dist_mat is not None, "Must pass distance matrix!"
         assert type(x1) == int or type(x1) == np.int64, "Must pass x1 as an int"
         if type(x2) == int or type(x2) == np.int64:
-            # 1-on-1 comparison
-            empty_counter()
+            empty_counter() # 1-on-1 comparison
             return dist_mat[x1, x2]
         elif type(x2) == np.ndarray:
             for _unused in x2:
@@ -440,54 +395,6 @@ def get_best_distances(medoids, dataset, subset = None, return_second_best = Fal
     return best_distances, closest_medoids
 
 
-def gaussian(mu, sigma, x):
-    '''
-    Calculate the value of a Gaussian PDF for the given parameters.
-    Could use scipy.stats.norm for this instead.
-    '''
-    exponent = (-0.5 * ((x - mu) / sigma)**2)
-    return np.exp( exponent ) / (sigma * np.sqrt(2 * np.pi))
-
-def estimate_sigma(dataset, N = None, metric = None):
-    '''
-    In early development, this fn was used to estimate sigma, as in
-    sigma-sub-Gaussian. It's no longer used.
-    '''
-
-    if N is None:
-        N = len(dataset)
-
-    if N > 1000:
-        print("Warning, this is going to be very slow for lots of images!")
-
-    sample = dataset[np.random.choice(len(dataset), size = N, replace = False)]
-
-    distances = np.zeros(N)
-    for tar_idx, tar in enumerate(sample):
-        this_tar_distances = np.zeros(N)
-        for ref_idx, ref in enumerate(sample):
-            this_tar_distances[ref_idx] = d(sample[tar_idx], sample[ref_idx], metric = metric)
-        distances[tar_idx] = np.mean(this_tar_distances)
-
-    distances -= np.mean(distances)
-    plt.hist(distances)
-    if metric == "L1":
-        for sigma in np.arange(5, 50, 5):
-            x = np.arange(-200, 200, 0.1)
-            y = gaussian(0, sigma, x)
-            plt.plot(x, y * N, label=sigma)
-        plt.legend()
-        plt.show()
-    elif metric == "L2":
-        for sigma in np.arange(0.001, .01, 0.001):
-            x = np.arange(-.1, 0.1, 0.001)
-            y = gaussian(0, sigma, x)
-            plt.plot(x, y , label=sigma)
-        plt.legend()
-        plt.show()
-    else:
-        raise Exception("bad metric in estimate_sigma")
-
 # TODO: Explicitly pass metric instead of args.metric here
 def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
     '''
@@ -520,61 +427,3 @@ def medoid_swap(medoids, best_swap, imgs, loss, args, dist_mat = None):
         print("New loss:", new_loss)
 
     return performed_or_not, new_medoids, min(new_loss, loss)
-
-def visualize_medoids(dataset, medoids, visualization = 'tsne'):
-    '''
-    Helper function to visualize the given medoids of a dataset using t-SNE
-    '''
-
-    if visualization == 'tsne':
-        X_embedded = TSNE(n_components=2).fit_transform(dataset)
-        plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c='b')
-        plt.scatter(X_embedded[medoids, 0], X_embedded[medoids, 1], c='r')
-        plt.show()
-    else:
-        raise Exception('Bad Visualization Arg')
-
-def create_gaussians(N, ratio = 0.6, seed = 42, visualize = True):
-    '''
-    Create some 2-D Gaussian toy data.
-    '''
-
-    np.random.seed(seed)
-    cluster1_size = int(N * ratio)
-    cluster2_size = N - cluster1_size
-
-    cov1 = np.array([[1, 0], [0, 1]])
-    cov2 = np.array([[1, 0], [0, 1]])
-
-    mu1 = np.array([-10, -10])
-    mu2 = np.array([10, 10])
-
-    cluster1 = np.random.multivariate_normal(mu1, cov1, cluster1_size)
-    cluster2 = np.random.multivariate_normal(mu2, cov2, cluster2_size)
-
-    if visualize:
-        plt.scatter(cluster1[:, 0], cluster1[:, 1], c='r')
-        plt.scatter(cluster2[:, 0], cluster2[:, 1], c='b')
-        plt.show()
-
-    return np.vstack((cluster1, cluster2))
-
-
-def extract_values(str_):
-    '''
-    Helper function for extracting the sigma statistics from a string in a
-    logfile.
-    '''
-    float_arr = str_.split(' ')
-    float_arr = [float(float_arr[idx]) for idx in range(1, 11, 2)]
-    return float_arr
-
-if __name__ == "__main__":
-    create_gaussians(1000, 0.5, 42)
-
-    ####### Use the code below to visualize the some medoids with t-SNE
-    # args = get_args(sys.argv[1:])
-    # total_images, total_labels, sigma = load_data(args)
-    # np.random.seed(args.seed)
-    # imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
-    # visualize_medoids(imgs, [891, 392])
