@@ -24,3 +24,6 @@ profiles/old_profiles_do_not_use/*
 profiles/profiles/*
 naive_pam_v2.py
 sbatch_exp.sh
+memoization_test.py
+auto_exp_config.py
+scratch_exp_config.py
