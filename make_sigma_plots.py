@@ -9,6 +9,7 @@ import seaborn as sns
 from data_utils import *
 from tests import Namespace
 
+
 def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
     '''
     For fixed arms, used to see the spread of possible loss changes for
@@ -40,25 +41,15 @@ def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
             binsize = 5
 
         bins = np.arange(min(costs) - binsize, max(costs) + binsize, binsize)
-
         metric_title = '$l_2$' if metric == 'L2' else ('$L_1$' if metric == 'L1' else 'cosine')
-        sns.distplot(costs,
-            bins = bins,
-            norm_hist = True,
-            # hist = True,
-            kde=True,
-            # kde_kws = {'label' : "Gaussian KDE"},
-            )
+        sns.distplot(costs, bins = bins, norm_hist = True, kde=True)
         plt.title("Histogram of arm returns for point " + str(a) + " (" + dataset_name + ", $d = $" + metric_title + ")")
         plt.ylabel('Frequency')
         plt.xlabel('Reward')
-        # plt.legend(loc="upper right")
         plt.plot(max(costs),[0], 'rx', markersize=12)
         plt.plot(min(costs),[0], 'rx', markersize=12)
         plt.savefig('figures/sigma-'+dataset_name+'-' + str(a_idx) + '-'+metric+'.pdf')
         plt.clf()
-
-
 
 def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
     '''
@@ -84,7 +75,6 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
     print(max(means))
 
     # Warning: unsafe global references
-
     if dataset_name == 'MNIST' and metric == 'L2':
         binsize = 0.125
     elif dataset_name == 'MNIST' and metric == 'COSINE':
@@ -95,14 +85,8 @@ def get_dist_of_means(dataset, metric, subsample_size, subsamp_refs = False):
         binsize = 5
 
     bins = np.arange(min(means) - binsize, max(means) + binsize, binsize)
-
-    print(dataset_name, metric)
-    print(bins)
     metric_title = '$l_2$' if metric == 'L2' else ('$L_1$' if metric == 'L1' else 'cosine')
-    sns.distplot(means,
-        bins = bins,
-        kde_kws = {'label' : "Gaussian KDE"},
-        )
+    sns.distplot(means, bins = bins, kde_kws = {'label' : "Gaussian KDE"})
     plt.title("True arm parameters among " + str(subsample_size) + " arms (" + dataset_name + ", $d = $" + metric_title + ")")
     plt.ylabel('Frequency')
     plt.xlabel('$\mu$')
@@ -140,7 +124,6 @@ def make_MNIST_sigma_dist_example():
     sigma_dist[2] = extract_sigmas(step3)
     sigma_dist[3] = extract_sigmas(step4)
     sigma_dist[4] = extract_sigmas(step5)
-    print(sigma_dist)
 
     fig, ax = plt.subplots(figsize = (5, 5))
     plt.boxplot(sigma_dist.T, whis=100)
