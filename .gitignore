@@ -18,3 +18,9 @@ csh_pam.py
 figure_these_refs_out/*
 figures_backup/*
 NeurIPS 2020 Submission/*
+ELKI/MiniGUI-saved-settings.txt
+ELKI/mouse.txt
+profiles/old_profiles_do_not_use/*
+profiles/profiles/*
+naive_pam_v2.py
+sbatch_exp.sh
