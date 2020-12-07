@@ -9,16 +9,15 @@ ANALYSIS_10X_PATH = DATA_PATH + '/analysis_csv'
 OUTPUT_PATH = DATA_PATH + '/NUMPY_OUT'
 
 def load_10x(GC_MAT_PATH):
-    """
-        https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/fresh_68k_pbmc_donor_a
-    """
+    '''
+    https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/fresh_68k_pbmc_donor_a
+    '''
     filename_data = GC_MAT_PATH + '/matrix.mtx'
     filename_genes = GC_MAT_PATH + '/genes.tsv'
     filename_barcodes = GC_MAT_PATH + '/barcodes.tsv'
 
     data = sc.read(filename_data, cache=True).transpose()
     data.var_names = np.genfromtxt(filename_genes, dtype=str)[:, 1]
-    # data.smp_names = np.genfromtxt(filename_barcodes, dtype=str)
     data.obs['barcode'] = np.genfromtxt(filename_barcodes, dtype=str)
     data.obs.index = data.obs['barcode']
     return data

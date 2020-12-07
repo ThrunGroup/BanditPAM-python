@@ -4,12 +4,12 @@ correctness, but is relatively slow since it's still O(kn^2) in each iteration.
 
 In particular, it contains the following optimizations over naive_pam:
 1. n --> (n-k) in the BUILD step (but not in the SWAP step for convenience)
-2. Array broadcasting instead of looping over losses [BUILD done, SWAP done]
-3. FastPAM1 [done -- only applies to SWAP step]
+2. Array broadcasting instead of looping over losses
+3. FastPAM1
 '''
+import itertools
 
 from data_utils import *
-import itertools
 
 def naive_build(args, imgs):
     '''
@@ -37,12 +37,11 @@ def naive_build(args, imgs):
     for k in range(num_medoids_found, args.num_medoids):
         target_idcs = np.arange(N)
         target_idcs = np.delete(target_idcs, medoids) # n --> (n-k)
-
         target_imgs = imgs[target_idcs]
         losses = np.zeros(len(target_idcs))
         for t_reidx, t in enumerate(target_idcs):
             refs = np.arange(N)
-            ref_imgs = imgs[refs] # should be == imgs, since sampling all reference points
+            ref_imgs = imgs[refs]
             if metric == 'TREE':
                 losses[t_reidx] = np.mean( np.minimum(d_tree(imgs[t], ref_imgs, metric = metric), best_distances)).round(DECIMAL_DIGITS)
             else:
@@ -50,7 +49,6 @@ def naive_build(args, imgs):
 
         best_loss_reidx = np.where(losses == losses.min())[0][0]
         best_medoid = target_idcs[best_loss_reidx]
-
         medoids.append(best_medoid)
         best_distances, closest_medoids = get_best_distances(medoids, imgs, metric = metric)
 
@@ -61,8 +59,6 @@ def naive_build(args, imgs):
         B_logstring = update_logstring(B_logstring, k, best_distances, N, None, None)
 
     return medoids, B_logstring
-
-
 
 def naive_swap(args, imgs, init_medoids):
     '''
@@ -99,7 +95,6 @@ def naive_swap(args, imgs, init_medoids):
 
         old_medoid_x = medoids[best_swap[0]]
         new_medoid_x = best_swap[1]
-
         performed_or_not, medoids, loss = medoid_swap(medoids, best_swap, imgs, loss, args)
         S_logstring = update_logstring(S_logstring, iter - 1, loss, N * k, None, None, swap = (old_medoid_x, new_medoid_x))
         if performed_or_not == "NO SWAP PERFORMED":

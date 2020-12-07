@@ -8,16 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-def showx():
-    '''
-    Convenience function for plotting matplotlib plots and closing on key press.
-    '''
-
-    plt.draw()
-    plt.pause(1)
-    input("<Hit Enter To Close>")
-    plt.close()
-
 def get_file_loss(file_):
     '''
     Get the final loss of an experiment from the logfile
@@ -29,7 +19,6 @@ def get_file_loss(file_):
 
     with open(file_, 'r') as fin:
         line_idx = 0
-
         while line_idx < num_lines:
             line_idx += 1
             line = fin.readline()
@@ -44,9 +33,7 @@ def get_swaps(file_):
 
     with open(file_, 'r') as fin:
         swaps = []
-
         line = fin.readline()
-
         while line.strip() != 'Swap Logstring:': # Need to get past the 'swap:' line in build logstring
             line = fin.readline()
 
@@ -62,7 +49,6 @@ def get_swaps(file_):
         last_old_medoid = medoids_swapped.split(',')[0]
         last_new_medoid = medoids_swapped.split(',')[1].strip()
         assert last_old_medoid == last_new_medoid, "The last swap should try to swap a medoid with itself"
-
         return swaps
 
 def get_build_meds(file_):
@@ -136,7 +122,6 @@ def get_FP_loss(N, seed):
 
     with open('ELKI/manual_fastpam_losses.txt', 'r') as fin:
         prefix = "N=" + str(N) + ",seed=" + str(seed + 42)+":"
-
         line = fin.readline()
         while line[:len(prefix)] != prefix:
             line = fin.readline()

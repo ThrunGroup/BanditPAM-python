@@ -4,7 +4,8 @@ This is almost certainly not the repo you're looking for. You probably want
 https://github.com/ThrunGroup/BanditPAM.
 
 This repo only exists as a reference Python implementation, and for the
-reproducibility of some of the figures in the paper.
+reproducibility of some of the figures in the paper. This code is not pretty,
+nor is it maintained.
 
 If you use this software, please cite:
 

@@ -5,8 +5,8 @@ We implement our own below.
 Based on
 Raymond T. Ng and Jiawei Han,
 “CLARANS: A Method for Clustering Objectsfor Spatial Data Mining”
-IEEE TRANSACTIONS ON KNOWLEDGE AND DATA ENGINEERING, VOL. 14, NO. 5,
-SEPTEMBER/OCTOBER 2002.
+IEEE Transactions on Knowledge and Data Engineering, volume 14, number 5,
+September/October 2002.
 http://www.cs.ecu.edu/dingq/CSCI6905/readings/CLARANS.pdf
 '''
 
@@ -33,14 +33,11 @@ def CLARANS_build_and_swap(args):
 
     total_images, total_labels, sigma = load_data(args)
     np.random.seed(args.seed)
-    if args.metric == 'TREE':
-        raise Exception("CLARANS is not yet implemented for non-matrix data")
-    else:
-        imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
 
     if args.metric != "L2":
         raise Exception("CLARANS does not support metrics other than L2")
 
+    imgs = total_images[np.random.choice(range(len(total_images)), size = args.sample_size, replace = False)]
     best_loss = float('inf')
     best_medoids = []
 

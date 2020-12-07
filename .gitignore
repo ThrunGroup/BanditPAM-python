@@ -27,3 +27,4 @@ sbatch_exp.sh
 memoization_test.py
 auto_exp_config.py
 scratch_exp_config.py
+naive_pam_v0.py
