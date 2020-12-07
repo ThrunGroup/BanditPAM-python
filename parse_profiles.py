@@ -21,17 +21,6 @@ FN_NAME_1 = 'data_utils.py:129(empty_counter)'
 FN_NAME_2 = 'data_utils.py:141(empty_counter)'
 FN_NAME_3 = 'data_utils.py:142(empty_counter)'
 
-def showx():
-    '''
-    Convenience function for plotting matplotlib plots and closing on key press.
-    '''
-
-    plt.draw()
-    plt.pause(1)
-    input("<Hit Enter To Close>")
-    plt.close()
-
-
 def verify_logfiles():
     '''
     Verifies that BanditPAM returns the same BUILD and SWAP medoid assignments

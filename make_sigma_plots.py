@@ -9,13 +9,6 @@ import seaborn as sns
 from data_utils import *
 from tests import Namespace
 
-def showx():
-    plt.draw()
-    plt.pause(1)
-    input("<Hit Enter To Close>")
-    plt.close()
-
-
 def get_fixed_sigma_dist(dataset, metric, target_size, subsamp_refs = False):
     '''
     For fixed arms, used to see the spread of possible loss changes for

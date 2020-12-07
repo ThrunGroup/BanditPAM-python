@@ -8,16 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-def showx():
-    '''
-    Convenience function for plotting matplotlib plots and closing on key press.
-    '''
-
-    plt.draw()
-    plt.pause(1)
-    input("<Hit Enter To Close>")
-    plt.close()
-
 def get_file_loss(file_):
     '''
     Get the final loss of an experiment from the logfile
