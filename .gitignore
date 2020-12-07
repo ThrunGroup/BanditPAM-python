@@ -12,3 +12,9 @@ hoc_data/
 tree-3630.dist
 manual_MNIST_subsets
 .ipynb_checkpoints/
+elki_commands.txt
+elki_sbatch.sh
+csh_pam.py
+figure_these_refs_out/*
+figures_backup/*
+NeurIPS 2020 Submission/*
