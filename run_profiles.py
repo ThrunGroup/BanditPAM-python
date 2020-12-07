@@ -181,9 +181,6 @@ def main(sys_args):
             elif exp[0] == 'ucb':
                 # pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
                 run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
-            # elif exp[0] == 'csh': # No longer used or supported
-            #     # pool.apply_async(run_exp, args=(copy.deepcopy(args), csh_pam.CSH_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
-            #     run_exp(args, csh_pam.CSH_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
             elif exp[0] == 'clarans':
                 # pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname)))
                 run_loss_exp(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname))
