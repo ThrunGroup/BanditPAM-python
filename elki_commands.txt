@@ -1,6 +1,0 @@
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.KMedoidsFastPAM1 -kmeans.k 5 -resulthandler DiscardResultHandler
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.KMedoidsFastPAM -kmeans.k 5 -resulthandler DiscardResultHandler
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.CLARA -kmeans.k 5 -resulthandler DiscardResultHandler
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.FastCLARA -kmeans.k 5 -resulthandler DiscardResultHandler
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.CLARANS -kmeans.k 5 -resulthandler DiscardResultHandler
-java -jar elki-bundle-0.7.5.jar KDDCLIApplication -verbose -verbose -dbc.in /sailhome/motiwari/manualPAM/MNIST-1k.csv -algorithm clustering.kmeans.FastCLARANS -kmeans.k 5 -resulthandler DiscardResultHandler

@@ -1,11 +1,33 @@
+# WARNING
+
+This is almost certainly not the repo you're looking for. You probably want
+https://github.com/ThrunGroup/BanditPAM.
+
+This repo only exists as a reference Python implementation, and for the
+reproducibility of some of the figures in the paper.
+
+If you use this software, please cite:
+
+Mo Tiwari, Martin Jinye Zhang, James Mayclin, Sebastian Thrun, Chris Piech, Ilan Shomorony. "Bandit-PAM: Almost Linear Time *k*-medoids Clustering via Multi-Armed Bandits" Advances in Neural Information Processing Systems (NeurIPS) 2020.
+
+```python
+@inproceedings{BanditPAM,
+  title={Bandit-PAM: Almost Linear Time k-medoids Clustering via Multi-Armed Bandits},
+  author={Tiwari, Mo and Zhang, Martin J and Mayclin, James and Thrun, Sebastian and Piech, Chris and Shomorony, Ilan},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2020}
+}
+```
+
 # BanditPAM
 
-This repository contains an implementation of BanditPAM, and provides the code
+This repository contains a reference python implementation of BanditPAM, and provides the code
 used to generate the results for our NeurIPS 2020 submission. This python code
-is used for all experiments and to generate all figures in the paper. The C++
-implementation is used for the wall clock time comparisons.
+is used for to generate some of the figures in the paper. The C++
+implementation at https://github.com/ThrunGroup/BanditPAM is used for the wall clock time comparisons,
+and is almost certainly what you're looking for (it is also callable from Python).
 
-Note that the file `ucb_pam.py` implements BanditPAM.
+In this repo, the file `ucb_pam.py` implements BanditPAM.
 
 # Introduction
 
@@ -42,7 +64,7 @@ in `requirements.txt` and can be installed via `pip install -r requirements.txt`
 
 If you are using a virtualenv, please ensure that you are able to run
 `python --version` and `pip --version` from your virtualenv. There are known
-issues with virtualenvs on Mac, unrelated to this work (for example, openssl
+issues with virtualenvs on Mac OSX, unrelated to this work (for example, openssl
 errors that manifest with errors like `cannot import name md5`). See
 https://stackoverflow.com/questions/59123154/importerror-cannot-import-name-md5
 
@@ -60,7 +82,7 @@ https://pypi.org/project/mnist/ and will enable loading of the MNIST dataset.
 
 The single-cell RNA (SCRNA) sequence dataset used in the paper is available from
 10x genomics at https://support.10xgenomics.com/single-cell-gene-expression/datasets/1.1.0/fresh_68k_pbmc_donor_a
--- "Gene / cell matrix (filtered)".
+-- the dataset is "Gene / cell matrix (filtered)".
 
 The SCRNA-PCA dataset referred to in the appendix contains the SCRNA dataset,
 but projected onto the top 10 principal components, which is available from the
@@ -81,7 +103,7 @@ The HOC4 ASTs were preprocessed into zss trees using `tree_utils.py`. For the
 convenience of the reviewers, we have included the `.tree` files so they can be
 used directly.
 
-The HOC4 ASTs also require precomputation of the pairwise distance matrix
+The HOC4 experiments also require precomputation of the pairwise distance matrix
 between trees. To compute this matrix from scratch, run `python tree_utils.py -d HOC4`. Note
 that this computation takes several hours.
 
