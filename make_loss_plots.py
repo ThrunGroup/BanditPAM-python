@@ -137,7 +137,7 @@ def make_plots():
 
     loss_dir = 'profiles/Loss_plots_paper/'
 
-    algos = ['naive_v1', 'ucb', 'clarans', 'em_style', 'fp']
+    algos = ['ucb']
     seeds = range(10)
     Ns = [500, 1000, 1500, 2000, 2500, 3000]
     k = 5
@@ -145,36 +145,20 @@ def make_plots():
     mult_jitter = 20
 
     alg_to_legend = {
-        'naive_v1' : 'PAM',
         'ucb' : 'BanditPAM',
-        'clarans' : 'CLARANS',
-        'em_style' : 'Voronoi Iteration',
-        'fp' : 'FastPAM',
     }
 
     ADD_JITTER = 75
     alg_to_add_jitter = {
-        'naive_v1' : 0,
         'ucb' : 0,
-        'fp' : 0,
-        'clarans' : 0,
-        'em_style' : 0,
     }
 
     alg_color = {
-        'naive_v1' : 'orange',
         'ucb' : 'b',
-        'clarans' : 'r',
-        'em_style' : 'g',
-        'fp' : 'y',
     }
 
     alg_zorder = {
-        'naive_v1' : 0,
         'ucb' : 4,
-        'clarans' : 3,
-        'em_style' : 2,
-        'fp' : 1,
     }
 
     losses = np.zeros((len(Ns), len(algos) + 1, len(seeds)))

@@ -17,9 +17,8 @@ import copy
 import traceback
 
 import naive_pam_v1
-import ucb_pam
+import banditpam
 import clarans
-import em_style
 
 from data_utils import *
 
@@ -31,15 +30,15 @@ def remap_args(args, exp):
     `python run_profiles -e exp_config.py -p`
     (This is inconsistent with the manner in which other args are passed)
     '''
-    args.build_ao_swap = exp[1]
-    args.verbose = exp[2]
+    args.build_ao_swap = exp[1]  # TODO(@Adarsh321123): irrelevant?
+    args.verbose = exp[2]  # TODO(@Adarsh321123): irrelevant
     args.num_medoids = exp[3]
     args.sample_size = exp[4]
     args.seed = exp[5]
     args.dataset = exp[6]
     args.metric = exp[7]
-    args.warm_start_medoids = exp[8]
-    args.cache_computed = None
+    args.warm_start_medoids = exp[8]  # TODO(@Adarsh321123): do we not use warm start??
+    args.cache_computed = None  # TODO(@Adarsh321123): irrelevant?
     return args
 
 def get_filename(exp, args):
@@ -69,7 +68,7 @@ def parse_logstring(logstring):
             output += "\t\t" + str(round) + ": " + str(logstring[k][round]) + "\n"
     return output
 
-def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, uniq_d):
+def write_medoids(medoids_fname, built_medoids, swapped_medoids, num_swaps, final_loss):
     '''
     Write results of an experiment to the given file, including:
     medoids after BUILD step, medoids after SWAP step, etc.
@@ -79,11 +78,8 @@ def write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_
         fout.write("\nSwapped:" + ','.join(map(str, swapped_medoids)))
         fout.write("\nNum Swaps: " + str(num_swaps))
         fout.write("\nFinal Loss: " + str(final_loss))
-        fout.write("\nUnique Distance Computations: " + str(uniq_d))
-        fout.write("\nBuild Logstring:" + parse_logstring(B_logstring))
-        fout.write("\nSwap Logstring:" + parse_logstring(S_logstring))
 
-def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
+def run_exp(args, object_name, medoids_fname, B_prof_fname, S_prof_fname):
     '''
     Runs an experiment with the given parameters, and writes the results to the
     files (arguments ending in _fname). We run the BUILD step and SWAP step
@@ -96,21 +92,52 @@ def run_exp(args, method_name, medoids_fname, B_prof_fname, S_prof_fname):
     '''
 
     tmp = args.build_ao_swap # Store as tmp variable because we modify below
+    total_images, total_labels, sigma = load_data(args)
+    np.random.seed(args.seed)
+    if args.metric == 'PRECOMP':
+        dist_mat = np.loadtxt('tree-3630.dist')
+        random_indices = np.random.choice(len(total_images), size=args.sample_size, replace=False)
+        imgs = np.array([total_images[x] for x in random_indices])
+        dist_mat = dist_mat[random_indices][:, random_indices]
+    elif args.metric == 'TREE':
+        imgs = np.random.choice(total_images, size=args.sample_size, replace=False)
+    else:
+        # Can remove range() here?
+        imgs = total_images[np.random.choice(range(len(total_images)), size=args.sample_size, replace=False)]
+    # X = pd.read_csv('data/MNIST_70k.csv', sep=' ', header=None).to_numpy()
+    # import ipdb;ipdb.set_trace()
+    # np.random.seed(args.seed)
+    # # Can remove range() here?
+    # imgs = X[np.random.choice(range(len(X)), size=args.sample_size, replace=False)]
     computed_B = False
+    # TODO(@Adarsh321123): clean up stuff below (e.g. warm start is not needed) (does it make sense to split the B and S anymore?)
     if 'B' in tmp:
         args.build_ao_swap = 'B'
         prof = cProfile.Profile()
-        built_medoids, _1, B_logstring, _2, _3, _4, _5 = prof.runcall(method_name, args)
+        prof.runcall(object_name.fit, imgs, args.metric)
+        built_medoids = object_name.build_medoids
+        swapped_medoids = object_name.medoids
+        # B_logstring and S_logstring are unnecessary for the main paper
+        num_swaps = object_name.steps
+        final_loss = object_name.average_loss
+        # uniq_d is not needed either
         prof.dump_stats(B_prof_fname)
         computed_B = True
+    # TODO(@Adarsh321123): this is essentially identical to the top if statement but is also run, is this needed?
     if 'S' in tmp:
         args.build_ao_swap = 'S'
         assert computed_B, "ERROR: BUILD step was not run, Using warm start medoids from a previous experiment"
         args.warm_start_medoids = ','.join(map(str, list(built_medoids)))
         prof = cProfile.Profile()
-        _1, swapped_medoids, _2, S_logstring, num_swaps, final_loss, uniq_d = prof.runcall(method_name, args)
+        prof.runcall(object_name.fit, imgs, args.metric)
+        built_medoids = object_name.build_medoids
+        swapped_medoids = object_name.medoids
+        # B_logstring and S_logstring are unnecessary for the main paper
+        num_swaps = object_name.steps
+        final_loss = object_name.average_loss
+        # uniq_d is not needed either
         prof.dump_stats(S_prof_fname)
-    write_medoids(medoids_fname, built_medoids, swapped_medoids, B_logstring, S_logstring, num_swaps, final_loss, uniq_d)
+    write_medoids(medoids_fname, built_medoids, swapped_medoids, num_swaps, final_loss)
 
 def write_loss(medoids_fname, final_medoids, final_loss):
     '''
@@ -177,10 +204,13 @@ def main(sys_args):
         try:
             if exp[0] == 'naive_v1':
                 # pool.apply_async(run_exp, args=(copy.deepcopy(args), naive_pam_v1.naive_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname))) # Copy inline to copy OTF
+                # TODO(@Adarsh321123): now this is broken since it passes the method and not the object name
                 run_exp(args, naive_pam_v1.naive_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
-            elif exp[0] == 'ucb':
+            elif exp[0] == 'ucb': # TODO(@Adarsh321123): change this to say BanditPAM throughout?
                 # pool.apply_async(run_exp, args=(copy.deepcopy(args), ucb_pam.UCB_build_and_swap, copy.deepcopy(medoids_fname), copy.deepcopy(B_prof_fname), copy.deepcopy(S_prof_fname)))
-                run_exp(args, ucb_pam.UCB_build_and_swap, medoids_fname, B_prof_fname, S_prof_fname)
+                # TODO(@Adarsh321123): deal with the double counting of swap steps later
+                kmed = banditpam.KMedoids(n_medoids=args.num_medoids, algorithm="BanditPAM_orig")
+                run_exp(args, kmed, medoids_fname, B_prof_fname, S_prof_fname)
             elif exp[0] == 'clarans':
                 # pool.apply_async(run_loss_exp, args=(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname)))
                 run_loss_exp(copy.deepcopy(args), clarans.CLARANS_build_and_swap, copy.deepcopy(medoids_fname))
@@ -199,3 +229,4 @@ def main(sys_args):
 
 if __name__ == "__main__":
     main(sys.argv)
+    # TODO(@Adarsh321123): see if it is a problem that the profile sometimes has one different built medoid and therefore 5 swaps instead of 4

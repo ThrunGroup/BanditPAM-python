@@ -16,15 +16,17 @@ def write_exp(algo, k, N, seed, dataset, metric):
         ", " + str(seed) + ", '" + dataset + "', '" + metric + "', ''],\n"
 
 def main():
+    # TODO(@Adarsh321123): change comments throughout
+    # TODO(@Adarsh321123): remove unnecessary things
     # Possible algos are ['ucb', 'naive_v1', 'em_style', 'csh', and 'clarans']
-    algos = ['naive_v1']
-    seeds = range(10)
+    # algos = ['naive_v1']
+    # seeds = range(10)
 
     ####### MNIST, L2 distance, k = 5 and k = 10
-    dataset = 'MNIST'
-    Ns = [1000, 10000, 20000, 40000, 70000]
-    ks = [5, 10]
-    metric = 'L2'
+    # dataset = 'MNIST'
+    # Ns = [1000, 10000, 20000, 40000, 70000]
+    # ks = [5, 10]
+    # metric = 'L2'
 
     ######## MNIST, Cosine distance, k = 5
     # dataset = 'MNIST'
@@ -45,14 +47,17 @@ def main():
     # metric = 'L2'
 
     ######## HOC4, Tree edit distance (precomputed), k = 2 and k = 3
-    # Ns = [1000, 2000, 3000, 3360]
-    # ks = [2, 3]
-    # metric = 'PRECOMP'
+    algos = ['ucb']
+    dataset = 'HOC4'
+    metric = 'PRECOMP'
+    Ns = [1000, 2000, 3000, 3360]
+    ks = [2, 3]
+    seeds = range(10)
 
     ######## For loss plots
-    # algos = ['clarans', 'em_style']#, 'ucb']#, 'naive_v1']
+    # algos = ['ucb']
     # seeds = range(10)
-    # Ns = [10000, 30000, 70000]
+    # Ns = [500, 1000, 1500, 2000, 2500, 3000]
     # ks = [5]
 
     with open('auto_exp_config.py', 'w+') as fout:

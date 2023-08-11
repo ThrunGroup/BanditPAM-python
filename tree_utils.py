@@ -146,6 +146,6 @@ if __name__ == "__main__":
     args = get_args(sys.argv[1:])
     assert args.dataset == "HOC4", "Can only do this for trees"
 
-    # write_trees() # Convert all ASTs to zss trees in .tree files
+    write_trees() # Convert all ASTs to zss trees in .tree files
     trees, _1, _2 = load_data(args)
     compute_pairwise_distances(trees) # Write precomputed distance matrix to file

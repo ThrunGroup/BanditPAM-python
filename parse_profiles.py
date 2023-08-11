@@ -271,20 +271,20 @@ def main():
     algos = ['ucb'] # Could also include 'naive_v1'
 
     #### for HOC4
-    dataset = 'HOC4'
-    metric = 'PRECOMP'
-    Ns = [1000, 2000, 3000, 3360]
-    ks = [2]
-    seeds = range(42, 52)
-    dir_ = 'HOC4_PRECOMP_k2k3_paper'
+    # dataset = 'HOC4'
+    # metric = 'PRECOMP'
+    # Ns = [1000, 2000, 3000, 3360]
+    # ks = [2]
+    # seeds = range(42, 52)
+    # dir_ = 'HOC4_PRECOMP_k2k3_paper'
 
     #### for MNIST L2, k = 5
-    # dataset = 'MNIST'
-    # metric = 'L2'
-    # Ns = [10000, 20000, 40000, 70000]
-    # ks = [5]
-    # seeds = range(42, 52)
-    # dir_ = 'MNIST_L2_k5_paper'
+    dataset = 'MNIST'
+    metric = 'L2'
+    Ns = [10000, 20000, 40000, 70000]
+    ks = [5]
+    seeds = range(42, 52)
+    dir_ = 'MNIST_L2_k5_paper'
 
     ### for MNIST L2, k = 10
     # dataset = 'MNIST'
